@@ -239,6 +239,15 @@ details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
 .forecast-desc{font-size:11px;color:var(--t3);flex:1;text-align:center}
 .forecast-temps{font-size:12px;font-weight:700;color:var(--accent)}
 
+.weather-detail-btn{width:100%;margin-top:10px;padding:8px;background:var(--s3);border:1px solid var(--border2);border-radius:10px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .18s;text-align:center}
+.weather-detail-btn:hover{border-color:var(--accent);color:var(--accent)}
+.weather-hourly{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.weather-hourly-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px;gap:8px}
+.weather-hourly-time{font-size:12px;font-weight:700;color:var(--accent);min-width:50px}
+.weather-hourly-icon{font-size:18px}
+.weather-hourly-desc{font-size:11px;color:var(--t3);flex:1;text-align:center}
+.weather-hourly-temp{font-size:13px;font-weight:700;color:var(--text)}
+
 /* INPUT */
 .input-bar{position:relative;z-index:20;padding:10px 16px 14px;background:rgba(8,8,15,.88);backdrop-filter:blur(24px);border-top:1px solid var(--border);flex-shrink:0;transition:background .3s,border-color .3s}
 [data-theme="light"] .input-bar{background:rgba(245,245,250,.92)}
@@ -1653,7 +1662,9 @@ function renderWeatherCard(data,city){
   const todayD=renderDay(todayItems,'today');
   const tomorrowD=renderDay(tomorrowItems,'tomorrow');
 
-  const cardId='wc_'+Date.now();
+const cardId='wc_'+Date.now();
+  // Store list for hourly detail — applied after render via timeout
+  setTimeout(()=>{const c=document.getElementById(cardId);if(c)c._weatherList=data.list;},100);
   const cityDisplay=`${data.name||city}${data.country?', '+data.country:''}`;
 
   const html=`
@@ -1673,6 +1684,7 @@ function renderWeatherCard(data,city){
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${todayD.feels}°C</div></div>
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${todayD.pressure} мм</div></div>
     </div>
+    <button class="weather-detail-btn" onclick="toggleHourly('${cardId}','today',${JSON.stringify(dayKeys)},this)" data-open="0">🕐 Подробнее по часам ▾</button>
   </div>
   <div id="${cardId}_week_content" style="display:none">
     <div class="weather-forecast show">${buildWeekHTML(days,dayKeys)}</div>
@@ -1691,16 +1703,62 @@ function renderWeatherCard(data,city){
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${tomorrowD.feels}°C</div></div>
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${tomorrowD.pressure} мм</div></div>
     </div>
+    <button class="weather-detail-btn" onclick="toggleHourly('${cardId}','tomorrow',${JSON.stringify(dayKeys)},this)" data-open="0">🕐 Подробнее по часам ▾</button>
   </div>
   <div class="weather-tabs">
     <div class="weather-tab active" id="${cardId}_tab_today" onclick="switchWeatherTab('${cardId}','today')">${t('weather_today')}</div>
     <div class="weather-tab" id="${cardId}_tab_tomorrow" onclick="switchWeatherTab('${cardId}','tomorrow')">${t('weather_tomorrow')}</div>
     <div class="weather-tab" id="${cardId}_tab_week" onclick="switchWeatherTab('${cardId}','week')">${t('weather_week')}</div>
   </div>
+  <div id="${cardId}_hourly" style="display:none">
+    <div class="weather-hourly" id="${cardId}_hourly_body"></div>
+  </div>
 </div>`;
   return html;
 }
-
+function toggleHourly(cardId, dayType, dayKeys, btn){
+  const isOpen=btn.dataset.open==='1';
+  const hourlyDiv=document.getElementById(`${cardId}_hourly`);
+  const hourlyBody=document.getElementById(`${cardId}_hourly_body`);
+  if(isOpen){
+    hourlyDiv.style.display='none';
+    btn.dataset.open='0';
+    btn.textContent='🕐 Подробнее по часам ▾';
+    return;
+  }
+  // Build hourly rows
+  const dayIdx=dayType==='today'?0:1;
+  const key=dayKeys[dayIdx];
+  // We need weather data — store it on the card element
+  const card=document.getElementById(cardId);
+  if(!card)return;
+  const raw=card._weatherList;
+  if(!raw)return;
+  const items=raw.filter(i=>i.dt_txt.startsWith(key));
+  const periods=[
+    {label:'Ночь',hours:['00:00:00','03:00:00']},
+    {label:'Утро',hours:['06:00:00','09:00:00']},
+    {label:'День',hours:['12:00:00','15:00:00']},
+    {label:'Вечер',hours:['18:00:00','21:00:00']},
+  ];
+  hourlyBody.innerHTML='';
+  periods.forEach(p=>{
+    const item=items.find(i=>p.hours.includes(i.dt_txt.split(' ')[1]));
+    if(!item)return;
+    const icon=getWeatherIcon(item.weather[0].main);
+    const temp=Math.round(item.main.temp);
+    const desc=item.weather[0].description;
+    const row=document.createElement('div');row.className='weather-hourly-row';
+    row.innerHTML=`<div class="weather-hourly-time">${p.label}</div><div class="weather-hourly-icon">${icon}</div><div class="weather-hourly-desc">${desc}</div><div class="weather-hourly-temp">${temp}°C</div>`;
+    hourlyBody.appendChild(row);
+  });
+  if(!hourlyBody.children.length){
+    hourlyBody.innerHTML='<div style="padding:8px;font-size:12px;color:var(--t3);text-align:center">Данные недоступны</div>';
+  }
+  hourlyDiv.style.display='';
+  btn.dataset.open='1';
+  btn.textContent='🕐 Скрыть ▴';
+}
 function switchWeatherTab(cardId, tab){
   ['today','tomorrow','week'].forEach(t=>{
     document.getElementById(`${cardId}_tab_${t}`)?.classList.toggle('active',t===tab);
