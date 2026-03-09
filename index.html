@@ -469,9 +469,10 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 /* SPLASH */
 #splash{position:fixed;inset:0;background:#08080f;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:all}
-#splashContent{position:relative;display:flex;align-items:center;gap:14px}
-#splashText{font-size:32px;font-weight:800;letter-spacing:-.5px;color:#f0f0ff;opacity:0;white-space:nowrap;font-family:'Outfit',sans-serif}
-#splashStar{font-size:32px;color:#8b5cf6;position:absolute;left:-60px;opacity:0;filter:drop-shadow(0 0 18px #8b5cf6)}
+#splashContent{display:flex;align-items:center;gap:14px}
+#splashText{font-size:32px;font-weight:800;letter-spacing:-.5px;color:#f0f0ff;opacity:0;white-space:nowrap;font-family:'Outfit',sans-serif;transform:translateX(8px)}
+#splashStar{font-size:32px;color:#8b5cf6;flex-shrink:0;filter:drop-shadow(0 0 18px #8b5cf6);animation:splashSpin 1.2s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes splashSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -2033,63 +2034,23 @@ init();
   const splash=document.getElementById('splash');
   const star=document.getElementById('splashStar');
   const text=document.getElementById('splashText');
-  let start=null;
-  const dur={roll:900,textIn:400,hold:600,out:700};
-  const total=dur.roll+dur.textIn+dur.hold+dur.out;
 
-  function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+  // Star spins and glows immediately
+  star.style.opacity=1;
 
-  function tick(ts){
-    if(!start)start=ts;
-    const e=ts-start;
+  // After short delay text fades in
+  setTimeout(()=>{
+    text.style.transition='opacity .7s ease, transform .7s ease';
+    text.style.opacity=1;
+    text.style.transform='translateX(0)';
+  }, 400);
 
-    // Phase 1: star flies right to left and spins
-    if(e<=dur.roll){
-      const p=ease(e/dur.roll);
-      const startX=window.innerWidth*0.45;
-      const endX=-16;
-      const x=startX-(startX-endX)*p;
-      const rot=p*720;
-      const op=Math.min(p*3,1);
-      star.style.transform=`translateX(${x}px) rotate(${rot}deg)`;
-      star.style.opacity=op;
-      text.style.opacity=0;
-      requestAnimationFrame(tick);return;
-    }
-
-    // Phase 2: text fades in
-    if(e<=dur.roll+dur.textIn){
-      const p=ease((e-dur.roll)/dur.textIn);
-      star.style.transform=`translateX(-16px) rotate(720deg)`;
-      star.style.opacity=1;
-      text.style.opacity=p;
-      text.style.transform=`translateX(${(1-p)*12}px)`;
-      requestAnimationFrame(tick);return;
-    }
-
-    // Phase 3: hold
-    if(e<=dur.roll+dur.textIn+dur.hold){
-      star.style.opacity=1;text.style.opacity=1;
-      requestAnimationFrame(tick);return;
-    }
-
-    // Phase 4: dissolve
-    if(e<=total){
-      const p=ease((e-dur.roll-dur.textIn-dur.hold)/dur.out);
-      const op=1-p;
-      star.style.opacity=op;
-      text.style.opacity=op;
-      star.style.filter=`drop-shadow(0 0 ${18+p*40}px #8b5cf6) blur(${p*6}px)`;
-      text.style.filter=`blur(${p*4}px)`;
-      splash.style.background=`rgba(8,8,15,${1-p})`;
-      requestAnimationFrame(tick);return;
-    }
-
-    // Done
-    splash.style.display='none';
-  }
-
-  requestAnimationFrame(tick);
+  // After hold — everything dissolves
+  setTimeout(()=>{
+    splash.style.transition='opacity .7s ease';
+    splash.style.opacity=0;
+    setTimeout(()=>splash.style.display='none', 700);
+  }, 1800);
 })();
 </script>
 </body>
