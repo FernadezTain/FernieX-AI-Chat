@@ -445,7 +445,9 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   .weather-card{min-width:unset;max-width:100%}
   .weather-details{grid-template-columns:1fr 1fr}
   /* Settings/Personalize panels */
-  .settings-panel,.personalize-panel{max-height:95vh}
+.settings-panel,.personalize-panel{max-height:92vh;overflow-y:auto}
+.personalize-panel{padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.pp-header{position:sticky;top:0;background:var(--surface);z-index:2}
   .sp-body,.pp-body{padding:6px 14px 20px}
   /* Empty state */
   .empty{min-height:42vh;gap:14px;padding:30px 16px}
@@ -466,23 +468,9 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   .lang-grid{grid-template-columns:repeat(3,1fr)}
   .empty h2{font-size:16px}
 }
-
-/* SPLASH */
-#splash{position:fixed;inset:0;background:#08080f;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:all}
-#splashContent{display:flex;align-items:center;gap:14px}
-#splashText{font-size:32px;font-weight:800;letter-spacing:-.5px;color:#f0f0ff;opacity:0;white-space:nowrap;font-family:'Outfit',sans-serif;transform:translateX(8px)}
-#splashStar{font-size:32px;color:#8b5cf6;flex-shrink:0;filter:drop-shadow(0 0 18px #8b5cf6);animation:splashSpin 1.2s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes splashSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div id="splash">
-  <div id="splashContent">
-    <div id="splashStar">✦</div>
-    <div id="splashText">FernieX AI</div>
-  </div>
-</div>
-
 <canvas id="bgCanvas"></canvas>
 <div class="noise"></div>
 <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
@@ -657,7 +645,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 <script>
 const WEATHER_API_KEY='920745ae9266589263a7ddc89bfd2c80';
-const OR_API_KEY='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';
+const OR_API_KEY = '';
 
 const codeStore=new Map();
 let codeStoreId=0;
@@ -666,9 +654,8 @@ function getCode(id){return codeStore.get(id)||'';}
 
 const MODELS=[
   {id:'step',name:'Step 3.5 Flash',api:'@preset/step',badge:'⚡',desc:'Быстрый · Универсальный'},
-  {id:'tl-Preview',name:'Trinity Large Preview',api:'@preset/trinity-large-preview',badge:'🌊',desc:'Быстрый · Лёгкий'},
-  {id:'rf-fast',name:'Riverflow V2 Fast',api:'@preset/riverflow-v2-fast',badge:'🌊',desc:'Быстрый · Лёгкий'},
-  {id:'rf-pro',name:'Riverflow V2 Pro',api:'@preset/riverflow-v2-pro',badge:'💎',desc:'Мощный · Точный'},
+  {id:'tl-Preview',name:'Trinity Large Preview',api:'@preset/trinity-large-preview',badge:'🔮',desc:'Быстрый · Лёгкий'},
+  {id:'Nemotron-Nano-12B-2-VL',name:'Nemotron Nano 12B 2 VL',api:'@preset/nemotron-nano-12-b-2-vl',badge:'🧠',desc:'Быстрый · Лёгкий'},
 ];
 const FONTS=[
   {id:'Outfit',label:'Outfit',preview:'Современный'},
@@ -1448,8 +1435,8 @@ function clearAllChats(){
 }
 async function generateChatTitle(msg){
   try{
-    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-      method:'POST',headers:{'Authorization':'Bearer '+OR_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'FernieX AI'},
+    const res=await fetch('/api/chat',{
+  method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:getModel().api,messages:[{role:'user',content:t('title_prompt')+msg}],max_tokens:20,stream:false})
     });
     const data=await res.json();const title=data?.choices?.[0]?.message?.content?.trim().slice(0,40);
@@ -1737,12 +1724,12 @@ async function sendMessage(){
   let stopped=false;
 
   try{
-    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+OR_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'FernieX AI'},
-      body:JSON.stringify({model:getModel().api,messages,stream:true}),
-      signal:abortCtrl.signal
-    });
+const res=await fetch('/api/chat',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({model:getModel().api,messages,stream:true}),
+  signal:abortCtrl.signal
+});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
     removeTyping();
 
@@ -2028,30 +2015,6 @@ function init(){
   renderChatList();
 }
 init();
-
-// SPLASH ANIMATION
-(function(){
-  const splash=document.getElementById('splash');
-  const star=document.getElementById('splashStar');
-  const text=document.getElementById('splashText');
-
-  // Star spins and glows immediately
-  star.style.opacity=1;
-
-  // After short delay text fades in
-  setTimeout(()=>{
-    text.style.transition='opacity .7s ease, transform .7s ease';
-    text.style.opacity=1;
-    text.style.transform='translateX(0)';
-  }, 400);
-
-  // After hold — everything dissolves
-  setTimeout(()=>{
-    splash.style.transition='opacity .7s ease';
-    splash.style.opacity=0;
-    setTimeout(()=>splash.style.display='none', 700);
-  }, 1800);
-})();
 </script>
 </body>
 </html>
