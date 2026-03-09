@@ -466,9 +466,59 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   .lang-grid{grid-template-columns:repeat(3,1fr)}
   .empty h2{font-size:16px}
 }
+/* SPLASH SCREEN */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg, #08080f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  gap: 14px;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#splash-star {
+  font-size: 36px;
+  display: inline-block;
+  animation: splashSpin 1s linear infinite, splashGlow 1s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+@keyframes splashSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes splashGlow {
+  from { filter: drop-shadow(0 0 6px #8b5cf6) drop-shadow(0 0 12px #8b5cf6); }
+  to   { filter: drop-shadow(0 0 18px #a78bfa) drop-shadow(0 0 36px #7c3aed); }
+}
+#splash-text {
+  font-size: 26px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+#splash-text.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
 </style>
 </head>
 <body>
+  <div id="splash">
+  <span id="splash-star">✦</span>
+  <span id="splash-text">FernieX AI</span>
+</div>
 <canvas id="bgCanvas"></canvas>
 <div class="noise"></div>
 <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
@@ -2012,6 +2062,15 @@ function init(){
   else createFirstChat();
   renderChatList();
 }
+setTimeout(() => {
+  document.getElementById('splash-text').classList.add('visible');
+}, 400);
+
+setTimeout(() => {
+  document.getElementById('splash').classList.add('fade-out');
+  setTimeout(() => document.getElementById('splash').remove(), 650);
+}, 1800);
+
 init();
 </script>
 </body>
