@@ -466,9 +466,22 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   .lang-grid{grid-template-columns:repeat(3,1fr)}
   .empty h2{font-size:16px}
 }
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#08080f;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:all}
+#splashContent{position:relative;display:flex;align-items:center;gap:14px}
+#splashText{font-size:32px;font-weight:800;letter-spacing:-.5px;color:#f0f0ff;opacity:0;white-space:nowrap;font-family:'Outfit',sans-serif}
+#splashStar{font-size:32px;color:#8b5cf6;position:absolute;left:-60px;opacity:0;filter:drop-shadow(0 0 18px #8b5cf6)}
 </style>
 </head>
 <body>
+<div id="splash">
+  <div id="splashContent">
+    <div id="splashStar">✦</div>
+    <div id="splashText">FernieX AI</div>
+  </div>
+</div>
+
 <canvas id="bgCanvas"></canvas>
 <div class="noise"></div>
 <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
@@ -643,7 +656,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 <script>
 const WEATHER_API_KEY='920745ae9266589263a7ddc89bfd2c80';
-const OR_API_KEY = '';
+const OR_API_KEY='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';
 
 const codeStore=new Map();
 let codeStoreId=0;
@@ -652,8 +665,9 @@ function getCode(id){return codeStore.get(id)||'';}
 
 const MODELS=[
   {id:'step',name:'Step 3.5 Flash',api:'@preset/step',badge:'⚡',desc:'Быстрый · Универсальный'},
-  {id:'tl-Preview',name:'Trinity Large Preview',api:'@preset/trinity-large-preview',badge:'🔮',desc:'Быстрый · Лёгкий'},
-  {id:'Nemotron-Nano-12B-2-VL',name:'Nemotron Nano 12B 2 VL',api:'@preset/nemotron-nano-12-b-2-vl',badge:'🧠',desc:'Быстрый · Лёгкий'},
+  {id:'tl-Preview',name:'Trinity Large Preview',api:'@preset/trinity-large-preview',badge:'🌊',desc:'Быстрый · Лёгкий'},
+  {id:'rf-fast',name:'Riverflow V2 Fast',api:'@preset/riverflow-v2-fast',badge:'🌊',desc:'Быстрый · Лёгкий'},
+  {id:'rf-pro',name:'Riverflow V2 Pro',api:'@preset/riverflow-v2-pro',badge:'💎',desc:'Мощный · Точный'},
 ];
 const FONTS=[
   {id:'Outfit',label:'Outfit',preview:'Современный'},
@@ -1433,8 +1447,8 @@ function clearAllChats(){
 }
 async function generateChatTitle(msg){
   try{
-    const res=await fetch('/api/chat',{
-  method:'POST',headers:{'Content-Type':'application/json'},
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',headers:{'Authorization':'Bearer '+OR_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'FernieX AI'},
       body:JSON.stringify({model:getModel().api,messages:[{role:'user',content:t('title_prompt')+msg}],max_tokens:20,stream:false})
     });
     const data=await res.json();const title=data?.choices?.[0]?.message?.content?.trim().slice(0,40);
@@ -1722,12 +1736,12 @@ async function sendMessage(){
   let stopped=false;
 
   try{
-const res=await fetch('/api/chat',{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({model:getModel().api,messages,stream:true}),
-  signal:abortCtrl.signal
-});
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+OR_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'FernieX AI'},
+      body:JSON.stringify({model:getModel().api,messages,stream:true}),
+      signal:abortCtrl.signal
+    });
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
     removeTyping();
 
@@ -2013,6 +2027,70 @@ function init(){
   renderChatList();
 }
 init();
+
+// SPLASH ANIMATION
+(function(){
+  const splash=document.getElementById('splash');
+  const star=document.getElementById('splashStar');
+  const text=document.getElementById('splashText');
+  let start=null;
+  const dur={roll:900,textIn:400,hold:600,out:700};
+  const total=dur.roll+dur.textIn+dur.hold+dur.out;
+
+  function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+
+  function tick(ts){
+    if(!start)start=ts;
+    const e=ts-start;
+
+    // Phase 1: star flies right to left and spins
+    if(e<=dur.roll){
+      const p=ease(e/dur.roll);
+      const startX=window.innerWidth*0.45;
+      const endX=-16;
+      const x=startX-(startX-endX)*p;
+      const rot=p*720;
+      const op=Math.min(p*3,1);
+      star.style.transform=`translateX(${x}px) rotate(${rot}deg)`;
+      star.style.opacity=op;
+      text.style.opacity=0;
+      requestAnimationFrame(tick);return;
+    }
+
+    // Phase 2: text fades in
+    if(e<=dur.roll+dur.textIn){
+      const p=ease((e-dur.roll)/dur.textIn);
+      star.style.transform=`translateX(-16px) rotate(720deg)`;
+      star.style.opacity=1;
+      text.style.opacity=p;
+      text.style.transform=`translateX(${(1-p)*12}px)`;
+      requestAnimationFrame(tick);return;
+    }
+
+    // Phase 3: hold
+    if(e<=dur.roll+dur.textIn+dur.hold){
+      star.style.opacity=1;text.style.opacity=1;
+      requestAnimationFrame(tick);return;
+    }
+
+    // Phase 4: dissolve
+    if(e<=total){
+      const p=ease((e-dur.roll-dur.textIn-dur.hold)/dur.out);
+      const op=1-p;
+      star.style.opacity=op;
+      text.style.opacity=op;
+      star.style.filter=`drop-shadow(0 0 ${18+p*40}px #8b5cf6) blur(${p*6}px)`;
+      text.style.filter=`blur(${p*4}px)`;
+      splash.style.background=`rgba(8,8,15,${1-p})`;
+      requestAnimationFrame(tick);return;
+    }
+
+    // Done
+    splash.style.display='none';
+  }
+
+  requestAnimationFrame(tick);
+})();
 </script>
 </body>
 </html>
