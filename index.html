@@ -276,7 +276,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 /* PERSONALIZE PANEL — slide-in overlay with backdrop */
 .personalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(5px);z-index:105;opacity:0;pointer-events:none;transition:opacity .3s}
 .personalize-overlay.open{opacity:1;pointer-events:all}
-.personalize-panel{position:fixed;bottom:0;left:0;right:0;max-height:92vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:24px 24px 0 0;z-index:106;transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.personalize-panel{position:fixed;bottom:0;left:0;right:0;max-height:92vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:24px 24px 0 0;z-index:106;transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top)}
 .personalize-panel.open{transform:translateY(0)}
 .pp-drag{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:12px auto 0;flex-shrink:0}
 .pp-header{display:flex;align-items:center;gap:10px;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -452,7 +452,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   .weather-card{min-width:unset;max-width:100%}
   .weather-details{grid-template-columns:1fr 1fr}
   /* Settings/Personalize panels */
-  .settings-panel,.personalize-panel{max-height:95vh}
+.settings-panel,.personalize-panel{max-height:100dvh;top:0;border-radius:0}
   .sp-body,.pp-body{padding:6px 14px 20px}
   /* Empty state */
   .empty{min-height:42vh;gap:14px;padding:30px 16px}
