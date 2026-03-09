@@ -239,14 +239,6 @@ details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
 .forecast-desc{font-size:11px;color:var(--t3);flex:1;text-align:center}
 .forecast-temps{font-size:12px;font-weight:700;color:var(--accent)}
 
-.weather-detail-btn{width:100%;margin-top:10px;padding:8px;background:var(--s3);border:1px solid var(--border2);border-radius:10px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .18s;text-align:center}
-.weather-detail-btn:hover{border-color:var(--accent);color:var(--accent)}
-.weather-hourly{margin-top:10px;display:flex;flex-direction:column;gap:6px}
-.weather-hourly-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px;gap:8px}
-.weather-hourly-time{font-size:12px;font-weight:700;color:var(--accent);min-width:50px}
-.weather-hourly-icon{font-size:18px}
-.weather-hourly-desc{font-size:11px;color:var(--t3);flex:1;text-align:center}
-.weather-hourly-temp{font-size:13px;font-weight:700;color:var(--text)}
 
 /* INPUT */
 .input-bar{position:relative;z-index:20;padding:10px 16px 14px;background:rgba(8,8,15,.88);backdrop-filter:blur(24px);border-top:1px solid var(--border);flex-shrink:0;transition:background .3s,border-color .3s}
@@ -528,6 +520,16 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
   opacity: 1;
   transform: translateX(0);
 }
+.weather-detail-btn{width:100%;margin-top:8px;padding:8px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:10px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;transition:all .18s;text-align:center}
+.weather-detail-btn:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+.weather-periods{display:none;margin-top:8px;display:none;flex-direction:column;gap:6px}
+.weather-periods.show{display:flex}
+.weather-period-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px}
+.weather-period-label{font-size:11px;font-weight:700;color:var(--t2);min-width:52px}
+.weather-period-icon{font-size:18px}
+.weather-period-temp{font-size:13px;font-weight:700;color:var(--accent);min-width:40px}
+.weather-period-desc{font-size:11px;color:var(--t3);flex:1}
+
 </style>
 </head>
 <body>
@@ -1613,61 +1615,105 @@ function groupForecastByDay(list){
   return days;
 }
 
-function renderWeatherCard(data,city){
-  const now=new Date();
-  const todayKey=now.toISOString().split('T')[0];
-  const days=groupForecastByDay(data.list);
-  const dayKeys=Object.keys(days).sort();
+function toggleHourlyPeriods(cardId, day) {
+  const blockId = cardId + '_periods_' + day;
+  const btnId   = cardId + '_btn_' + day;
+  const block = document.getElementById(blockId);
+  const btn   = document.getElementById(btnId);
+  if (!block || !btn) return;
+  const isOpen = block.classList.contains('show');
+  block.classList.toggle('show', !isOpen);
+  btn.textContent = isOpen ? '🕐 Подробнее по часам ▾' : '🕐 Скрыть ▴';
+}
 
-  function getClosest(items){
-    return items.reduce((a,b)=>{
-      return Math.abs(new Date(a.dt_txt)-now)<Math.abs(new Date(b.dt_txt)-now)?a:b;
-    });
+function renderWeatherCard(data, city) {
+  const now = new Date();
+  const days = groupForecastByDay(data.list);
+  const dayKeys = Object.keys(days).sort();
+
+  function getClosest(items) {
+    return items.reduce((a, b) =>
+      Math.abs(new Date(a.dt_txt) - now) < Math.abs(new Date(b.dt_txt) - now) ? a : b
+    );
   }
 
-  function renderDay(items, label){
-    const item=getClosest(items);
-    const mainIcon=getWeatherIcon(item.weather[0].main);
-    const desc=item.weather[0].description;
-    const temps=items.map(i=>i.main.temp);
-    const minT=Math.round(Math.min(...temps));
-    const maxT=Math.round(Math.max(...temps));
-    const humidity=item.main.humidity;
-    const wind=item.wind.speed.toFixed(1);
-    const feels=Math.round(item.main.feels_like);
-    const pressure=Math.round(item.main.pressure*0.750064);
-    return {item,mainIcon,desc,minT,maxT,humidity,wind,feels,pressure};
+  function renderDay(items) {
+    const item = getClosest(items);
+    const mainIcon = getWeatherIcon(item.weather[0].main);
+    const desc = item.weather[0].description;
+    const temps = items.map(i => i.main.temp);
+    const minT = Math.round(Math.min(...temps));
+    const maxT = Math.round(Math.max(...temps));
+    const humidity = item.main.humidity;
+    const wind = item.wind.speed.toFixed(1);
+    const feels = Math.round(item.main.feels_like);
+    const pressure = Math.round(item.main.pressure * 0.750064);
+    return { item, mainIcon, desc, minT, maxT, humidity, wind, feels, pressure };
   }
 
-  function buildWeekHTML(days,dayKeys){
-    const wdays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-    let html='';
-    dayKeys.forEach(k=>{
-      const items=days[k];
-      const item=getClosest(items);
-      const icon=getWeatherIcon(item.weather[0].main);
-      const d=new Date(k+'T12:00:00');
-      const dayName=wdays[d.getDay()];
-      const temps=items.map(i=>i.main.temp);
-      const minT=Math.round(Math.min(...temps));
-      const maxT=Math.round(Math.max(...temps));
-      const desc=item.weather[0].description;
-      html+=`<div class="forecast-row"><div class="forecast-day">${dayName} ${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</div><div class="forecast-icon">${icon}</div><div class="forecast-desc">${desc}</div><div class="forecast-temps">${maxT}° / ${minT}°</div></div>`;
+  function buildWeekHTML(days, dayKeys) {
+    const wdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    let html = '';
+    dayKeys.forEach(k => {
+      const items = days[k];
+      const item = getClosest(items);
+      const icon = getWeatherIcon(item.weather[0].main);
+      const d = new Date(k + 'T12:00:00');
+      const dayName = wdays[d.getDay()];
+      const temps = items.map(i => i.main.temp);
+      const minT = Math.round(Math.min(...temps));
+      const maxT = Math.round(Math.max(...temps));
+      const desc = item.weather[0].description;
+      html += `<div class="forecast-row"><div class="forecast-day">${dayName} ${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</div><div class="forecast-icon">${icon}</div><div class="forecast-desc">${desc}</div><div class="forecast-temps">${maxT}° / ${minT}°</div></div>`;
     });
     return html;
   }
 
-  const todayItems=days[dayKeys[0]]||data.list.slice(0,8);
-  const tomorrowItems=days[dayKeys[1]]||data.list.slice(8,16);
-  const todayD=renderDay(todayItems,'today');
-  const tomorrowD=renderDay(tomorrowItems,'tomorrow');
+  // Build periods (morning/day/evening/night) for a given day's items
+  function buildPeriodsHTML(items) {
+    const periods = [
+      { label: '🌅 Утро',   hours: [6,  7,  8,  9]  },
+      { label: '☀️ День',   hours: [12, 13, 14, 15] },
+      { label: '🌆 Вечер',  hours: [18, 19, 20, 21] },
+      { label: '🌙 Ночь',   hours: [0,  1,  2,  3]  },
+    ];
+    let html = '';
+    periods.forEach(p => {
+      // Find item closest to period hours
+      let best = null, bestDiff = Infinity;
+      items.forEach(item => {
+        const h = new Date(item.dt_txt).getHours();
+        p.hours.forEach(ph => {
+          const diff = Math.abs(h - ph);
+          if (diff < bestDiff) { bestDiff = diff; best = item; }
+        });
+      });
+      if (!best) return;
+      const icon = getWeatherIcon(best.weather[0].main);
+      const temp = Math.round(best.main.temp);
+      const desc = best.weather[0].description;
+      html += `<div class="weather-period-row">
+        <div class="weather-period-label">${p.label}</div>
+        <div class="weather-period-icon">${icon}</div>
+        <div class="weather-period-temp">${temp}°C</div>
+        <div class="weather-period-desc">${desc}</div>
+      </div>`;
+    });
+    return html;
+  }
 
-const cardId='wc_'+Date.now();
-  // Store list for hourly detail — applied after render via timeout
-  setTimeout(()=>{const c=document.getElementById(cardId);if(c)c._weatherList=data.list;},100);
-  const cityDisplay=`${data.name||city}${data.country?', '+data.country:''}`;
+  const todayItems    = days[dayKeys[0]] || data.list.slice(0, 8);
+  const tomorrowItems = days[dayKeys[1]] || data.list.slice(8, 16);
+  const todayD    = renderDay(todayItems);
+  const tomorrowD = renderDay(tomorrowItems);
 
-  const html=`
+  const cardId = 'wc_' + Date.now();
+  const cityDisplay = `${data.name || city}${data.country ? ', ' + data.country : ''}`;
+
+  const todayPeriodsHTML    = buildPeriodsHTML(todayItems);
+  const tomorrowPeriodsHTML = buildPeriodsHTML(tomorrowItems);
+
+  const html = `
 <div class="weather-card" id="${cardId}">
   <div class="weather-city">📍 ${escHtml(cityDisplay)}</div>
   <div id="${cardId}_content">
@@ -1684,10 +1730,11 @@ const cardId='wc_'+Date.now();
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${todayD.feels}°C</div></div>
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${todayD.pressure} мм</div></div>
     </div>
-    <button class="weather-detail-btn" onclick="toggleHourly('${cardId}','today',${JSON.stringify(dayKeys)},this)" data-open="0">🕐 Подробнее по часам ▾</button>
+    <div class="weather-periods" id="${cardId}_periods_today">${todayPeriodsHTML}</div>
+    <button class="weather-detail-btn" id="${cardId}_btn_today" onclick="toggleHourlyPeriods('${cardId}','today')">🕐 Подробнее по часам ▾</button>
   </div>
   <div id="${cardId}_week_content" style="display:none">
-    <div class="weather-forecast show">${buildWeekHTML(days,dayKeys)}</div>
+    <div class="weather-forecast show">${buildWeekHTML(days, dayKeys)}</div>
   </div>
   <div id="${cardId}_tomorrow_content" style="display:none">
     <div class="weather-main">
@@ -1703,62 +1750,18 @@ const cardId='wc_'+Date.now();
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${tomorrowD.feels}°C</div></div>
       <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${tomorrowD.pressure} мм</div></div>
     </div>
-    <button class="weather-detail-btn" onclick="toggleHourly('${cardId}','tomorrow',${JSON.stringify(dayKeys)},this)" data-open="0">🕐 Подробнее по часам ▾</button>
+    <div class="weather-periods" id="${cardId}_periods_tomorrow">${tomorrowPeriodsHTML}</div>
+    <button class="weather-detail-btn" id="${cardId}_btn_tomorrow" onclick="toggleHourlyPeriods('${cardId}','tomorrow')">🕐 Подробнее по часам ▾</button>
   </div>
   <div class="weather-tabs">
     <div class="weather-tab active" id="${cardId}_tab_today" onclick="switchWeatherTab('${cardId}','today')">${t('weather_today')}</div>
     <div class="weather-tab" id="${cardId}_tab_tomorrow" onclick="switchWeatherTab('${cardId}','tomorrow')">${t('weather_tomorrow')}</div>
     <div class="weather-tab" id="${cardId}_tab_week" onclick="switchWeatherTab('${cardId}','week')">${t('weather_week')}</div>
   </div>
-  <div id="${cardId}_hourly" style="display:none">
-    <div class="weather-hourly" id="${cardId}_hourly_body"></div>
-  </div>
 </div>`;
   return html;
 }
-function toggleHourly(cardId, dayType, dayKeys, btn){
-  const isOpen=btn.dataset.open==='1';
-  const hourlyDiv=document.getElementById(`${cardId}_hourly`);
-  const hourlyBody=document.getElementById(`${cardId}_hourly_body`);
-  if(isOpen){
-    hourlyDiv.style.display='none';
-    btn.dataset.open='0';
-    btn.textContent='🕐 Подробнее по часам ▾';
-    return;
-  }
-  // Build hourly rows
-  const dayIdx=dayType==='today'?0:1;
-  const key=dayKeys[dayIdx];
-  // We need weather data — store it on the card element
-  const card=document.getElementById(cardId);
-  if(!card)return;
-  const raw=card._weatherList;
-  if(!raw)return;
-  const items=raw.filter(i=>i.dt_txt.startsWith(key));
-  const periods=[
-    {label:'Ночь',hours:['00:00:00','03:00:00']},
-    {label:'Утро',hours:['06:00:00','09:00:00']},
-    {label:'День',hours:['12:00:00','15:00:00']},
-    {label:'Вечер',hours:['18:00:00','21:00:00']},
-  ];
-  hourlyBody.innerHTML='';
-  periods.forEach(p=>{
-    const item=items.find(i=>p.hours.includes(i.dt_txt.split(' ')[1]));
-    if(!item)return;
-    const icon=getWeatherIcon(item.weather[0].main);
-    const temp=Math.round(item.main.temp);
-    const desc=item.weather[0].description;
-    const row=document.createElement('div');row.className='weather-hourly-row';
-    row.innerHTML=`<div class="weather-hourly-time">${p.label}</div><div class="weather-hourly-icon">${icon}</div><div class="weather-hourly-desc">${desc}</div><div class="weather-hourly-temp">${temp}°C</div>`;
-    hourlyBody.appendChild(row);
-  });
-  if(!hourlyBody.children.length){
-    hourlyBody.innerHTML='<div style="padding:8px;font-size:12px;color:var(--t3);text-align:center">Данные недоступны</div>';
-  }
-  hourlyDiv.style.display='';
-  btn.dataset.open='1';
-  btn.textContent='🕐 Скрыть ▴';
-}
+
 function switchWeatherTab(cardId, tab){
   ['today','tomorrow','week'].forEach(t=>{
     document.getElementById(`${cardId}_tab_${t}`)?.classList.toggle('active',t===tab);
