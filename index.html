@@ -643,7 +643,6 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 <script>
 const WEATHER_API_KEY='920745ae9266589263a7ddc89bfd2c80';
-const OR_API_KEY='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';
 
 const codeStore=new Map();
 let codeStoreId=0;
@@ -1433,7 +1432,7 @@ function clearAllChats(){
 }
 async function generateChatTitle(msg){
   try{
-    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    const res=await fetch('/api/chat',{
       method:'POST',headers:{'Authorization':'Bearer '+OR_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'FernieX AI'},
       body:JSON.stringify({model:getModel().api,messages:[{role:'user',content:t('title_prompt')+msg}],max_tokens:20,stream:false})
     });
