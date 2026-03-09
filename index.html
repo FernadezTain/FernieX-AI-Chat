@@ -1789,7 +1789,7 @@ const res=await fetch('/api/chat',{
 
     const thinkId='tk_'+Date.now();
     const thinkDetails=document.createElement('details');
-    thinkDetails.className='thinking-block';thinkDetails.open=true;
+    thinkDetails.className='thinking-block';thinkDetails.open=false;
     thinkDetails.innerHTML=`<summary class="thinking-summary"><div class="thinking-spinner"></div><div class="thinking-check">✓</div><div class="thinking-stopped-icon">■</div><span class="thinking-label">${t('thinking')}</span><span class="thinking-toggle-icon">›</span></summary><div class="thinking-content" id="${thinkId}"></div>`;
     const thinkContent=thinkDetails.querySelector(`#${thinkId}`);
 
@@ -1911,8 +1911,16 @@ function renderMarkdown(text){
   let html=text.replace(/```([\w-]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
     const idx=blocks.length;blocks.push({lang:lang.trim()||'code',code:code.trimEnd()});return`%%CB_${idx}%%`;
   });
-  html=parseTables(html);
+// Extract tables before escaping HTML
+  const tablePlaceholders=[];
+  html=parseTables(html).replace(/<div class="md-table-wrap">[\s\S]*?<\/div>/g,match=>{
+    const idx=tablePlaceholders.length;
+    tablePlaceholders.push(match);
+    return`%%TABLE_${idx}%%`;
+  });
+
   html=html
+
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/`([^`\n]+)`/g,'<code>$1</code>')
     .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
@@ -1941,6 +1949,8 @@ function renderMarkdown(text){
     }
     return`<pre><div class="code-header"><span class="code-lang">&lt;/&gt; ${lbl}</span><div class="code-actions">${runBtn}<button class="code-dl-btn" onclick="downloadCode('${id}','${ext}')">${t('code_dl')}</button><button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">${t('code_copy')}</button></div></div><code id="${id}">${hi}</code></pre>`;
   });
+// Restore tables
+  tablePlaceholders.forEach((t,i)=>{html=html.replace(`%%TABLE_${i}%%`,t)});
   return html;
 }
 
