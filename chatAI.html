@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>FernieX AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#08080f;--surface:#0e0e1c;--s2:#151526;--s3:#1c1c32;
+  --border:#22223a;--border2:#2a2a45;
+  --accent:#8b5cf6;--a2:#ec4899;--a3:#06b6d4;
+  --text:#f0f0ff;--t2:#9090b8;--t3:#55556a;
+  --ubg:#180f2e;--uborder:rgba(139,92,246,.35);
+  --r:14px;--font:'Outfit',sans-serif;--sidebar-w:260px;
+}
+[data-theme="blue"]{--accent:#3b82f6;--a2:#06b6d4;--a3:#8b5cf6;--bg:#07090f;--surface:#0c1020;--s2:#111828;--s3:#192038;--border:#1e2a3a;--border2:#263245;--ubg:#0a1628;--uborder:rgba(59,130,246,.35)}
+[data-theme="green"]{--accent:#22c55e;--a2:#10b981;--a3:#84cc16;--bg:#070f09;--surface:#0c1e10;--s2:#112618;--s3:#183020;--border:#1e3a22;--border2:#264530;--ubg:#0a1a0c;--uborder:rgba(34,197,94,.35)}
+[data-theme="yellow"]{--accent:#eab308;--a2:#f97316;--a3:#fbbf24;--bg:#0f0e07;--surface:#1e1c0c;--s2:#262412;--s3:#302e18;--border:#3a3818;--border2:#454320;--ubg:#1a180a;--uborder:rgba(234,179,8,.35)}
+[data-theme="purple"]{--accent:#a855f7;--a2:#7c3aed;--a3:#c084fc;--bg:#0a0810;--surface:#120e1c;--s2:#1a1426;--s3:#221c32;--border:#2a2040;--border2:#32284c;--ubg:#160e28;--uborder:rgba(168,85,247,.35)}
+[data-theme="red"]{--accent:#ef4444;--a2:#f97316;--a3:#fb923c;--bg:#100808;--surface:#1e0e0e;--s2:#261414;--s3:#301a1a;--border:#3a1c1c;--border2:#452424;--ubg:#1a0a0a;--uborder:rgba(239,68,68,.35)}
+[data-theme="light"]{--bg:#f5f5fa;--surface:#ffffff;--s2:#f0f0f8;--s3:#e8e8f4;--border:#ddddf0;--border2:#ccccec;--accent:#7c3aed;--a2:#db2777;--a3:#0891b2;--text:#1a1a2e;--t2:#4a4a7a;--t3:#8888aa;--ubg:#f0ecff;--uborder:rgba(124,58,237,.3)}
+[data-theme="dark"]{--bg:#000000;--surface:#0a0a0a;--s2:#111111;--s3:#1a1a1a;--border:#222222;--border2:#2a2a2a;--accent:#8b5cf6;--a2:#ec4899;--a3:#06b6d4;--text:#ffffff;--t2:#888888;--t3:#444444;--ubg:#0f0a1e;--uborder:rgba(139,92,246,.4)}
+[data-theme="ocean"]{--accent:#0891b2;--a2:#0e7490;--a3:#06b6d4;--bg:#050c12;--surface:#071622;--s2:#0c1e2e;--s3:#12283c;--border:#1a3448;--border2:#224058;--ubg:#07101c;--uborder:rgba(8,145,178,.35)}
+[data-theme="rose"]{--accent:#f43f5e;--a2:#e11d48;--a3:#fb7185;--bg:#100a0c;--surface:#1c1014;--s2:#24141c;--s3:#2e1a24;--border:#3c202c;--border2:#482834;--ubg:#1c0e14;--uborder:rgba(244,63,94,.35)}
+[data-theme="cyber"]{--accent:#00ff9d;--a2:#00d4ff;--a3:#ff00ff;--bg:#030305;--surface:#060812;--s2:#0a0c1a;--s3:#0f1224;--border:#141830;--border2:#1c2040;--ubg:#060a1a;--uborder:rgba(0,255,157,.3);--text:#e0fff5;--t2:#80c8b0;--t3:#3a7060}
+[data-theme="coffee"]{--accent:#c8956c;--a2:#a0522d;--a3:#deb887;--bg:#0f0b08;--surface:#1c1410;--s2:#251c16;--s3:#30241c;--border:#3c2e22;--border2:#4a382c;--ubg:#1c1008;--uborder:rgba(200,149,108,.35);--text:#f5e6d8;--t2:#b09080;--t3:#6a5040}
+
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:row;position:relative;overscroll-behavior:none;transition:background .3s,color .3s}
+#bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0;transition:opacity .6s}
+body.no-fx #bgCanvas{opacity:0}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
+body.no-fx .noise{opacity:0}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.o1{width:500px;height:500px;background:radial-gradient(circle,rgba(139,92,246,.12),transparent 70%);top:-150px;left:-150px;animation:of1 9s ease-in-out infinite}
+.o2{width:400px;height:400px;background:radial-gradient(circle,rgba(236,72,153,.09),transparent 70%);bottom:-100px;right:-100px;animation:of2 11s ease-in-out infinite}
+.o3{width:300px;height:300px;background:radial-gradient(circle,rgba(6,182,212,.06),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:of3 14s ease-in-out infinite}
+body.no-fx .orb{opacity:0}
+@keyframes of1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,25px)}}
+@keyframes of2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
+@keyframes of3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
+
+/* SIDEBAR */
+.sidebar{position:relative;z-index:10;width:var(--sidebar-w);height:100%;background:rgba(8,8,15,.92);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+[data-theme="light"] .sidebar{background:rgba(245,245,250,.95)}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;gap:8px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.logo-gem{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 18px rgba(139,92,246,.45);animation:gPulse 3s ease-in-out infinite;flex-shrink:0}
+body.no-fx .logo-gem{animation:none;box-shadow:none}
+@keyframes gPulse{0%,100%{box-shadow:0 0 18px rgba(139,92,246,.45)}50%{box-shadow:0 0 35px rgba(139,92,246,.8),0 0 60px rgba(236,72,153,.3)}}
+.new-chat-btn{width:30px;height:30px;background:var(--s2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--t2);transition:all .18s;flex-shrink:0}
+.new-chat-btn:hover{background:var(--s3);border-color:var(--accent);color:var(--accent);transform:scale(1.06)}
+.new-chat-btn.disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.sidebar-search{padding:0 12px 10px;flex-shrink:0}
+.sidebar-search input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:7px 12px;font-family:var(--font);font-size:12px;color:var(--text);outline:none;transition:border-color .18s}
+.sidebar-search input:focus{border-color:var(--accent)}
+.sidebar-search input::placeholder{color:var(--t3)}
+.chat-list{flex:1;overflow-y:auto;padding:0 8px 8px}
+.chat-list::-webkit-scrollbar{width:3px}
+.chat-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.chat-group-label{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.7px;text-transform:uppercase;padding:10px 6px 5px}
+.chat-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;cursor:pointer;transition:all .18s;position:relative}
+.chat-item:hover{background:var(--s2)}
+.chat-item.active{background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(236,72,153,.1));border:1px solid rgba(139,92,246,.25)}
+.chat-item-icon{font-size:14px;flex-shrink:0}
+.chat-item-name{flex:1;font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.chat-item.active .chat-item-name{color:var(--text);font-weight:600}
+.chat-item-del{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);cursor:pointer;opacity:0;transition:all .15s;background:transparent;border:none;flex-shrink:0}
+.chat-item:hover .chat-item-del{opacity:1}
+.chat-item-del:hover{background:rgba(239,68,68,.15);color:#f87171}
+.sidebar-bottom{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.sidebar-settings-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--s2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t2);transition:all .18s}
+.sidebar-settings-btn:hover{background:var(--s3);border-color:var(--accent);color:var(--text)}
+.sidebar-toggle{display:none;width:34px;height:34px;background:var(--s2);border:1px solid var(--border);border-radius:9px;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--t2);transition:all .18s;flex-shrink:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9;opacity:0;transition:opacity .3s;pointer-events:none}
+.sidebar-overlay.show{opacity:1;pointer-events:all}
+
+/* HEADER */
+.main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden;min-width:0}
+header{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(8,8,15,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);gap:8px;min-height:56px;flex-shrink:0;transition:background .3s,border-color .3s}
+[data-theme="light"] header{background:rgba(245,245,250,.92)}
+.header-left,.header-right{display:flex;align-items:center;gap:7px}
+.model-pill{background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(236,72,153,.12));border:1px solid rgba(139,92,246,.35);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.3px;white-space:nowrap;cursor:pointer;transition:all .18s}
+.model-pill:hover{opacity:.8}
+.name-badge{display:flex;align-items:center;gap:5px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--a3);font-weight:600;white-space:nowrap;max-width:110px;overflow:hidden;transition:all .3s}
+.name-badge.hidden{opacity:0;max-width:0;padding:4px 0;border-width:0}
+.name-badge span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{width:34px;height:34px;background:var(--s2);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .18s;color:var(--t2);flex-shrink:0}
+.icon-btn:hover{background:var(--s3);border-color:var(--accent);color:var(--text);transform:scale(1.06)}
+.icon-btn:active{transform:scale(.93)}
+.model-notify{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;margin:8px auto;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:20px;font-size:11px;color:var(--t2);max-width:400px;animation:fadeUp .3s ease;white-space:nowrap}
+.model-notify .arrow{color:var(--accent)}.model-notify .old-m{color:var(--t3);text-decoration:line-through}.model-notify .new-m{color:var(--accent);font-weight:700}
+
+/* CHAT */
+.chat-wrap{position:relative;z-index:2;flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 0 8px;-webkit-overflow-scrolling:touch}
+.chat-wrap::-webkit-scrollbar{width:4px}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.messages{max-width:860px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:14px}
+
+/* EMPTY */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52vh;gap:18px;padding:40px 20px;text-align:center;animation:fadeUp .6s ease}
+.empty-gem{width:68px;height:68px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 0 40px rgba(139,92,246,.5);animation:gPulse 3s ease-in-out infinite,gemBounceIn .8s cubic-bezier(.34,1.56,.64,1)}
+body.no-fx .empty-gem{animation:none;box-shadow:0 0 20px rgba(139,92,246,.3)}
+@keyframes gemBounceIn{0%{transform:rotate(-20deg) scale(0.6);opacity:0}60%{transform:rotate(5deg) scale(1.08)}100%{transform:rotate(0) scale(1);opacity:1}}
+.empty h2{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.empty p{font-size:13px;color:var(--t2);max-width:340px;line-height:1.65}
+.empty-chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:4px}
+.chip{background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--t2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.chip:hover{background:var(--s3);border-color:var(--accent);color:var(--text);transform:translateY(-2px)}
+.chip:active{transform:translateY(0) scale(.97)}
+
+/* MESSAGES */
+.msg{display:flex;gap:10px;animation:msgIn .35s cubic-bezier(.34,1.56,.64,1)}
+body.no-fx .msg{animation:fadeUp .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;font-weight:700}
+.msg.user .avatar{background:linear-gradient(135deg,var(--accent),var(--a2));box-shadow:0 0 14px rgba(139,92,246,.4);color:#fff}
+body.no-fx .msg.user .avatar{box-shadow:none}
+.msg.ai .avatar{background:var(--s2);border:1px solid var(--border2)}
+.avatar-star{display:inline-block}
+.msg.ai:not(.history-msg) .avatar .avatar-star{animation:starEntry .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes starEntry{0%{transform:rotate(-180deg) scale(0.2)}60%{transform:rotate(15deg) scale(1.15)}100%{transform:rotate(0deg) scale(1)}}
+.msg.ai .avatar.spinning .avatar-star{animation:starSpin 1s linear infinite}
+@keyframes starSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.bubble{max-width:82%;padding:11px 16px;border-radius:var(--r);font-size:14px;line-height:1.8;word-break:break-word}
+.msg.user .bubble{background:var(--ubg);border:1px solid var(--uborder);border-top-right-radius:4px;white-space:pre-wrap}
+.msg.ai .bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:4px}
+
+/* MARKDOWN */
+.bubble strong{font-weight:700;color:var(--text)}
+.bubble em{font-style:italic;color:var(--t2)}
+.bubble code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.2);border-radius:5px;padding:1px 6px;color:#c4b5fd}
+.bubble pre{background:#0a0a14;border:1px solid var(--border2);border-radius:12px;margin:8px 0;overflow:hidden}
+[data-theme="light"] .bubble pre{background:#f0f0f8}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2);gap:6px;flex-wrap:wrap}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.code-actions{display:flex;gap:5px;flex-wrap:wrap}
+.code-copy-btn,.code-run-btn,.code-dl-btn,.code-view-btn{background:var(--s3);border:1px solid var(--border2);border-radius:7px;padding:4px 9px;font-family:var(--font);font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.code-copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.code-copy-btn.copied{border-color:#4ade80;color:#4ade80}
+.code-run-btn{color:#a3e635;border-color:rgba(163,230,53,.2)}.code-run-btn:hover{background:rgba(163,230,53,.1);border-color:#a3e635}
+.code-dl-btn{color:#60a5fa;border-color:rgba(96,165,250,.2)}.code-dl-btn:hover{background:rgba(96,165,250,.1);border-color:#60a5fa}
+.code-view-btn{color:#c4b5fd;border-color:rgba(196,181,253,.2)}.code-view-btn:hover{background:rgba(196,181,253,.1);border-color:#c4b5fd}
+.bubble pre code{display:block;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#e2e8f0;background:none;border:none;overflow-x:auto;white-space:pre}
+[data-theme="light"] .bubble pre code{color:#2a2a4a}
+.bubble pre code::-webkit-scrollbar{height:4px}
+.bubble pre code::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.tok-kw{color:#c084fc}.tok-str{color:#86efac}.tok-num{color:#fb923c}
+.tok-cmt{color:#4b5563;font-style:italic}.tok-fn{color:#60a5fa}.tok-cls{color:#fbbf24}
+.bubble h1,.bubble h2,.bubble h3{font-weight:700;margin:8px 0 4px;line-height:1.3}
+.bubble h1{font-size:17px}.bubble h2{font-size:15px}.bubble h3{font-size:14px;color:var(--t2)}
+.bubble ul,.bubble ol{padding-left:18px;margin:4px 0;display:flex;flex-direction:column;gap:3px}
+.bubble li{font-size:14px;line-height:1.7}
+.bubble hr{border:none;margin:12px 0;display:flex;align-items:center;gap:8px}
+.bubble hr::before{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--accent))}
+.bubble hr::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--accent),transparent)}
+.bubble a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.msg-copy-btn{position:absolute;bottom:6px;right:6px;width:26px;height:26px;background:var(--s2);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;opacity:0;transition:all .18s;color:var(--t2)}
+.msg:hover .msg-copy-btn{opacity:1}
+.msg-copy-btn:hover{background:var(--s3);border-color:var(--accent);color:var(--accent)}
+.msg-copy-btn.copied{border-color:#4ade80;color:#4ade80}
+.bubble-wrap{position:relative;display:inline-block;max-width:82%}
+.msg.user .bubble-wrap{max-width:82%}
+.bubble-wrap .bubble{max-width:100%}
+.bubble blockquote{border-left:3px solid var(--accent);padding-left:10px;color:var(--t2);margin:6px 0;font-style:italic}
+
+/* TABLES */
+.bubble .md-table-wrap{overflow-x:auto;margin:10px 0;border-radius:10px;border:1px solid var(--border2)}
+.bubble table{border-collapse:collapse;width:100%;font-size:13px;min-width:320px}
+.bubble thead{background:rgba(139,92,246,.1)}
+.bubble th{padding:9px 14px;text-align:left;font-weight:700;color:var(--accent);border-bottom:1px solid rgba(139,92,246,.25);white-space:nowrap}
+.bubble td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--t2)}
+.bubble tr:last-child td{border-bottom:none}
+.bubble tbody tr:hover td{background:var(--s2);color:var(--text)}
+.bubble tbody tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+/* LARGE CODE BLOCK */
+.large-code-block{background:var(--s2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:8px 0}
+.large-code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2);gap:6px;flex-wrap:wrap}
+.large-code-preview{padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);line-height:1.5;white-space:pre;overflow:hidden;max-height:64px;cursor:pointer;transition:background .18s;text-overflow:ellipsis}
+.large-code-preview:hover{background:var(--s3);color:var(--t2)}
+.large-code-note{font-size:10px;color:var(--t3);padding:6px 14px 10px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border)}
+
+/* THINKING BLOCK */
+.thinking-block{margin-bottom:6px;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:rgba(139,92,246,.04)}
+.thinking-summary{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;user-select:none;list-style:none;transition:background .18s}
+.thinking-summary::-webkit-details-marker{display:none}
+.thinking-summary:hover{background:rgba(139,92,246,.08)}
+.thinking-spinner{width:14px;height:14px;border:2px solid rgba(139,92,246,.3);border-top-color:var(--accent);border-radius:50%;animation:tspin .7s linear infinite;flex-shrink:0}
+@keyframes tspin{to{transform:rotate(360deg)}}
+.thinking-block.done .thinking-spinner{display:none}
+.thinking-block.done .thinking-check{display:flex}
+.thinking-block.stopped .thinking-spinner{display:none}
+.thinking-block.stopped .thinking-stopped-icon{display:flex}
+.thinking-stopped-icon{display:none;width:14px;height:14px;align-items:center;justify-content:center;font-size:11px;color:#f87171;flex-shrink:0}
+.thinking-check{display:none;width:14px;height:14px;align-items:center;justify-content:center;font-size:11px;color:#4ade80;flex-shrink:0}
+.thinking-label{font-size:12px;font-weight:600;color:var(--t2);flex:1}
+.thinking-block.stopped .thinking-label{color:#f87171}
+.thinking-toggle-icon{font-size:10px;color:var(--t3);transition:transform .2s;flex-shrink:0}
+details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
+.thinking-content{padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;border-top:1px solid var(--border)}
+.thinking-content::-webkit-scrollbar{width:3px}
+.thinking-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* TYPING / ERR */
+.typing-dots{display:flex;align-items:center;gap:5px;padding:14px 15px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;animation:tdot 1.3s infinite ease-in-out}
+.typing-dots span:nth-child(1){background:var(--accent)}
+.typing-dots span:nth-child(2){background:#b06aff;animation-delay:.18s}
+.typing-dots span:nth-child(3){background:var(--a2);animation-delay:.36s}
+@keyframes tdot{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-7px);opacity:1}}
+.err-bubble{max-width:82%;padding:10px 14px;border-radius:var(--r);font-size:13px;line-height:1.55;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#f87171}
+
+/* WEATHER CARD */
+.weather-card{background:linear-gradient(135deg,rgba(6,182,212,.1),rgba(139,92,246,.08));border:1px solid rgba(6,182,212,.25);border-radius:16px;padding:16px 18px;margin:4px 0;min-width:280px;max-width:420px}
+.weather-city{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px}
+.weather-main{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.weather-icon{font-size:40px;line-height:1}
+.weather-temp{font-size:36px;font-weight:800;color:var(--accent)}
+.weather-desc{font-size:13px;color:var(--t2);text-transform:capitalize;margin-top:2px}
+.weather-details{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.weather-detail{background:rgba(255,255,255,.05);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--t2)}
+.weather-detail-label{font-size:10px;color:var(--t3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.weather-detail-val{font-size:13px;color:var(--text);font-weight:700}
+.weather-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.weather-tab{background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:7px 14px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .18s}
+.weather-tab:hover{border-color:var(--accent);color:var(--accent)}
+.weather-tab.active{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.12));border-color:var(--accent);color:var(--text)}
+.weather-forecast{margin-top:12px;display:flex;flex-direction:column;gap:6px;display:none}
+.weather-forecast.show{display:flex}
+.forecast-row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px;gap:8px}
+.forecast-day{font-size:12px;font-weight:700;color:var(--text);min-width:60px}
+.forecast-icon{font-size:18px}
+.forecast-desc{font-size:11px;color:var(--t3);flex:1;text-align:center}
+.forecast-temps{font-size:12px;font-weight:700;color:var(--accent)}
+
+
+/* INPUT */
+.input-bar{position:relative;z-index:20;padding:10px 16px 14px;background:rgba(8,8,15,.88);backdrop-filter:blur(24px);border-top:1px solid var(--border);flex-shrink:0;transition:background .3s,border-color .3s}
+[data-theme="light"] .input-bar{background:rgba(245,245,250,.92)}
+.input-inner{max-width:860px;margin:0 auto;display:flex;align-items:flex-end;gap:9px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 9px 9px 16px;transition:border-color .2s,box-shadow .2s}
+.input-inner:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+textarea{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:14px;color:var(--text);resize:none;line-height:1.6;max-height:140px;overflow-y:auto;padding-top:1px}
+textarea::placeholder{color:var(--t3)}
+textarea::-webkit-scrollbar{width:3px}
+textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.input-actions{display:flex;gap:6px;align-items:flex-end;flex-shrink:0}
+.stop-btn{width:36px;height:36px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0;color:#f87171;font-size:14px}
+.stop-btn:hover{background:rgba(239,68,68,.3);border-color:#ef4444;transform:scale(1.06)}
+.stop-btn.hidden{display:none}
+.send-btn{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--a2));border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .18s,transform .12s;flex-shrink:0}
+.send-btn:hover{opacity:.85}
+.send-btn:active{transform:scale(.91)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.send-btn.hidden{display:none}
+.send-btn svg{width:17px;height:17px;fill:#fff}
+.input-hint{text-align:center;font-size:10px;color:var(--t3);margin-top:7px;max-width:860px;margin-left:auto;margin-right:auto;transition:color .3s}
+.input-hint.warn{color:rgba(239,68,68,.7)}
+
+/* NAV ROW */
+.nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .18s;gap:10px}
+.nav-row:hover{background:var(--s3);border-color:var(--accent)}
+.nav-row:active{transform:scale(.98)}
+.nav-row-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.nav-row-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--a2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.nav-row-info{flex:1;min-width:0}
+.nav-row-label{font-size:14px;font-weight:700;color:var(--text)}
+.nav-row-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.nav-row-arrow{font-size:22px;color:var(--t3);font-weight:300;flex-shrink:0;transition:transform .18s}
+.nav-row:hover .nav-row-arrow{transform:translateX(3px);color:var(--accent)}
+
+/* PERSONALIZE PANEL — slide-in overlay with backdrop */
+.personalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(5px);z-index:105;opacity:0;pointer-events:none;transition:opacity .3s}
+.personalize-overlay.open{opacity:1;pointer-events:all}
+.personalize-panel{position:fixed;bottom:0;left:0;right:0;max-height:92vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:24px 24px 0 0;z-index:106;transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top)}
+.personalize-panel.open{transform:translateY(0)}
+.pp-drag{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:12px auto 0;flex-shrink:0}
+.pp-header{display:flex;align-items:center;gap:10px;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.pp-back{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:6px 14px;font-family:var(--font);font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:4px}
+.pp-back:hover{background:var(--s3);border-color:var(--accent)}
+.pp-title{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex:1}
+.pp-body{overflow-y:auto;padding:16px 20px 24px;display:flex;flex-direction:column;gap:22px}
+.pp-body::-webkit-scrollbar{width:3px}
+.pp-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.pp-section-title{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+.pp-card{background:var(--s2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.pp-card-inner{padding:14px}
+
+/* CODE PANEL */
+.code-panel{position:fixed;top:0;right:0;width:480px;max-width:100vw;height:100%;background:var(--surface);border-left:1px solid var(--border2);z-index:200;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.34,1.2,.64,1)}
+.code-panel.open{transform:translateX(0)}
+.code-panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border2);flex-shrink:0;gap:8px}
+.code-panel-title{font-size:13px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.code-panel-close{width:28px;height:28px;background:var(--s2);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--t2);transition:all .18s}
+.code-panel-close:hover{border-color:var(--a2);color:var(--a2)}
+.code-panel-body{flex:1;overflow:auto;padding:16px}
+.code-panel-body pre{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#e2e8f0;white-space:pre;margin:0}
+[data-theme="light"] .code-panel-body pre{color:#2a2a4a}
+.code-panel-body::-webkit-scrollbar{width:4px;height:4px}
+.code-panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.code-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;opacity:0;pointer-events:none;transition:opacity .3s}
+.code-panel-overlay.open{opacity:1;pointer-events:all}
+
+/* TOASTS */
+.name-toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--s2);border:1px solid rgba(6,182,212,.4);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--a3);font-weight:600;opacity:0;transition:all .35s;pointer-events:none;z-index:300;white-space:nowrap}
+.name-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:9px 17px;font-size:13px;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;z-index:300;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(34,197,94,.35);color:#4ade80}
+.toast.err{border-color:rgba(239,68,68,.35);color:#f87171}
+
+/* SETTINGS */
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
+.settings-overlay.open{opacity:1;pointer-events:all}
+.settings-panel{position:fixed;bottom:0;left:0;right:0;max-height:90vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:22px 22px 0 0;z-index:101;transform:translateY(100%);transition:transform .38s cubic-bezier(.34,1.2,.64,1);overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.settings-panel.open{transform:translateY(0)}
+.settings-panel::-webkit-scrollbar{width:3px}
+.settings-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.sp-handle{width:40px;height:4px;background:var(--border2);border-radius:4px;margin:12px auto 0}
+.sp-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px}
+.sp-title{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sp-close{width:30px;height:30px;background:var(--s2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--t2);transition:all .18s}
+.sp-close:hover{border-color:var(--a2);color:var(--a2)}
+.sp-body{padding:6px 20px 20px;display:flex;flex-direction:column;gap:20px}
+.sp-section-title{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color .18s}
+.toggle-row:hover{border-color:var(--border2)}
+.toggle-info{display:flex;flex-direction:column;gap:2px}
+.toggle-label{font-size:14px;font-weight:600;color:var(--text)}
+.toggle-desc{font-size:11px;color:var(--t3)}
+.toggle{width:44px;height:24px;background:var(--s3);border-radius:12px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:linear-gradient(135deg,var(--accent),var(--a2))}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.toggle.on::after{transform:translateX(20px)}
+.name-row{display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px}
+.name-row-top{display:flex;align-items:center;justify-content:space-between}
+.name-row-label{font-size:14px;font-weight:600;color:var(--text)}
+.name-row-sub{font-size:11px;color:var(--t3)}
+.name-field{display:flex;gap:8px}
+.name-input-el{flex:1;background:var(--s3);border:1px solid var(--border2);border-radius:9px;padding:8px 12px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;transition:border-color .18s}
+.name-input-el:focus{border-color:var(--a3)}
+.name-input-el::placeholder{color:var(--t3)}
+.name-save-btn{background:linear-gradient(135deg,var(--a3),var(--accent));border:none;border-radius:9px;padding:8px 14px;font-family:var(--font);font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .18s,transform .12s;white-space:nowrap}
+.name-save-btn:hover{opacity:.85}
+.name-save-btn:active{transform:scale(.95)}
+/* LANG GRID — bigger in personalize */
+.lang-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.lang-btn{background:var(--s3);border:1px solid var(--border2);border-radius:12px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:all .18s;font-size:11px;color:var(--t2);font-weight:600}
+.lang-btn .flag{font-size:22px}
+.lang-btn:hover{background:var(--s2);border-color:var(--border2);color:var(--text);transform:translateY(-2px)}
+.lang-btn.active{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.15));border-color:var(--accent);color:var(--text)}
+.lang-btn:active{transform:scale(.95)}
+/* FONT GRID */
+.font-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.font-btn{background:var(--s3);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .18s;text-align:left}
+.font-btn:hover{background:var(--s2);border-color:var(--border2)}
+.font-btn.active{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.1));border-color:var(--accent)}
+.font-btn:active{transform:scale(.97)}
+.font-name{font-size:13px;font-weight:600;color:var(--text)}
+.font-preview{font-size:11px;color:var(--t3);margin-top:2px}
+/* THEME GRID */
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.theme-btn{background:var(--s3);border:1px solid var(--border2);border-radius:12px;padding:10px 8px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.theme-btn:hover{border-color:var(--border2);transform:translateY(-2px)}
+.theme-btn.active{border-color:var(--accent)}
+.theme-btn:active{transform:scale(.96)}
+.theme-swatch{width:32px;height:32px;border-radius:8px;border:2px solid rgba(255,255,255,.1)}
+.theme-name{font-size:10px;font-weight:600;color:var(--t2);text-align:center}
+.theme-btn.active .theme-name{color:var(--accent)}
+/* MODEL BTN */
+.model-btn-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .18s;gap:10px}
+.model-btn-row:hover{background:var(--s3);border-color:var(--accent)}
+.model-btn-row:active{transform:scale(.98)}
+.model-btn-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.model-btn-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--a2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.model-btn-info{flex:1;min-width:0}
+.model-btn-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-btn-sub{font-size:11px;color:var(--t3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-btn-arrow{font-size:22px;color:var(--t3);font-weight:300;flex-shrink:0;transition:transform .18s}
+.model-btn-row:hover .model-btn-arrow{transform:translateX(3px);color:var(--accent)}
+.danger-row{display:flex;flex-direction:column;gap:8px}
+.danger-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;color:#f87171;transition:all .18s}
+.danger-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4)}
+.danger-btn:active{transform:scale(.98)}
+.danger-btn.warn{background:rgba(251,146,60,.07);border-color:rgba(251,146,60,.2);color:#fb923c}
+.danger-btn.warn:hover{background:rgba(251,146,60,.12);border-color:rgba(251,146,60,.4)}
+/* MODEL MODAL */
+.model-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
+.model-overlay.open{opacity:1;pointer-events:all}
+.model-modal{position:fixed;bottom:0;left:0;right:0;max-height:82vh;background:var(--surface);border-top:1px solid var(--border2);border-radius:24px 24px 0 0;z-index:151;transform:translateY(100%);transition:transform .38s cubic-bezier(.34,1.2,.64,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.model-modal.open{transform:translateY(0)}
+.mm-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 8px;flex-shrink:0}
+.mm-search-wrap{position:relative;margin:0 16px 12px;flex-shrink:0}
+.mm-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.mm-search{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:11px 36px 11px 38px;font-family:var(--font);font-size:14px;color:var(--text);outline:none;transition:border-color .18s}
+.mm-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.mm-search::placeholder{color:var(--t3)}
+.mm-search-clear{position:absolute;right:11px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:var(--s3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t2);cursor:pointer;opacity:0;transition:opacity .18s;pointer-events:none}
+.mm-search-clear.visible{opacity:1;pointer-events:all}
+.mm-list{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:8px}
+.mm-list::-webkit-scrollbar{width:3px}
+.mm-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.mm-item{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--s2);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .18s;animation:fadeUp .2s ease}
+.mm-item:hover{background:var(--s3);border-color:var(--border2);transform:translateY(-1px)}
+.mm-item.active{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.12));border-color:var(--accent)}
+.mm-item:active{transform:scale(.98)}
+.mm-icon{width:42px;height:42px;border-radius:12px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.mm-item.active .mm-icon{background:linear-gradient(135deg,var(--accent),var(--a2))}
+.mm-info{flex:1;min-width:0}
+.mm-name{font-size:14px;font-weight:700;color:var(--text)}
+.mm-desc{font-size:11px;color:var(--t3);margin-top:3px}
+.mm-preset{font-size:10px;color:var(--t3);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.mm-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s cubic-bezier(.34,1.56,.64,1)}
+.mm-item.active .mm-check{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.1)}
+.mm-empty{text-align:center;padding:30px 20px;color:var(--t3);font-size:14px}
+
+@media(max-width:700px){
+  /* Sidebar */
+  .sidebar{position:fixed;top:0;left:0;height:100%;z-index:11;transform:translateX(-100%);width:80vw;max-width:300px}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay{display:block}
+  .sidebar-toggle{display:flex!important}
+  .main{width:100%}
+  /* Messages */
+  .bubble,.err-bubble{max-width:92%}
+  .messages{padding:0 10px;gap:10px}
+  .msg{gap:7px}
+  .avatar{width:28px;height:28px;font-size:12px;border-radius:7px}
+  .bubble{font-size:13px;padding:9px 13px;line-height:1.7}
+  /* Input bar */
+  .input-bar{padding:8px 10px 10px}
+  .input-inner{padding:7px 7px 7px 12px;gap:7px}
+  textarea{font-size:14px}
+  .send-btn,.stop-btn{width:34px;height:34px}
+  /* Header */
+  header{padding:8px 12px;min-height:50px}
+  .model-pill{font-size:10px;padding:3px 9px}
+  .name-badge{max-width:90px}
+  .icon-btn{width:30px;height:30px;font-size:14px}
+  /* Code panel as bottom sheet */
+  .code-panel{width:100%;border-left:none;border-top:1px solid var(--border2);top:auto;bottom:0;height:80vh;transform:translateY(100%)}
+  .code-panel.open{transform:translateY(0)}
+  /* Grids */
+  .theme-grid{grid-template-columns:repeat(3,1fr)}
+  .lang-grid{grid-template-columns:repeat(3,1fr)}
+  .font-grid{grid-template-columns:1fr 1fr}
+  /* Weather card */
+  .weather-card{min-width:unset;max-width:100%}
+  .weather-details{grid-template-columns:1fr 1fr}
+  /* Settings/Personalize panels */
+.settings-panel,.personalize-panel{max-height:100dvh;top:0;border-radius:0}
+  .sp-body,.pp-body{padding:6px 14px 20px}
+  /* Empty state */
+  .empty{min-height:42vh;gap:14px;padding:30px 16px}
+  .empty-gem{width:56px;height:56px;font-size:26px}
+  .empty h2{font-size:18px}
+  .empty p{font-size:12px}
+  .empty-chips{gap:6px}
+  .chip{font-size:11px;padding:5px 12px}
+  /* Code blocks */
+  .bubble pre code{font-size:11.5px;padding:10px}
+  .code-header{padding:6px 10px}
+  .code-copy-btn,.code-run-btn,.code-dl-btn,.code-view-btn{font-size:10px;padding:3px 7px}
+}
+@media(max-width:400px){
+  .sidebar{width:88vw}
+  .bubble{max-width:96%;font-size:12.5px}
+  .theme-grid{grid-template-columns:repeat(3,1fr)}
+  .lang-grid{grid-template-columns:repeat(3,1fr)}
+  .empty h2{font-size:16px}
+}
+/* SPLASH SCREEN */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg, #08080f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  gap: 14px;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#splash-star {
+  font-size: 36px;
+  display: inline-block;
+  animation: splashSpin 1s linear infinite, splashGlow 1s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+@keyframes splashSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes splashGlow {
+  from { filter: drop-shadow(0 0 6px #8b5cf6) drop-shadow(0 0 12px #8b5cf6); }
+  to   { filter: drop-shadow(0 0 18px #a78bfa) drop-shadow(0 0 36px #7c3aed); }
+}
+#splash-text {
+  font-size: 26px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+#splash-text.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.weather-detail-btn{width:100%;margin-top:8px;padding:8px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:10px;font-family:var(--font);font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;transition:all .18s;text-align:center}
+.weather-detail-btn:hover{background:rgba(139,92,246,.2);border-color:var(--accent)}
+.weather-periods{display:none;margin-top:8px;display:none;flex-direction:column;gap:6px}
+.weather-periods.show{display:flex}
+.weather-period-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px}
+.weather-period-label{font-size:11px;font-weight:700;color:var(--t2);min-width:52px}
+.weather-period-icon{font-size:18px}
+.weather-period-temp{font-size:13px;font-weight:700;color:var(--accent);min-width:40px}
+.weather-period-desc{font-size:11px;color:var(--t3);flex:1}
+
+</style>
+</head>
+<body>
+  <div id="splash">
+  <span id="splash-star">✦</span>
+  <span id="splash-text">FernieX AI</span>
+</div>
+<canvas id="bgCanvas"></canvas>
+<div class="noise"></div>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- CODE PANEL -->
+<div class="code-panel-overlay" id="codePanelOverlay" onclick="closeCodePanel()"></div>
+<div class="code-panel" id="codePanel">
+  <div class="code-panel-header">
+    <div class="code-panel-title" id="codePanelTitle">code</div>
+    <div class="code-panel-close" onclick="closeCodePanel()">✕</div>
+  </div>
+  <div class="code-panel-body" id="codePanelBody"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="logo"><div class="logo-gem">✦</div><span>FernieX AI</span></div>
+    <button class="new-chat-btn" id="newChatBtn" onclick="newChat()" id="newChatBtnEl">＋</button>
+  </div>
+  <div class="sidebar-search"><input id="chatSearch" data-i18n-placeholder="chat_search_placeholder" oninput="renderChatList(this.value)"/></div>
+  <div class="chat-list" id="chatList"></div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-settings-btn" onclick="openSettings()" data-i18n-attr="textContent" data-i18n="settings_btn">⚙️ &nbsp;Настройки</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <header>
+    <div class="header-left">
+      <button class="icon-btn sidebar-toggle" onclick="toggleSidebar()" style="display:none">☰</button>
+    </div>
+    <div class="header-right">
+      <div class="name-badge hidden" id="nameBadge">👤 <span id="nameBadgeText"></span></div>
+      <div class="model-pill" id="modelPill" onclick="openModelModal()">⚡ Step 3.5 Flash</div>
+      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    </div>
+  </header>
+  <div class="chat-wrap" id="chatWrap">
+    <div class="messages" id="messages"></div>
+  </div>
+  <div class="input-bar">
+    <div class="input-inner">
+      <textarea id="inputMsg" rows="1" data-i18n-placeholder="input_placeholder"></textarea>
+      <div class="input-actions">
+        <button class="stop-btn hidden" id="stopBtn" onclick="stopGeneration()" title="Остановить">■</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="input-hint" id="inputHint">Enter — отправить · Shift+Enter — новая строка</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="sp-handle"></div>
+  <div class="sp-header">
+    <div class="sp-title" data-i18n="settings_title">Настройки</div>
+    <div class="sp-close" onclick="closeSettings()">✕</div>
+  </div>
+  <div class="sp-body">
+    <div class="sp-section">
+      <div class="sp-section-title" data-i18n="settings_name_section">Ваше имя</div>
+      <div class="name-row">
+        <div class="name-row-top">
+          <div class="name-row-label" data-i18n="settings_name_label">Имя</div>
+          <div class="name-row-sub" data-i18n="settings_name_optional">необязательно</div>
+        </div>
+        <div class="name-field">
+          <input class="name-input-el" id="nameInput" data-i18n-placeholder="settings_name_placeholder"/>
+          <button class="name-save-btn" onclick="saveName()" data-i18n="settings_name_save">Сохранить</button>
+        </div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title" data-i18n="settings_appearance_section">Персонализация</div>
+      <div class="nav-row" onclick="openPersonalize()">
+        <div class="nav-row-left">
+          <div class="nav-row-icon">🎨</div>
+          <div class="nav-row-info">
+            <div class="nav-row-label" data-i18n="settings_appearance_label">Внешний вид</div>
+            <div class="nav-row-sub" data-i18n="settings_appearance_sub">Темы, шрифты, язык, эффекты</div>
+          </div>
+        </div>
+        <div class="nav-row-arrow">›</div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title" data-i18n="settings_model_section">Модель</div>
+      <div class="model-btn-row" onclick="openModelModal()">
+        <div class="model-btn-left">
+          <div class="model-btn-icon" id="modelBtnIcon">⚡</div>
+          <div class="model-btn-info">
+            <div class="model-btn-name" id="modelBtnName">Step 3.5 Flash</div>
+            <div class="model-btn-sub" id="modelBtnSub">@preset/step</div>
+          </div>
+        </div>
+        <div class="model-btn-arrow">›</div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title" data-i18n="settings_data_section">Данные</div>
+      <div class="danger-row">
+        <div class="danger-btn warn" onclick="clearCurrentChat()" data-i18n="settings_clear_chat">🗑 Сбросить текущий чат</div>
+        <div class="danger-btn" onclick="clearAllChats()" data-i18n="settings_clear_all">⚠️ Сбросить все чаты</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONALIZE PANEL -->
+<div class="personalize-overlay" id="personalizeOverlay" onclick="closePersonalize()"></div>
+<div class="personalize-panel" id="personalizePanel">
+  <div class="pp-drag"></div>
+  <div class="pp-header">
+    <button class="pp-back" onclick="closePersonalize()">‹ <span data-i18n="pp_back">Назад</span></button>
+    <div class="pp-title" data-i18n="pp_title">Персонализация</div>
+  </div>
+  <div class="pp-body">
+    <div>
+      <div class="pp-section-title" data-i18n="pp_effects">Эффекты</div>
+      <div class="pp-card">
+        <div class="pp-card-inner">
+          <div class="toggle-row" onclick="toggleFx()" style="background:transparent;border:none;padding:0">
+            <div class="toggle-info">
+              <div class="toggle-label" data-i18n="pp_fx_label">Анимации и частицы</div>
+              <div class="toggle-desc" data-i18n="pp_fx_desc">Свечение, орбы, частицы</div>
+            </div>
+            <div class="toggle on" id="fxToggle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="pp-section-title" data-i18n="pp_theme">Тема оформления</div>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+    <div>
+      <div class="pp-section-title" data-i18n="pp_font">Шрифт</div>
+      <div class="font-grid" id="fontGrid"></div>
+    </div>
+    <div>
+      <div class="pp-section-title" data-i18n="pp_lang">Язык интерфейса</div>
+      <div class="lang-grid" id="langGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="name-toast" id="nameToast"></div>
+
+<!-- MODEL MODAL -->
+<div class="model-overlay" id="modelOverlay" onclick="closeModelModal()"></div>
+<div class="model-modal" id="modelModal">
+  <div class="sp-handle"></div>
+  <div class="mm-header">
+    <div class="sp-title" data-i18n="model_select_title">Выбор модели</div>
+    <div class="sp-close" onclick="closeModelModal()">✕</div>
+  </div>
+  <div class="mm-search-wrap">
+    <div class="mm-search-icon">🔍</div>
+    <input class="mm-search" id="modelSearch" data-i18n-placeholder="model_search_placeholder" oninput="filterModels(this.value)" autocomplete="off"/>
+    <div class="mm-search-clear" id="searchClear" onclick="clearModelSearch()">✕</div>
+  </div>
+  <div class="mm-list" id="modelList"></div>
+</div>
+
+<script>
+const WEATHER_API_KEY='920745ae9266589263a7ddc89bfd2c80';
+const OR_API_KEY = '';
+
+const codeStore=new Map();
+let codeStoreId=0;
+function storeCode(code){const id='cs_'+(++codeStoreId);codeStore.set(id,code);return id;}
+function getCode(id){return codeStore.get(id)||'';}
+
+const MODELS=[
+  {id:'step',name:'Step 3.5 Flash',api:'@preset/step',badge:'⚡',desc:'Быстрый · Универсальный'},
+  {id:'tl-Preview',name:'Trinity Large Preview',api:'@preset/trinity-large-preview',badge:'🔮',desc:'Быстрый · Лёгкий'},
+  {id:'Nemotron-Nano-12B-2-VL',name:'Nemotron Nano 12B 2 VL',api:'@preset/nemotron-nano-12-b-2-vl',badge:'🧠',desc:'Быстрый · Лёгкий'},
+];
+const FONTS=[
+  {id:'Outfit',label:'Outfit',preview:'Современный'},
+  {id:'Inter',label:'Inter',preview:'Чёткий'},
+  {id:'Nunito',label:'Nunito',preview:'Мягкий'},
+  {id:'Raleway',label:'Raleway',preview:'Элегантный'},
+  {id:'Space Grotesk',label:'Space Grotesk',preview:'Технический'},
+  {id:'DM Sans',label:'DM Sans',preview:'Нейтральный'},
+];
+const THEMES=[
+  {id:'default',name:'Фиолет',s:'linear-gradient(135deg,#8b5cf6,#ec4899)'},
+  {id:'blue',name:'Синий',s:'linear-gradient(135deg,#3b82f6,#06b6d4)'},
+  {id:'green',name:'Зелёный',s:'linear-gradient(135deg,#22c55e,#10b981)'},
+  {id:'yellow',name:'Жёлтый',s:'linear-gradient(135deg,#eab308,#f97316)'},
+  {id:'purple',name:'Пурпур',s:'linear-gradient(135deg,#a855f7,#7c3aed)'},
+  {id:'red',name:'Красный',s:'linear-gradient(135deg,#ef4444,#f97316)'},
+  {id:'light',name:'Светлый',s:'linear-gradient(135deg,#dde,#f5f5fa)'},
+  {id:'dark',name:'Тёмный',s:'linear-gradient(135deg,#1a1a1a,#000)'},
+  {id:'ocean',name:'Океан',s:'linear-gradient(135deg,#0891b2,#06b6d4)'},
+  {id:'rose',name:'Роза',s:'linear-gradient(135deg,#f43f5e,#fb7185)'},
+  {id:'cyber',name:'Кибер',s:'linear-gradient(135deg,#00ff9d,#00d4ff)'},
+  {id:'coffee',name:'Кофе',s:'linear-gradient(135deg,#c8956c,#6b3a1f)'},
+];
+
+// === HUGE CHIP POOL ===
+const ALL_CHIPS = {
+  ru:[
+    // Programming
+    ['Напиши REST API на Node.js 🖥️','Объясни что такое замыкание в JS 🔒','Помоги с алгоритмом сортировки 🔄','Напиши SQL запрос с JOIN 🗃️'],
+    ['Что такое Docker? 🐋','Помоги с регулярными выражениями 🔍','Напиши функцию на Python 🐍','Объясни ООП простыми словами 🧱'],
+    ['Как работает async/await? ⏳','Напиши компонент на React ⚛️','Помоги с Git конфликтами 🔀','Что такое REST vs GraphQL? 📡'],
+    // Creative
+    ['Напиши стихотворение о море 🌊','Придумай короткий рассказ 📖','Напиши песню о звёздах ⭐','Сочини сказку для детей 🧚'],
+    ['Напиши письмо от имени космонавта 🚀','Придумай монолог злодея 😈','Напиши хайку о осени 🍂','Сочини загадку 🎭'],
+    // Science
+    ['Объясни квантовую запутанность 🔬','Как работает ДНК? 🧬','Что такое чёрные дыры? 🕳️','Объясни теорию относительности ⚡'],
+    ['Как работает квантовый компьютер? 💻','Что такое нейронные сети? 🧠','Объясни CRISPR 🧫','Как работает интернет? 🌐'],
+    // Fun
+    ['Расскажи анекдот 😄','Придумай весёлую историю 🤣','Напиши тост для вечеринки 🥂','Придумай смешное стихотворение 😂'],
+    ['Сыграй в 20 вопросов 🎯','Придумай загадку-каламбур 🎪','Расскажи абсурдный анекдот 🤪','Напиши шутку про программиста 💻😄'],
+    // Productivity
+    ['Помоги составить резюме 📄','Напиши деловое письмо ✉️','Составь план проекта 📋','Помоги с переговорами 🤝'],
+    ['Как правильно расставить приоритеты? ⚡','Составь учебный план 📚','Помоги с целями на год 🎯','Напиши сопроводительное письмо 📝'],
+    // Philosophy / Mind
+    ['В чём смысл жизни? 🌍','Существует ли свобода воли? 🤔','Что такое сознание? 🧠','Объясни парадокс Тесея 🚢'],
+    ['Что думал Ницше? 📜','Объясни стоицизм 🏛️','Что такое экзистенциализм? 💭','Является ли математика изобретением? ∑'],
+    // Life
+    ['Как лучше учить иностранный язык? 🗣️','Советы для улучшения памяти 🧠','Как справляться со стрессом? 🧘','Как начать вставать рано? ⏰'],
+    ['Лучшие привычки успешных людей 🏆','Как побороть прокрастинацию? 🎯','Как научиться медитировать? 🕉️','Советы по здоровому сну 💤'],
+  ],
+  en:[
+    ['Write a REST API in Node.js 🖥️','Explain closures in JavaScript 🔒','Help with sorting algorithms 🔄','Write an SQL query with JOIN 🗃️'],
+    ['What is Docker? 🐋','Help with regular expressions 🔍','Write a Python function 🐍','Explain OOP simply 🧱'],
+    ['How does async/await work? ⏳','Write a React component ⚛️','Help with Git conflicts 🔀','REST vs GraphQL? 📡'],
+    ['Write a poem about the sea 🌊','Create a short story 📖','Write a song about stars ⭐','Tell me a fairy tale 🧚'],
+    ['Write a letter from an astronaut 🚀','Create a villain\'s monologue 😈','Write a haiku about autumn 🍂','Make up a riddle 🎭'],
+    ['Explain quantum entanglement 🔬','How does DNA work? 🧬','What are black holes? 🕳️','Explain relativity ⚡'],
+    ['How do quantum computers work? 💻','What are neural networks? 🧠','Explain CRISPR 🧫','How does the internet work? 🌐'],
+    ['Tell me a joke 😄','Create a funny story 🤣','Write a party toast 🥂','Write a silly poem 😂'],
+    ['Play 20 questions 🎯','Create a pun riddle 🎪','Tell me an absurd joke 🤪','Tell a programmer joke 💻😄'],
+    ['Help me write a resume 📄','Write a business letter ✉️','Create a project plan 📋','Help with negotiations 🤝'],
+    ['How to prioritize tasks? ⚡','Create a study plan 📚','Help with yearly goals 🎯','Write a cover letter 📝'],
+    ['What is the meaning of life? 🌍','Does free will exist? 🤔','What is consciousness? 🧠','Explain the Ship of Theseus 🚢'],
+    ['What did Nietzsche think? 📜','Explain stoicism 🏛️','What is existentialism? 💭','Is math invented or discovered? ∑'],
+    ['Best way to learn a language? 🗣️','Tips to improve memory 🧠','How to handle stress? 🧘','How to wake up early? ⏰'],
+    ['Habits of successful people 🏆','How to beat procrastination? 🎯','How to start meditating? 🕉️','Tips for better sleep 💤'],
+  ],
+  zh:[
+    ['用Node.js写REST API 🖥️','解释JavaScript闭包 🔒','帮我写排序算法 🔄','写一个SQL JOIN查询 🗃️'],
+    ['什么是Docker? 🐋','帮我写正则表达式 🔍','写一个Python函数 🐍','用简单话解释面向对象 🧱'],
+    ['写一首关于大海的诗 🌊','创作一个短故事 📖','写关于星星的歌 ⭐','给孩子讲个童话 🧚'],
+    ['讲个笑话 😄','解释量子纠缠 🔬','DNA是如何工作的? 🧬','什么是黑洞? 🕳️'],
+    ['什么是神经网络? 🧠','互联网是如何工作的? 🌐','帮我写简历 📄','如何克服拖延症? 🎯'],
+    ['生命的意义是什么? 🌍','什么是存在主义? 💭','如何学好外语? 🗣️','改善记忆的建议 🧠'],
+  ],
+  ko:[
+    ['Node.js로 REST API 작성 🖥️','JavaScript 클로저 설명 🔒','정렬 알고리즘 도움 🔄','SQL JOIN 쿼리 작성 🗃️'],
+    ['Docker란? 🐋','정규표현식 도움 🔍','Python 함수 작성 🐍','OOP 쉽게 설명 🧱'],
+    ['바다에 관한 시 써줘 🌊','짧은 이야기 만들어줘 📖','별에 관한 노래 써줘 ⭐','어린이 동화 들려줘 🧚'],
+    ['농담해줘 😄','양자 얽힘 설명해줘 🔬','DNA는 어떻게 작동해? 🧬','블랙홀이란? 🕳️'],
+    ['신경망이란? 🧠','인터넷은 어떻게 작동해? 🌐','이력서 작성 도움 📄','지연증 극복 방법 🎯'],
+    ['삶의 의미는? 🌍','외국어 잘 배우는 법? 🗣️','기억력 향상 팁 🧠','일찍 일어나는 방법? ⏰'],
+  ],
+  ja:[
+    ['Node.jsでREST API作成 🖥️','JavaScriptのクロージャー解説 🔒','ソートアルゴリズムの助け 🔄','SQL JOINクエリ作成 🗃️'],
+    ['Dockerとは? 🐋','正規表現の助け 🔍','Python関数作成 🐍','OOPを簡単に説明 🧱'],
+    ['海についての詩を書いて 🌊','短い話を作って 📖','星についての歌 ⭐','子供向けお伽話 🧚'],
+    ['冗談を言って 😄','量子もつれを説明して 🔬','DNAはどう機能する? 🧬','ブラックホールとは? 🕳️'],
+    ['ニューラルネットワークとは? 🧠','インターネットの仕組み? 🌐','履歴書作成の助け 📄','先延ばしを克服する方法? 🎯'],
+    ['人生の意味は? 🌍','外国語を学ぶ方法? 🗣️','記憶力向上のヒント 🧠','早起きする方法? ⏰'],
+  ],
+};
+
+// Per-chat chip set storage
+const chatChipSets = {};
+function getChipsForChat(chatId) {
+  if (!chatChipSets[chatId]) {
+    const pool = ALL_CHIPS[currentLang] || ALL_CHIPS.ru;
+    const idx = Math.floor(Math.random() * pool.length);
+    chatChipSets[chatId] = pool[idx];
+  }
+  return chatChipSets[chatId];
+}
+
+const I18N = {
+  ru:{
+    greeting:'Привет! Чем помочь?',
+    greeting_sub:'Умный AI-ассистент готов к диалогу',
+    thinking:'Думаю...',
+    thinking_done:'Подумал',
+    thinking_stopped:'Остановлено',
+    name_detected:'Буду называть тебя',
+    system_lang:'Отвечай строго на русском языке, если пользователь сам явно не попросит использовать другой язык.',
+    title_prompt:'Придумай очень короткое название (2-4 слова) для этого чата. Отвечай ТОЛЬКО названием, без кавычек и знаков препинания. Сообщение: ',
+    stop_hint:'ИИ пишет — остановите ■ или подождите',
+    writing:'ИИ пишет ответ...',
+    input_placeholder:'Напишите сообщение...',
+    input_hint:'Enter — отправить · Shift+Enter — новая строка',
+    settings_btn:'⚙️  Настройки',
+    settings_title:'Настройки',
+    settings_name_section:'Ваше имя',
+    settings_name_label:'Имя',
+    settings_name_optional:'необязательно',
+    settings_name_placeholder:'Как вас зовут?',
+    settings_name_save:'Сохранить',
+    settings_appearance_section:'Персонализация',
+    settings_appearance_label:'Внешний вид',
+    settings_appearance_sub:'Темы, шрифты, язык, эффекты',
+    settings_model_section:'Модель',
+    settings_data_section:'Данные',
+    settings_clear_chat:'🗑 Сбросить текущий чат',
+    settings_clear_all:'⚠️ Сбросить все чаты',
+    pp_back:'Назад',
+    pp_title:'Персонализация',
+    pp_effects:'Эффекты',
+    pp_fx_label:'Анимации и частицы',
+    pp_fx_desc:'Свечение, орбы, частицы',
+    pp_theme:'Тема оформления',
+    pp_font:'Шрифт',
+    pp_lang:'Язык интерфейса',
+    model_select_title:'Выбор модели',
+    model_search_placeholder:'Поиск модели...',
+    chat_search_placeholder:'Поиск чатов...',
+    no_chats:'Чатов нет',
+    today:'Сегодня',
+    yesterday:'Вчера',
+    older:'Ранее',
+    new_chat_title:'Новый чат',
+    toast_enter_name:'⚠️ Введите имя',
+    toast_name_saved:'✓ ',
+    toast_chat_cleared:'🗑 Чат очищен',
+    toast_all_cleared:'⚠️ Все чаты удалены',
+    toast_first_msg:'Сначала напишите сообщение',
+    toast_code_mobile:'Панель кода недоступна на мобильных',
+    toast_run_unsupported:'Запуск не поддерживается',
+    code_copy:'⎘ Копировать',
+    code_copied:'✓ Скопировано',
+    code_run:'▶ Запустить',
+    code_dl:'⬇ Download',
+    code_open:'👁 Открыть',
+    code_lines:' строк — нажмите чтобы открыть',
+    weather_loading:'Загружаю погоду...',
+    weather_today:'Сейчас',
+    weather_tomorrow:'Завтра',
+    weather_week:'Неделя',
+    weather_humidity:'Влажность',
+    weather_wind:'Ветер',
+    weather_feels:'Ощущается',
+    weather_pressure:'Давление',
+    weather_city_not_found:'Город не найден',
+    weather_error:'Ошибка загрузки погоды',
+    js_output_title:'▶ Вывод JS',
+  },
+  en:{
+    greeting:'Hello! How can I help?',
+    greeting_sub:'Your smart AI assistant is ready',
+    thinking:'Thinking...',
+    thinking_done:'Done thinking',
+    thinking_stopped:'Stopped',
+    name_detected:"I'll call you",
+    system_lang:'Reply strictly in English, unless the user explicitly asks you to use another language.',
+    title_prompt:'Create a very short title (2-4 words) for this chat. Reply ONLY with the title. Message: ',
+    stop_hint:'AI is writing — stop ■ or wait',
+    writing:'AI is writing...',
+    input_placeholder:'Write a message...',
+    input_hint:'Enter to send · Shift+Enter for new line',
+    settings_btn:'⚙️  Settings',
+    settings_title:'Settings',
+    settings_name_section:'Your Name',
+    settings_name_label:'Name',
+    settings_name_optional:'optional',
+    settings_name_placeholder:'What is your name?',
+    settings_name_save:'Save',
+    settings_appearance_section:'Personalization',
+    settings_appearance_label:'Appearance',
+    settings_appearance_sub:'Themes, fonts, language, effects',
+    settings_model_section:'Model',
+    settings_data_section:'Data',
+    settings_clear_chat:'🗑 Reset current chat',
+    settings_clear_all:'⚠️ Reset all chats',
+    pp_back:'Back',
+    pp_title:'Personalization',
+    pp_effects:'Effects',
+    pp_fx_label:'Animations & Particles',
+    pp_fx_desc:'Glow, orbs, particles',
+    pp_theme:'Color Theme',
+    pp_font:'Font',
+    pp_lang:'Interface Language',
+    model_select_title:'Select Model',
+    model_search_placeholder:'Search model...',
+    chat_search_placeholder:'Search chats...',
+    no_chats:'No chats',
+    today:'Today',
+    yesterday:'Yesterday',
+    older:'Earlier',
+    new_chat_title:'New Chat',
+    toast_enter_name:'⚠️ Enter a name',
+    toast_name_saved:'✓ ',
+    toast_chat_cleared:'🗑 Chat cleared',
+    toast_all_cleared:'⚠️ All chats deleted',
+    toast_first_msg:'Write a message first',
+    toast_code_mobile:'Code panel not available on mobile',
+    toast_run_unsupported:'Running not supported',
+    code_copy:'⎘ Copy',
+    code_copied:'✓ Copied',
+    code_run:'▶ Run',
+    code_dl:'⬇ Download',
+    code_open:'👁 Open',
+    code_lines:' lines — click to open',
+    weather_loading:'Loading weather...',
+    weather_today:'Now',
+    weather_tomorrow:'Tomorrow',
+    weather_week:'Week',
+    weather_humidity:'Humidity',
+    weather_wind:'Wind',
+    weather_feels:'Feels like',
+    weather_pressure:'Pressure',
+    weather_city_not_found:'City not found',
+    weather_error:'Weather load error',
+    js_output_title:'▶ JS Output',
+  },
+  zh:{
+    greeting:'你好！有什么需要帮忙的？',
+    greeting_sub:'智能AI助手随时为您服务',
+    thinking:'思考中...',
+    thinking_done:'已思考',
+    thinking_stopped:'已停止',
+    name_detected:'我会叫你',
+    system_lang:'请严格用中文回复，除非用户明确要求使用其他语言。',
+    title_prompt:'根据消息创建一个非常简短的标题。只回复标题。消息：',
+    stop_hint:'AI正在写 — 停止■或等待',
+    writing:'AI写作中...',
+    input_placeholder:'输入消息...',
+    input_hint:'Enter 发送 · Shift+Enter 换行',
+    settings_btn:'⚙️  设置',
+    settings_title:'设置',
+    settings_name_section:'您的姓名',
+    settings_name_label:'姓名',
+    settings_name_optional:'可选',
+    settings_name_placeholder:'您叫什么名字？',
+    settings_name_save:'保存',
+    settings_appearance_section:'个性化',
+    settings_appearance_label:'外观',
+    settings_appearance_sub:'主题、字体、语言、效果',
+    settings_model_section:'模型',
+    settings_data_section:'数据',
+    settings_clear_chat:'🗑 清空当前对话',
+    settings_clear_all:'⚠️ 清空所有对话',
+    pp_back:'返回',
+    pp_title:'个性化',
+    pp_effects:'效果',
+    pp_fx_label:'动画与粒子',
+    pp_fx_desc:'发光、球体、粒子',
+    pp_theme:'颜色主题',
+    pp_font:'字体',
+    pp_lang:'界面语言',
+    model_select_title:'选择模型',
+    model_search_placeholder:'搜索模型...',
+    chat_search_placeholder:'搜索对话...',
+    no_chats:'暂无对话',
+    today:'今天',
+    yesterday:'昨天',
+    older:'更早',
+    new_chat_title:'新对话',
+    toast_enter_name:'⚠️ 请输入姓名',
+    toast_name_saved:'✓ ',
+    toast_chat_cleared:'🗑 对话已清空',
+    toast_all_cleared:'⚠️ 所有对话已删除',
+    toast_first_msg:'请先发送一条消息',
+    toast_code_mobile:'移动端不支持代码面板',
+    toast_run_unsupported:'不支持运行',
+    code_copy:'⎘ 复制',
+    code_copied:'✓ 已复制',
+    code_run:'▶ 运行',
+    code_dl:'⬇ 下载',
+    code_open:'👁 打开',
+    code_lines:' 行 — 点击打开',
+    weather_loading:'加载天气中...',
+    weather_today:'现在',
+    weather_tomorrow:'明天',
+    weather_week:'本周',
+    weather_humidity:'湿度',
+    weather_wind:'风速',
+    weather_feels:'体感',
+    weather_pressure:'气压',
+    weather_city_not_found:'找不到城市',
+    weather_error:'天气加载错误',
+    js_output_title:'▶ JS 输出',
+  },
+  ko:{
+    greeting:'안녕하세요! 무엇을 도와드릴까요?',
+    greeting_sub:'스마트 AI 어시스턴트가 준비되었습니다',
+    thinking:'생각 중...',
+    thinking_done:'생각 완료',
+    thinking_stopped:'중단됨',
+    name_detected:'이렇게 부를게요',
+    system_lang:'사용자가 명시적으로 다른 언어를 요청하지 않는 한 반드시 한국어로 답변하세요.',
+    title_prompt:'메시지를 기반으로 매우 짧은 제목을 만드세요. 제목만 답하세요. 메시지: ',
+    stop_hint:'AI가 쓰는 중 — 중지■ 또는 기다리세요',
+    writing:'AI 작성 중...',
+    input_placeholder:'메시지 입력...',
+    input_hint:'Enter 전송 · Shift+Enter 줄바꿈',
+    settings_btn:'⚙️  설정',
+    settings_title:'설정',
+    settings_name_section:'이름',
+    settings_name_label:'이름',
+    settings_name_optional:'선택사항',
+    settings_name_placeholder:'이름이 무엇인가요?',
+    settings_name_save:'저장',
+    settings_appearance_section:'개인화',
+    settings_appearance_label:'외관',
+    settings_appearance_sub:'테마, 폰트, 언어, 효과',
+    settings_model_section:'모델',
+    settings_data_section:'데이터',
+    settings_clear_chat:'🗑 현재 채팅 초기화',
+    settings_clear_all:'⚠️ 모든 채팅 초기화',
+    pp_back:'뒤로',
+    pp_title:'개인화',
+    pp_effects:'효과',
+    pp_fx_label:'애니메이션 & 파티클',
+    pp_fx_desc:'글로우, 구체, 파티클',
+    pp_theme:'색상 테마',
+    pp_font:'폰트',
+    pp_lang:'인터페이스 언어',
+    model_select_title:'모델 선택',
+    model_search_placeholder:'모델 검색...',
+    chat_search_placeholder:'채팅 검색...',
+    no_chats:'채팅 없음',
+    today:'오늘',
+    yesterday:'어제',
+    older:'이전',
+    new_chat_title:'새 채팅',
+    toast_enter_name:'⚠️ 이름을 입력하세요',
+    toast_name_saved:'✓ ',
+    toast_chat_cleared:'🗑 채팅 초기화됨',
+    toast_all_cleared:'⚠️ 모든 채팅 삭제됨',
+    toast_first_msg:'먼저 메시지를 보내세요',
+    toast_code_mobile:'모바일에서는 코드 패널 사용 불가',
+    toast_run_unsupported:'실행 미지원',
+    code_copy:'⎘ 복사',
+    code_copied:'✓ 복사됨',
+    code_run:'▶ 실행',
+    code_dl:'⬇ 다운로드',
+    code_open:'👁 열기',
+    code_lines:' 줄 — 클릭하여 열기',
+    weather_loading:'날씨 불러오는 중...',
+    weather_today:'지금',
+    weather_tomorrow:'내일',
+    weather_week:'이번 주',
+    weather_humidity:'습도',
+    weather_wind:'풍속',
+    weather_feels:'체감',
+    weather_pressure:'기압',
+    weather_city_not_found:'도시를 찾을 수 없음',
+    weather_error:'날씨 로드 오류',
+    js_output_title:'▶ JS 출력',
+  },
+  ja:{
+    greeting:'こんにちは！何かお手伝いできますか？',
+    greeting_sub:'スマートAIアシスタントが準備できています',
+    thinking:'考え中...',
+    thinking_done:'考えた',
+    thinking_stopped:'停止しました',
+    name_detected:'そう呼ばせてもらいます',
+    system_lang:'ユーザーが明示的に他の言語を要求しない限り、必ず日本語で返答してください。',
+    title_prompt:'メッセージに基づいて非常に短いタイトルを作成してください。タイトルのみを返してください。メッセージ：',
+    stop_hint:'AIが書いています — 停止■または待機',
+    writing:'AI書き込み中...',
+    input_placeholder:'メッセージを入力...',
+    input_hint:'Enter 送信 · Shift+Enter 改行',
+    settings_btn:'⚙️  設定',
+    settings_title:'設定',
+    settings_name_section:'お名前',
+    settings_name_label:'名前',
+    settings_name_optional:'任意',
+    settings_name_placeholder:'お名前は？',
+    settings_name_save:'保存',
+    settings_appearance_section:'パーソナライズ',
+    settings_appearance_label:'外観',
+    settings_appearance_sub:'テーマ、フォント、言語、エフェクト',
+    settings_model_section:'モデル',
+    settings_data_section:'データ',
+    settings_clear_chat:'🗑 現在のチャットをリセット',
+    settings_clear_all:'⚠️ すべてのチャットをリセット',
+    pp_back:'戻る',
+    pp_title:'パーソナライズ',
+    pp_effects:'エフェクト',
+    pp_fx_label:'アニメーション＆パーティクル',
+    pp_fx_desc:'グロー、オーブ、パーティクル',
+    pp_theme:'カラーテーマ',
+    pp_font:'フォント',
+    pp_lang:'インターフェース言語',
+    model_select_title:'モデルを選択',
+    model_search_placeholder:'モデルを検索...',
+    chat_search_placeholder:'チャットを検索...',
+    no_chats:'チャットなし',
+    today:'今日',
+    yesterday:'昨日',
+    older:'以前',
+    new_chat_title:'新しいチャット',
+    toast_enter_name:'⚠️ 名前を入力してください',
+    toast_name_saved:'✓ ',
+    toast_chat_cleared:'🗑 チャットをクリア',
+    toast_all_cleared:'⚠️ すべてのチャットを削除',
+    toast_first_msg:'まずメッセージを送ってください',
+    toast_code_mobile:'モバイルではコードパネル非対応',
+    toast_run_unsupported:'実行非対応',
+    code_copy:'⎘ コピー',
+    code_copied:'✓ コピー済み',
+    code_run:'▶ 実行',
+    code_dl:'⬇ DL',
+    code_open:'👁 開く',
+    code_lines:' 行 — クリックして開く',
+    weather_loading:'天気を読み込み中...',
+    weather_today:'現在',
+    weather_tomorrow:'明日',
+    weather_week:'今週',
+    weather_humidity:'湿度',
+    weather_wind:'風速',
+    weather_feels:'体感',
+    weather_pressure:'気圧',
+    weather_city_not_found:'都市が見つかりません',
+    weather_error:'天気の読み込みエラー',
+    js_output_title:'▶ JS 出力',
+  },
+};
+
+// STATE
+let currentLang   =localStorage.getItem('lang')||'ru';
+let userName      =localStorage.getItem('userName')||'';
+let fxEnabled     =localStorage.getItem('fx')!=='0';
+let currentModelId=localStorage.getItem('modelId')||'step';
+let currentFont   =localStorage.getItem('font')||'Outfit';
+let currentTheme  =localStorage.getItem('theme')||'default';
+let currentChatId =null;
+let isLoading     =false;
+let abortCtrl     =null;
+
+function loadChats(){try{return JSON.parse(localStorage.getItem('fx_chats')||'{}')}catch{return{}}}
+function saveChats(c){localStorage.setItem('fx_chats',JSON.stringify(c))}
+function loadChatOrder(){try{return JSON.parse(localStorage.getItem('fx_chat_order')||'[]')}catch{return[]}}
+function saveChatOrder(o){localStorage.setItem('fx_chat_order',JSON.stringify(o))}
+function saveLastChatId(id){localStorage.setItem('fx_last_chat',id)}
+function loadLastChatId(){return localStorage.getItem('fx_last_chat')||null}
+function getModel(){return MODELS.find(m=>m.id===currentModelId)||MODELS[0]}
+function t(k){return I18N[currentLang]?.[k]??I18N.ru?.[k]??k}
+
+// === GLOBAL I18N APPLY ===
+function applyI18n(){
+  // Text content
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent=t(el.dataset.i18n);
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.placeholder=t(el.dataset.i18nPlaceholder);
+  });
+  // Chat search placeholder
+  const cs=document.getElementById('chatSearch');
+  if(cs)cs.placeholder=t('chat_search_placeholder');
+  // Input hint
+  const hint=document.getElementById('inputHint');
+  if(hint){hint.textContent=isLoading?t('stop_hint'):t('input_hint');hint.classList.toggle('warn',isLoading)}
+  // Input placeholder
+  const ia=document.getElementById('inputMsg');
+  if(ia)ia.placeholder=isLoading?t('writing'):t('input_placeholder');
+  // Lang buttons
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+  // Empty state
+  const emptyEl=document.getElementById('emptyState');
+  if(emptyEl){
+    const h2=emptyEl.querySelector('[data-i18n="greeting"]');
+    const p=emptyEl.querySelector('[data-i18n="greeting_sub"]');
+    if(h2)h2.textContent=t('greeting');
+    if(p)p.textContent=t('greeting_sub');
+    // Refresh chips with new language
+    buildChips(emptyEl.querySelector('.empty-chips'));
+  }
+  // "No chats" text
+  const noChats=document.querySelector('.no-chats-text');
+  if(noChats)noChats.textContent=t('no_chats');
+  // New chat button title
+  const ncb=document.getElementById('newChatBtn');
+  if(ncb)ncb.title=t('new_chat_title');
+  updateNameBadge(false);
+}
+
+function setLang(lang){
+  currentLang=lang;
+  localStorage.setItem('lang',lang);
+  if(currentChatId)delete chatChipSets[currentChatId];
+  applyI18n();
+  renderChatList();
+}
+
+function buildEmptyState(){
+  const div=document.createElement('div');div.className='empty';div.id='emptyState';
+  div.innerHTML=`<div class="empty-gem">✦</div><h2 data-i18n="greeting">${t('greeting')}</h2><p data-i18n="greeting_sub">${t('greeting_sub')}</p><div class="empty-chips"></div>`;
+  buildChips(div.querySelector('.empty-chips'));
+  return div;
+}
+function buildChips(container){
+  if(!container)return;container.innerHTML='';
+  const chips=currentChatId?getChipsForChat(currentChatId):(ALL_CHIPS[currentLang]||ALL_CHIPS.ru)[0];
+  chips.forEach(c=>{
+    const d=document.createElement('div');d.className='chip';d.textContent=c;
+    d.onclick=()=>{document.getElementById('inputMsg').value=c;sendMessage()};
+    container.appendChild(d);
+  });
+}
+
+// THEME
+function applyTheme(id){
+  currentTheme=id;localStorage.setItem('theme',id);
+  document.documentElement.setAttribute('data-theme',id==='default'?'':id);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===id));
+}
+function renderThemeGrid(){
+  const g=document.getElementById('themeGrid');g.innerHTML='';
+  THEMES.forEach(th=>{
+    const b=document.createElement('div');b.className='theme-btn'+(th.id===currentTheme?' active':'');
+    b.dataset.theme=th.id;b.onclick=()=>applyTheme(th.id);
+    b.innerHTML=`<div class="theme-swatch" style="background:${th.s}"></div><div class="theme-name">${th.name}</div>`;
+    g.appendChild(b);
+  });
+}
+
+// FONT
+function applyFont(f){
+  currentFont=f;localStorage.setItem('font',f);
+  document.documentElement.style.setProperty('--font',`'${f}',sans-serif`);
+  document.querySelectorAll('.font-btn').forEach(b=>b.classList.toggle('active',b.dataset.font===f));
+}
+function renderFontGrid(){
+  const g=document.getElementById('fontGrid');g.innerHTML='';
+  FONTS.forEach(f=>{
+    const b=document.createElement('div');b.className='font-btn'+(f.id===currentFont?' active':'');
+    b.dataset.font=f.id;b.onclick=()=>applyFont(f.id);
+    b.innerHTML=`<div class="font-name" style="font-family:'${f.id}',sans-serif">${f.label}</div><div class="font-preview" style="font-family:'${f.id}',sans-serif">${f.preview}</div>`;
+    g.appendChild(b);
+  });
+}
+
+// LANG GRID in personalize panel
+function renderLangGrid(){
+  const g=document.getElementById('langGrid');g.innerHTML='';
+  const langs=[
+    {id:'ru',flag:'🇷🇺',label:'Рус'},
+    {id:'en',flag:'🇺🇸',label:'Eng'},
+    {id:'zh',flag:'🇨🇳',label:'中文'},
+    {id:'ko',flag:'🇰🇷',label:'한국어'},
+    {id:'ja',flag:'🇯🇵',label:'日本語'},
+  ];
+  langs.forEach(l=>{
+    const b=document.createElement('div');b.className='lang-btn'+(l.id===currentLang?' active':'');
+    b.dataset.lang=l.id;b.onclick=()=>setLang(l.id);
+    b.innerHTML=`<span class="flag">${l.flag}</span><span>${l.label}</span>`;
+    g.appendChild(b);
+  });
+}
+
+// NAME
+function updateNameBadge(animate=true){
+  const badge=document.getElementById('nameBadge'),txt=document.getElementById('nameBadgeText');
+  if(userName){txt.textContent=userName;badge.classList.remove('hidden')}
+  else badge.classList.add('hidden');
+  if(animate&&userName){badge.style.animation='none';badge.offsetWidth;badge.style.animation='fadeUp .4s ease';setTimeout(()=>badge.style.animation='',500)}
+}
+function saveName(){
+  const val=document.getElementById('nameInput').value.trim();
+  if(!val){showToast(t('toast_enter_name'),'err');return}
+  const old=userName;userName=val;localStorage.setItem('userName',val);localStorage.setItem('nameManual','1');
+  updateNameBadge(true);
+  if(old!==val&&getCurrentHistory().length>0){
+    const h=getCurrentHistory().filter(m=>!m._nameOverride);
+    h.push({role:'system',content:`[Update] User changed name to "${val}". Address them by this name.`,_nameOverride:true});
+    saveHistory(h);
+  }
+  showToast(t('toast_name_saved')+val,'ok');
+}
+function setUserName(name,notify=false){
+  if(localStorage.getItem('nameManual')==='1')return;
+  userName=name;localStorage.setItem('userName',name);
+  document.getElementById('nameInput').value=name;updateNameBadge(true);
+  if(notify){
+    const nt=document.getElementById('nameToast');
+    nt.textContent=t('name_detected')+': '+name+' 👋';
+    nt.classList.add('show');setTimeout(()=>nt.classList.remove('show'),3000);
+  }
+}
+function detectNameFromUser(text){
+  const pp=[/(?:меня зовут|мое имя|моё имя)[:\s]+([А-ЯЁA-Z][а-яёa-zA-Z]{1,20})/i,
+    /(?:my name is|i(?:'m| am| go by))[:\s]+([A-Z][a-z]{1,20})/i,
+    /(?:我叫|我的名字是)[:\s]*([^\s,，！!。.]{1,10})/,
+    /(?:제 이름은)[:\s]*([가-힣]{1,8})/,
+    /(?:私の名前は|僕の名前は)[:\s]*([^\s！!。.]{1,10})/];
+  for(const p of pp){const m=text.match(p);if(m&&m[1])return m[1]}
+  return null;
+}
+
+// FX
+function applyFx(){
+  document.body.classList.toggle('no-fx',!fxEnabled);
+  document.getElementById('fxToggle').classList.toggle('on',fxEnabled);
+  if(fxEnabled)startCanvas();else stopCanvas();
+}
+function toggleFx(){fxEnabled=!fxEnabled;localStorage.setItem('fx',fxEnabled?'1':'0');applyFx()}
+let animId=null;
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+let particles=[];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+class Particle{
+  constructor(){this.reset()}
+  reset(){
+    this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;
+    this.size=Math.random()*1.5+.3;this.speedX=(Math.random()-.5)*.3;this.speedY=(Math.random()-.5)*.3;
+    this.opacity=Math.random()*.5+.1;
+    const cs=getComputedStyle(document.documentElement);
+    this.color=(Math.random()>.5?cs.getPropertyValue('--accent').trim():cs.getPropertyValue('--a2').trim())||'#8b5cf6';
+    this.life=0;this.maxLife=Math.random()*200+100;
+  }
+  update(){this.x+=this.speedX;this.y+=this.speedY;this.life++;
+    if(this.life>this.maxLife||this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.reset()}
+  draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.globalAlpha=this.opacity;ctx.fillStyle=this.color;ctx.fill();ctx.globalAlpha=1}
+}
+function initParticles(){const n=Math.min(80,Math.floor(window.innerWidth*window.innerHeight/12000));particles=Array.from({length:n},()=>new Particle())}
+function animateCanvas(){
+  if(!fxEnabled){animId=null;return}
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.globalAlpha=.08*(1-d/100);ctx.strokeStyle=particles[i].color;ctx.lineWidth=.5;ctx.stroke();ctx.globalAlpha=1}
+    }
+    particles[i].update();particles[i].draw();
+  }
+  animId=requestAnimationFrame(animateCanvas);
+}
+function startCanvas(){resizeCanvas();initParticles();if(!animId)animId=requestAnimationFrame(animateCanvas)}
+function stopCanvas(){if(animId){cancelAnimationFrame(animId);animId=null}ctx.clearRect(0,0,canvas.width,canvas.height)}
+window.addEventListener('resize',()=>{if(fxEnabled){resizeCanvas();initParticles()}});
+
+// SIDEBAR
+function toggleSidebar(){
+  const s=document.getElementById('sidebar');
+  const o=document.getElementById('sidebarOverlay');
+  const isOpen=s.classList.contains('open');
+  if(isOpen){s.classList.remove('open');o.classList.remove('show')}
+  else{s.classList.add('open');o.classList.add('show')}
+}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show')}
+function updateNewChatBtn(){
+  const btn=document.getElementById('newChatBtn');if(!currentChatId)return;
+  const chats=loadChats();const chat=chats[currentChatId];
+  const isEmpty=!chat||!chat.history||chat.history.filter(m=>m.role==='user'||m.role==='assistant').length===0;
+  btn.classList.toggle('disabled',isEmpty);
+}
+
+// CHAT LIST
+function renderChatList(filter=''){
+  const list=document.getElementById('chatList');
+  const chats=loadChats();const order=loadChatOrder();
+  list.innerHTML='';
+  const filtered=order.filter(id=>chats[id]&&(!filter||chats[id].title.toLowerCase().includes(filter.toLowerCase())));
+  if(!filtered.length){list.innerHTML=`<div class="no-chats-text" style="text-align:center;padding:20px;font-size:12px;color:var(--t3)">${t('no_chats')}</div>`;return}
+  const today=new Date();today.setHours(0,0,0,0);
+  const yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);
+  const groups={today:[],yesterday:[],older:[]};
+  filtered.forEach(id=>{
+    const d=new Date(chats[id].updatedAt||chats[id].createdAt||0);d.setHours(0,0,0,0);
+    if(d>=today)groups.today.push(id);else if(d>=yesterday)groups.yesterday.push(id);else groups.older.push(id);
+  });
+  ['today','yesterday','older'].forEach(g=>{
+    if(!groups[g].length)return;
+    const lbl=document.createElement('div');lbl.className='chat-group-label';
+    lbl.textContent=t(g);list.appendChild(lbl);
+    groups[g].forEach(id=>list.appendChild(makeChatItem(id,chats[id])));
+  });
+}
+function makeChatItem(id,chat){
+  const el=document.createElement('div');el.className='chat-item'+(id===currentChatId?' active':'');el.dataset.id=id;
+  el.innerHTML=`<span class="chat-item-icon">💬</span><span class="chat-item-name">${escHtml(chat.title||t('new_chat_title'))}</span><button class="chat-item-del" onclick="deleteChat(event,'${id}')">✕</button>`;
+  el.onclick=(e)=>{
+  if(e.target.classList.contains('chat-item-del'))return;
+  loadChat(id);
+  closeSidebar();
+};
+  return el;
+}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// CHAT MANAGEMENT
+function getCurrentHistory(){if(!currentChatId)return[];return loadChats()[currentChatId]?.history||[]}
+function saveHistory(h){
+  if(!currentChatId)return;const chats=loadChats();
+  if(chats[currentChatId]){chats[currentChatId].history=h;chats[currentChatId].updatedAt=Date.now();saveChats(chats)}
+}
+function newChat(){
+  if(currentChatId){
+    const chats=loadChats();const chat=chats[currentChatId];
+    const isEmpty=!chat||!chat.history||chat.history.filter(m=>m.role==='user'||m.role==='assistant').length===0;
+    if(isEmpty){showToast(t('toast_first_msg'),'err');return}
+  }
+  const id='chat_'+Date.now();const chats=loadChats();
+  chats[id]={id,title:t('new_chat_title'),history:[],createdAt:Date.now(),updatedAt:Date.now()};
+  saveChats(chats);const order=loadChatOrder();order.unshift(id);saveChatOrder(order);
+  loadChat(id);renderChatList();
+}
+function createFirstChat(){
+  const id='chat_'+Date.now();const chats=loadChats();
+  chats[id]={id,title:t('new_chat_title'),history:[],createdAt:Date.now(),updatedAt:Date.now()};
+  saveChats(chats);const order=loadChatOrder();order.unshift(id);saveChatOrder(order);
+  currentChatId=id;saveLastChatId(id);
+  const el=document.getElementById('messages');el.innerHTML='';el.appendChild(buildEmptyState());
+  renderChatList();updateNewChatBtn();
+}
+function loadChat(id){
+  currentChatId=id;saveLastChatId(id);
+  const chats=loadChats();const chat=chats[id];
+  const el=document.getElementById('messages');el.innerHTML='';
+  if(!chat||!chat.history||chat.history.filter(m=>m.role==='user'||m.role==='assistant').length===0){
+    el.appendChild(buildEmptyState());
+  }else{
+    chat.history.filter(m=>m.role==='user'||m.role==='assistant').forEach(m=>{
+      appendMsgRaw(m.role==='user'?'user':'ai',m.content,true);
+    });
+  }
+  document.querySelectorAll('.chat-item').forEach(e=>e.classList.toggle('active',e.dataset.id===id));
+  updateNewChatBtn();scrollBottom();
+}
+function appendMsgRaw(role,content,isHistory=false){
+  const el=document.getElementById('messages');
+  const wrap=document.createElement('div');wrap.className=`msg ${role}${isHistory?' history-msg':''}`;
+  const av=document.createElement('div');av.className='avatar';
+  if(role==='user'){av.textContent=userName?userName[0].toUpperCase():'👤'}
+  else{av.innerHTML='<span class="avatar-star">✦</span>'}
+const bubWrap=document.createElement('div');bubWrap.className='bubble-wrap';
+const bub=document.createElement('div');bub.className='bubble';  
+  if(role==='user'){
+    bub.textContent=content;
+  } else if(content&&content.startsWith('WEATHER_DATA:')){
+    try{const parsed=JSON.parse(content.slice('WEATHER_DATA:'.length));bub.innerHTML=renderWeatherCard(parsed.data,parsed.city);}
+    catch{bub.innerHTML=renderMarkdown(content)}
+  } else if(content&&content.startsWith('WEATHER_NOT_FOUND:')){
+    const city=content.slice('WEATHER_NOT_FOUND:'.length);
+    bub.innerHTML='<span style="color:#f87171">⚠ '+t('weather_city_not_found')+': '+escHtml(city)+'</span>';
+  } else {
+    bub.innerHTML=renderMarkdown(content);
+  }
+const copyBtn=document.createElement('div');copyBtn.className='msg-copy-btn';copyBtn.title='Копировать';copyBtn.textContent='⎘';
+copyBtn.onclick=()=>{
+  const text=bub.innerText||bub.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    copyBtn.textContent='✓';copyBtn.classList.add('copied');
+    setTimeout(()=>{copyBtn.textContent='⎘';copyBtn.classList.remove('copied')},2000);
+  });
+};
+bubWrap.appendChild(bub);bubWrap.appendChild(copyBtn);
+wrap.appendChild(av);wrap.appendChild(bubWrap);el.appendChild(wrap);return bub;
+}
+function deleteChat(e,id){
+  e.stopPropagation();const chats=loadChats();delete chats[id];saveChats(chats);
+  const order=loadChatOrder().filter(x=>x!==id);saveChatOrder(order);
+  if(currentChatId===id){if(order.length)loadChat(order[0]);else{currentChatId=null;createFirstChat()}}
+  renderChatList();
+}
+function clearCurrentChat(){
+  if(!currentChatId){showToast(t('toast_first_msg'),'err');return}
+  const chats=loadChats();
+  if(chats[currentChatId]){chats[currentChatId].history=[];chats[currentChatId].title=t('new_chat_title');saveChats(chats)}
+  loadChat(currentChatId);renderChatList();closeSettings();showToast(t('toast_chat_cleared'),'ok');
+}
+function clearAllChats(){
+  localStorage.removeItem('fx_chats');localStorage.removeItem('fx_chat_order');localStorage.removeItem('fx_last_chat');
+  currentChatId=null;createFirstChat();closeSettings();showToast(t('toast_all_cleared'),'ok');
+}
+async function generateChatTitle(msg){
+  try{
+    const res=await fetch('/api/chat',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:getModel().api,messages:[{role:'user',content:t('title_prompt')+msg}],max_tokens:20,stream:false})
+    });
+    const data=await res.json();const title=data?.choices?.[0]?.message?.content?.trim().slice(0,40);
+    if(title&&title.length>1)return title;
+  }catch{}
+  return msg.slice(0,30)+(msg.length>30?'...':'');
+}
+
+// SETTINGS / MODALS
+function openSettings(){document.getElementById('settingsOverlay').classList.add('open');document.getElementById('settingsPanel').classList.add('open')}
+function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');document.getElementById('settingsPanel').classList.remove('open')}
+function openPersonalize(){
+  renderThemeGrid();renderFontGrid();renderLangGrid();
+  document.getElementById('personalizeOverlay').classList.add('open');
+  document.getElementById('personalizePanel').classList.add('open');
+}
+function closePersonalize(){
+  document.getElementById('personalizeOverlay').classList.remove('open');
+  document.getElementById('personalizePanel').classList.remove('open');
+}
+function openModelModal(){
+  document.getElementById('modelOverlay').classList.add('open');document.getElementById('modelModal').classList.add('open');
+  document.getElementById('modelSearch').value='';document.getElementById('searchClear').classList.remove('visible');
+  renderModelList('');setTimeout(()=>document.getElementById('modelSearch').focus(),300);
+}
+function closeModelModal(){document.getElementById('modelOverlay').classList.remove('open');document.getElementById('modelModal').classList.remove('open')}
+function clearModelSearch(){document.getElementById('modelSearch').value='';document.getElementById('searchClear').classList.remove('visible');renderModelList('');document.getElementById('modelSearch').focus()}
+function filterModels(q){document.getElementById('searchClear').classList.toggle('visible',q.length>0);renderModelList(q.toLowerCase().trim())}
+function renderModelList(q){
+  const list=document.getElementById('modelList');
+  const filtered=q?MODELS.filter(m=>m.name.toLowerCase().includes(q)||m.api.includes(q)):MODELS;
+  list.innerHTML='';
+  if(!filtered.length){list.innerHTML='<div class="mm-empty">🔍 Ничего не найдено</div>';return}
+  filtered.forEach(m=>{
+    const el=document.createElement('div');el.className='mm-item'+(m.id===currentModelId?' active':'');
+    el.innerHTML=`<div class="mm-icon">${m.badge}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-desc">${m.desc}</div><div class="mm-preset">${m.api}</div></div><div class="mm-check">${m.id===currentModelId?'✓':''}</div>`;
+    el.onclick=()=>selectModel(m.id);list.appendChild(el);
+  });
+}
+function selectModel(id){
+  const prev=getModel();currentModelId=id;localStorage.setItem('modelId',id);
+  const m=getModel();
+  document.getElementById('modelPill').textContent=m.badge+' '+m.name;
+  document.getElementById('modelBtnIcon').textContent=m.badge;
+  document.getElementById('modelBtnName').textContent=m.name;
+  document.getElementById('modelBtnSub').textContent=m.api;
+  renderModelList(document.getElementById('modelSearch').value.toLowerCase());
+  if(prev.id!==id){
+    const el=document.getElementById('messages');
+    if(!el.querySelector('.empty')){
+      const div=document.createElement('div');div.className='model-notify';
+      div.innerHTML=`🔄 <span class="old-m">${escHtml(prev.name)}</span> <span class="arrow">→</span> <span class="new-m">${escHtml(m.name)}</span>`;
+      el.appendChild(div);scrollBottom();
+    }
+  }
+  setTimeout(closeModelModal,200);
+}
+
+// CODE PANEL
+function openCodePanel(cid,lang,filename){
+  if(window.innerWidth<=700){showToast(t('toast_code_mobile'),'err');return}
+  const code=codeStore.get(cid)||document.getElementById(cid)?.innerText||'';
+  document.getElementById('codePanelTitle').textContent=filename||`code.${lang}`;
+  document.getElementById('codePanelBody').innerHTML=`<pre>${syntaxHighlight(escHtml(code),lang)}</pre>`;
+  document.getElementById('codePanel').classList.add('open');
+  document.getElementById('codePanelOverlay').classList.add('open');
+}
+function closeCodePanel(){document.getElementById('codePanel').classList.remove('open');document.getElementById('codePanelOverlay').classList.remove('open')}
+
+// WEATHER
+const WEATHER_ICONS={clear:'☀️',clouds:'☁️',rain:'🌧️',drizzle:'🌦️',thunderstorm:'⛈️',snow:'❄️',mist:'🌫️',haze:'🌫️',fog:'🌫️',smoke:'🌫️',dust:'💨',sand:'💨',tornado:'🌪️'};
+function getWeatherIcon(main){return WEATHER_ICONS[(main||'').toLowerCase()]||'🌡️'}
+
+async function fetchWeather(city){
+  const geo=await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${WEATHER_API_KEY}`).then(r=>r.json());
+  if(!geo||!geo.length)return null;
+  const{lat,lon,name,country}=geo[0];
+  const forecast=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&lang=ru`).then(r=>r.json());
+  if(!forecast||!forecast.list)return null;
+  return{name,country,lat,lon,list:forecast.list};
+}
+
+function groupForecastByDay(list){
+  const days={};
+  list.forEach(item=>{
+    const d=item.dt_txt.split(' ')[0];
+    if(!days[d])days[d]=[];
+    days[d].push(item);
+  });
+  return days;
+}
+
+function toggleHourlyPeriods(cardId, day) {
+  const blockId = cardId + '_periods_' + day;
+  const btnId   = cardId + '_btn_' + day;
+  const block = document.getElementById(blockId);
+  const btn   = document.getElementById(btnId);
+  if (!block || !btn) return;
+  const isOpen = block.classList.contains('show');
+  block.classList.toggle('show', !isOpen);
+  btn.textContent = isOpen ? '🕐 Подробнее по часам ▾' : '🕐 Скрыть ▴';
+}
+
+function renderWeatherCard(data, city) {
+  const now = new Date();
+  const days = groupForecastByDay(data.list);
+  const dayKeys = Object.keys(days).sort();
+
+  function getClosest(items) {
+    return items.reduce((a, b) =>
+      Math.abs(new Date(a.dt_txt) - now) < Math.abs(new Date(b.dt_txt) - now) ? a : b
+    );
+  }
+
+  function renderDay(items) {
+    const item = getClosest(items);
+    const mainIcon = getWeatherIcon(item.weather[0].main);
+    const desc = item.weather[0].description;
+    const temps = items.map(i => i.main.temp);
+    const minT = Math.round(Math.min(...temps));
+    const maxT = Math.round(Math.max(...temps));
+    const humidity = item.main.humidity;
+    const wind = item.wind.speed.toFixed(1);
+    const feels = Math.round(item.main.feels_like);
+    const pressure = Math.round(item.main.pressure * 0.750064);
+    return { item, mainIcon, desc, minT, maxT, humidity, wind, feels, pressure };
+  }
+
+  function buildWeekHTML(days, dayKeys) {
+    const wdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    let html = '';
+    dayKeys.forEach(k => {
+      const items = days[k];
+      const item = getClosest(items);
+      const icon = getWeatherIcon(item.weather[0].main);
+      const d = new Date(k + 'T12:00:00');
+      const dayName = wdays[d.getDay()];
+      const temps = items.map(i => i.main.temp);
+      const minT = Math.round(Math.min(...temps));
+      const maxT = Math.round(Math.max(...temps));
+      const desc = item.weather[0].description;
+      html += `<div class="forecast-row"><div class="forecast-day">${dayName} ${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</div><div class="forecast-icon">${icon}</div><div class="forecast-desc">${desc}</div><div class="forecast-temps">${maxT}° / ${minT}°</div></div>`;
+    });
+    return html;
+  }
+
+  // Build periods (morning/day/evening/night) for a given day's items
+  function buildPeriodsHTML(items) {
+    const periods = [
+      { label: '🌅 Утро',   hours: [6,  7,  8,  9]  },
+      { label: '☀️ День',   hours: [12, 13, 14, 15] },
+      { label: '🌆 Вечер',  hours: [18, 19, 20, 21] },
+      { label: '🌙 Ночь',   hours: [0,  1,  2,  3]  },
+    ];
+    let html = '';
+    periods.forEach(p => {
+      // Find item closest to period hours
+      let best = null, bestDiff = Infinity;
+      items.forEach(item => {
+        const h = new Date(item.dt_txt).getHours();
+        p.hours.forEach(ph => {
+          const diff = Math.abs(h - ph);
+          if (diff < bestDiff) { bestDiff = diff; best = item; }
+        });
+      });
+      if (!best) return;
+      const icon = getWeatherIcon(best.weather[0].main);
+      const temp = Math.round(best.main.temp);
+      const desc = best.weather[0].description;
+      html += `<div class="weather-period-row">
+        <div class="weather-period-label">${p.label}</div>
+        <div class="weather-period-icon">${icon}</div>
+        <div class="weather-period-temp">${temp}°C</div>
+        <div class="weather-period-desc">${desc}</div>
+      </div>`;
+    });
+    return html;
+  }
+
+  const todayItems    = days[dayKeys[0]] || data.list.slice(0, 8);
+  const tomorrowItems = days[dayKeys[1]] || data.list.slice(8, 16);
+  const todayD    = renderDay(todayItems);
+  const tomorrowD = renderDay(tomorrowItems);
+
+  const cardId = 'wc_' + Date.now();
+  const cityDisplay = `${data.name || city}${data.country ? ', ' + data.country : ''}`;
+
+  const todayPeriodsHTML    = buildPeriodsHTML(todayItems);
+  const tomorrowPeriodsHTML = buildPeriodsHTML(tomorrowItems);
+
+  const html = `
+<div class="weather-card" id="${cardId}">
+  <div class="weather-city">📍 ${escHtml(cityDisplay)}</div>
+  <div id="${cardId}_content">
+    <div class="weather-main">
+      <div class="weather-icon">${todayD.mainIcon}</div>
+      <div>
+        <div class="weather-temp">${Math.round(todayD.item.main.temp)}°C</div>
+        <div class="weather-desc">${todayD.desc}</div>
+      </div>
+    </div>
+    <div class="weather-details">
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_humidity')}</div><div class="weather-detail-val">${todayD.humidity}%</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_wind')}</div><div class="weather-detail-val">${todayD.wind} м/с</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${todayD.feels}°C</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${todayD.pressure} мм</div></div>
+    </div>
+    <div class="weather-periods" id="${cardId}_periods_today">${todayPeriodsHTML}</div>
+    <button class="weather-detail-btn" id="${cardId}_btn_today" onclick="toggleHourlyPeriods('${cardId}','today')">🕐 Подробнее по часам ▾</button>
+  </div>
+  <div id="${cardId}_week_content" style="display:none">
+    <div class="weather-forecast show">${buildWeekHTML(days, dayKeys)}</div>
+  </div>
+  <div id="${cardId}_tomorrow_content" style="display:none">
+    <div class="weather-main">
+      <div class="weather-icon">${tomorrowD.mainIcon}</div>
+      <div>
+        <div class="weather-temp">${tomorrowD.maxT}° / ${tomorrowD.minT}°</div>
+        <div class="weather-desc">${tomorrowD.desc}</div>
+      </div>
+    </div>
+    <div class="weather-details">
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_humidity')}</div><div class="weather-detail-val">${tomorrowD.humidity}%</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_wind')}</div><div class="weather-detail-val">${tomorrowD.wind} м/с</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_feels')}</div><div class="weather-detail-val">${tomorrowD.feels}°C</div></div>
+      <div class="weather-detail"><div class="weather-detail-label">${t('weather_pressure')}</div><div class="weather-detail-val">${tomorrowD.pressure} мм</div></div>
+    </div>
+    <div class="weather-periods" id="${cardId}_periods_tomorrow">${tomorrowPeriodsHTML}</div>
+    <button class="weather-detail-btn" id="${cardId}_btn_tomorrow" onclick="toggleHourlyPeriods('${cardId}','tomorrow')">🕐 Подробнее по часам ▾</button>
+  </div>
+  <div class="weather-tabs">
+    <div class="weather-tab active" id="${cardId}_tab_today" onclick="switchWeatherTab('${cardId}','today')">${t('weather_today')}</div>
+    <div class="weather-tab" id="${cardId}_tab_tomorrow" onclick="switchWeatherTab('${cardId}','tomorrow')">${t('weather_tomorrow')}</div>
+    <div class="weather-tab" id="${cardId}_tab_week" onclick="switchWeatherTab('${cardId}','week')">${t('weather_week')}</div>
+  </div>
+</div>`;
+  return html;
+}
+
+function switchWeatherTab(cardId, tab){
+  ['today','tomorrow','week'].forEach(t=>{
+    document.getElementById(`${cardId}_tab_${t}`)?.classList.toggle('active',t===tab);
+  });
+  document.getElementById(`${cardId}_content`).style.display=tab==='today'?'':'none';
+  document.getElementById(`${cardId}_tomorrow_content`).style.display=tab==='tomorrow'?'':'none';
+  document.getElementById(`${cardId}_week_content`).style.display=tab==='week'?'':'none';
+}
+
+function detectWeatherQuery(text){
+  const patterns=[
+    /погода(?:\s+в)?\s+([а-яёА-ЯЁa-zA-Z\s-]{2,30})/i,
+    /weather(?:\s+in)?\s+([a-zA-Z\s-]{2,30})/i,
+    /天气[在]?\s*([^\s，。！?]{2,10})/,
+    /날씨[는이]?\s*([가-힣a-zA-Z]{2,15})/,
+    /天気[は]?\s*([^\s。！?]{2,10})/,
+  ];
+  for(const p of patterns){
+    const m=text.match(p);
+    if(m&&m[1]){
+      return m[1].trim().replace(/[?!。！]/g,'');
+    }
+  }
+  return null;
+}
+
+// SEND
+const chatWrapEl=document.getElementById('chatWrap');
+const messagesEl=document.getElementById('messages');
+const inputEl=document.getElementById('inputMsg');
+const sendBtnEl=document.getElementById('sendBtn');
+const stopBtnEl=document.getElementById('stopBtn');
+
+function scrollBottom(){setTimeout(()=>chatWrapEl.scrollTop=chatWrapEl.scrollHeight,40)}
+function hideEmpty(){const e=document.getElementById('emptyState');if(e)e.remove()}
+function appendMsg(role,content){hideEmpty();return appendMsgRaw(role,content,false)}
+function appendTyping(){
+  hideEmpty();
+  const wrap=document.createElement('div');wrap.className='msg ai';wrap.id='typingWrap';
+  const av=document.createElement('div');av.className='avatar';av.innerHTML='<span class="avatar-star">✦</span>';
+  const bub=document.createElement('div');bub.className='bubble';
+  bub.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
+  wrap.appendChild(av);wrap.appendChild(bub);messagesEl.appendChild(wrap);scrollBottom();
+}
+function removeTyping(){const t=document.getElementById('typingWrap');if(t)t.remove()}
+function appendErr(msg){
+  hideEmpty();const wrap=document.createElement('div');wrap.className='msg ai';
+  const av=document.createElement('div');av.className='avatar';av.innerHTML='<span class="avatar-star">✦</span>';
+  const e=document.createElement('div');e.className='err-bubble';e.textContent='⚠ '+msg;
+  wrap.appendChild(av);wrap.appendChild(e);messagesEl.appendChild(wrap);scrollBottom();
+}
+function setLoadingState(loading){
+  isLoading=loading;
+  sendBtnEl.disabled=loading;
+  // Stop btn replaces send btn
+  stopBtnEl.classList.toggle('hidden',!loading);
+  sendBtnEl.classList.toggle('hidden',loading);
+  const hint=document.getElementById('inputHint');
+  if(hint){hint.textContent=loading?t('stop_hint'):t('input_hint');hint.classList.toggle('warn',loading)}
+  inputEl.placeholder=loading?t('writing'):t('input_placeholder');
+}
+function stopGeneration(){if(abortCtrl){abortCtrl.abort();abortCtrl=null}}
+function buildSystemPrompt(){
+  let p=t('system_lang')+'\n';
+  if(userName)p+=`Имя пользователя: ${userName}. Обращайся к нему по имени.\n`;
+  // Tell AI to use special weather command syntax
+  p+=`\nIf the user asks about weather in a city, respond with ONLY: WEATHER:cityname\nDo not add any other text, just WEATHER:cityname.`;
+  return p.trim();
+}
+inputEl.addEventListener('input',()=>{inputEl.style.height='auto';inputEl.style.height=Math.min(inputEl.scrollHeight,140)+'px'});
+inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+
+async function sendMessage(){
+  const text=inputEl.value.trim();
+  if(!text||isLoading)return;
+  if(!currentChatId)createFirstChat();
+  const dn=detectNameFromUser(text);if(dn){localStorage.removeItem('nameManual');setUserName(dn,true)}
+  setLoadingState(true);inputEl.value='';inputEl.style.height='auto';
+
+  const thisChatId=currentChatId;
+  appendMsg('user',text);
+  const history=getCurrentHistory();history.push({role:'user',content:text});saveHistory(history);
+  const chats=loadChats();
+  if(chats[thisChatId]&&(chats[thisChatId].title===t('new_chat_title')||chats[thisChatId].title==='Новый чат'||chats[thisChatId].title==='New Chat'||chats[thisChatId].title==='新对话'||chats[thisChatId].title==='새 채팅'||chats[thisChatId].title==='新しいチャット')&&history.filter(m=>m.role==='user').length===1){
+    generateChatTitle(text).then(title=>{const c=loadChats();if(c[thisChatId]){c[thisChatId].title=title;saveChats(c);renderChatList()}});
+  }
+  appendTyping();updateNewChatBtn();
+
+  const systemPrompt=buildSystemPrompt();
+  const cleanHistory=history.map(m=>{
+    if(m._nameOverride)return{role:'system',content:m.content};
+    return{role:m.role,content:m.content};
+  }).filter(m=>['user','assistant','system'].includes(m.role));
+  const messages=[{role:'system',content:systemPrompt},...cleanHistory];
+  abortCtrl=new AbortController();
+  let stopped=false;
+
+  try{
+const res=await fetch('/api/chat',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({model:getModel().api,messages,stream:true}),
+  signal:abortCtrl.signal
+});
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
+    removeTyping();
+
+    const isActiveDom=(currentChatId===thisChatId);
+    if(isActiveDom)hideEmpty();
+
+    const wrap=document.createElement('div');wrap.className='msg ai';
+    const av=document.createElement('div');av.className='avatar spinning';av.innerHTML='<span class="avatar-star">✦</span>';
+
+    const thinkId='tk_'+Date.now();
+    const thinkDetails=document.createElement('details');
+    thinkDetails.className='thinking-block';thinkDetails.open=false;
+    thinkDetails.innerHTML=`<summary class="thinking-summary"><div class="thinking-spinner"></div><div class="thinking-check">✓</div><div class="thinking-stopped-icon">■</div><span class="thinking-label">${t('thinking')}</span><span class="thinking-toggle-icon">›</span></summary><div class="thinking-content" id="${thinkId}"></div>`;
+    const thinkContent=thinkDetails.querySelector(`#${thinkId}`);
+
+    const bub=document.createElement('div');bub.className='bubble';bub.style.display='none';
+    const col=document.createElement('div');col.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;gap:6px';
+    col.appendChild(thinkDetails);col.appendChild(bub);
+    wrap.appendChild(av);wrap.appendChild(col);
+
+    if(isActiveDom){messagesEl.appendChild(wrap);scrollBottom();}
+
+    let full='';
+    const reader=res.body.getReader();const dec=new TextDecoder();
+
+    try{
+      while(true){
+        const{done,value}=await reader.read();if(done)break;
+        const lines=dec.decode(value,{stream:true}).split('\n');
+        for(const line of lines){
+          if(!line.startsWith('data: '))continue;
+          const data=line.slice(6).trim();if(data==='[DONE]')break;
+          try{
+            const delta=JSON.parse(data)?.choices?.[0]?.delta?.content||'';
+            if(delta){full+=delta;thinkContent.textContent=full;thinkContent.scrollTop=thinkContent.scrollHeight;scrollBottom()}
+          }catch{}
+        }
+      }
+    }catch(readErr){
+      if(readErr.name==='AbortError'){stopped=true;}
+      else throw readErr;
+    }
+
+    av.classList.remove('spinning');
+
+    if(stopped){
+      // Show stopped state
+      thinkDetails.classList.add('stopped');thinkDetails.open=false;
+      thinkDetails.querySelector('.thinking-label').textContent=t('thinking_stopped');
+      bub.style.display='';
+      if(full.trim()){
+        bub.innerHTML=renderMarkdown(full);
+      }else{
+        bub.innerHTML=`<span style="color:var(--t3);font-size:12px">■ ${t('thinking_stopped')}</span>`;
+      }
+    } else {
+      // Check if the full response is a weather command
+      const weatherMatch=full.trim().match(/^WEATHER:(.+)$/i);
+      if(weatherMatch){
+        const cityName=weatherMatch[1].trim();
+        thinkDetails.classList.add('done');thinkDetails.open=false;
+        thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');
+        bub.style.display='';
+        bub.innerHTML=`<span style="color:var(--t2);font-size:12px">🌡️ ${t('weather_loading')}</span>`;
+        scrollBottom();
+        // Fetch weather
+        fetchWeather(cityName).then(data=>{
+          if(!data){
+            bub.innerHTML=`<span style="color:#f87171">⚠ ${t('weather_city_not_found')}: ${escHtml(cityName)}</span>`;
+            // Save error message
+            const chatsNow=loadChats();
+            if(chatsNow[thisChatId]){
+              const h2=chatsNow[thisChatId].history||[];
+              h2.push({role:'assistant',content:`WEATHER_NOT_FOUND:${cityName}`});
+              chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();
+              saveChats(chatsNow);
+            }
+          } else {
+            bub.innerHTML=renderWeatherCard(data,cityName);
+            // Save full weather data as JSON for re-render on reload
+            const chatsNow=loadChats();
+            if(chatsNow[thisChatId]){
+              const h2=chatsNow[thisChatId].history||[];
+              h2.push({role:'assistant',content:`WEATHER_DATA:${JSON.stringify({city:cityName,data:{name:data.name,country:data.country,list:data.list}})}`});
+              chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();
+              saveChats(chatsNow);
+            }
+          }
+          renderChatList();
+          scrollBottom();
+        }).catch(()=>{
+          bub.innerHTML=`<span style="color:#f87171">⚠ ${t('weather_error')}</span>`;
+        });
+        return;
+      }
+
+      thinkDetails.classList.add('done');thinkDetails.open=false;
+      thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');
+      bub.style.display='';bub.innerHTML=renderMarkdown(full);
+    }
+
+    scrollBottom();
+
+    // Save
+    if(!stopped||full.trim()){
+      const chatsNow=loadChats();
+      if(chatsNow[thisChatId]){
+        const h2=chatsNow[thisChatId].history||[];
+        h2.push({role:'assistant',content:full});
+        chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();
+        saveChats(chatsNow);
+      }
+    }
+    renderChatList();
+
+  }catch(err){
+    removeTyping();
+    if(err.name!=='AbortError')appendErr(err.message||'Unknown error');
+  }finally{
+    abortCtrl=null;setLoadingState(false);inputEl.focus();updateNewChatBtn();
+    if(currentChatId===thisChatId){
+      // reload only if needed (e.g. user switched away and back)
+    }
+  }
+}
+
+// MARKDOWN
+const LARGE_LINES=100;
+function renderMarkdown(text){
+  const blocks=[];
+  let html=text.replace(/```([\w-]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
+    const idx=blocks.length;blocks.push({lang:lang.trim()||'code',code:code.trimEnd()});return`%%CB_${idx}%%`;
+  });
+// Extract tables before escaping HTML
+  const tablePlaceholders=[];
+  html=parseTables(html).replace(/<div class="md-table-wrap">[\s\S]*?<\/div>/g,match=>{
+    const idx=tablePlaceholders.length;
+    tablePlaceholders.push(match);
+    return`%%TABLE_${idx}%%`;
+  });
+
+  html=html
+
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/`([^`\n]+)`/g,'<code>$1</code>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>')
+    .replace(/(?<!\w)\*([^*\n]+)\*(?!\w)/g,'<em>$1</em>').replace(/(?<!\w)_([^_\n]+)_(?!\w)/g,'<em>$1</em>')
+    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---+$/gm,'<hr>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g,'<br>');
+  html=html.replace(/<(pre|ul|ol|h[123]|blockquote|hr|div)([^>]*)><br>/g,'<$1$2>').replace(/<br><\/(pre|ul|ol|h[123]|blockquote|div)>/g,'</$1>');
+  html=html.replace(/%%CB_(\d+)%%/g,(_,i)=>{
+    const{lang,code}=blocks[i];
+    const lines=code.split('\n').length;
+    const esc=escHtml(code);const hi=syntaxHighlight(esc,lang);
+    const id='cb_'+Date.now()+'_'+i;
+    codeStore.set(id,code);
+    const lbl=lang&&lang!=='code'?lang.toUpperCase():'CODE';
+    const ext=langToExt(lang);
+    const canRun=['javascript','js','html','python','py'].includes(lang.toLowerCase());
+    const runBtn=canRun?`<button class="code-run-btn" onclick="runCode('${id}','${lang.toLowerCase()}')">${t('code_run')}</button>`:'';
+    if(lines>=LARGE_LINES){
+      const prevLines=code.split('\n').slice(0,4).map(escHtml).join('\n');
+      return`<div class="large-code-block"><div class="large-code-header"><span class="code-lang">&lt;/&gt; ${lbl}</span><div class="code-actions">${runBtn}<button class="code-view-btn" onclick="openCodePanel('${id}','${lang}','code.${ext}')">${t('code_open')}</button><button class="code-dl-btn" onclick="downloadCode('${id}','${ext}')">${t('code_dl')}</button><button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">${t('code_copy')}</button></div></div><div class="large-code-preview" onclick="openCodePanel('${id}','${lang}','code.${ext}')">${prevLines}</div><div class="large-code-note">📄 ${lines}${t('code_lines')}</div><code id="${id}" style="display:none">${hi}</code></div>`;
+    }
+    return`<pre><div class="code-header"><span class="code-lang">&lt;/&gt; ${lbl}</span><div class="code-actions">${runBtn}<button class="code-dl-btn" onclick="downloadCode('${id}','${ext}')">${t('code_dl')}</button><button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">${t('code_copy')}</button></div></div><code id="${id}">${hi}</code></pre>`;
+  });
+// Restore tables
+  tablePlaceholders.forEach((t,i)=>{html=html.replace(`%%TABLE_${i}%%`,t)});
+  return html;
+}
+
+function parseTables(text){
+  return text.replace(/(?:^|\n)((?:\|[^\n]+\|\n?){2,})/gm,(match,tableBlock)=>{
+    const rows=tableBlock.trim().split('\n').filter(r=>r.trim()&&r.trim()!=='');
+    if(rows.length<3)return match;
+    const isSep=r=>/^\|[\s\-:|]+\|$/.test(r.trim());
+    if(!isSep(rows[1]))return match;
+    const parseRow=r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+    const headers=parseRow(rows[0]);
+    const body=rows.slice(2).filter(r=>!isSep(r)).map(parseRow);
+    const ths=headers.map(h=>`<th>${h}</th>`).join('');
+    const trs=body.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+    return`\n<div class="md-table-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>\n`;
+  });
+}
+
+function langToExt(lang){
+  const m={js:'js',javascript:'js',ts:'ts',typescript:'ts',python:'py',py:'py',html:'html',css:'css',java:'java',c:'c',cpp:'cpp',go:'go',rust:'rs',php:'php',swift:'swift',kotlin:'kt',bash:'sh',shell:'sh',sh:'sh',sql:'sql',json:'json',yaml:'yml',yml:'yml',xml:'xml',markdown:'md',md:'md'};
+  return m[(lang||'').toLowerCase()]||'txt';
+}
+function syntaxHighlight(code,lang){
+  const l=(lang||'').toLowerCase();
+  if(!['js','javascript','ts','python','py','java','c','cpp','go','rust','php','swift','kotlin'].includes(l))return code;
+  const KW=new Set(['function','def','class','return','if','else','elif','for','while','import','from','const','let','var','async','await','try','catch','finally','new','this','self','in','of','true','false','null','None','True','False','undefined','void','public','private','static','export','default','extends','typeof','instanceof','delete','throw','break','continue','switch','case','yield','super']);
+  let result='',i=0;
+  while(i<code.length){
+    // line comment
+    if((code[i]==='/'&&code[i+1]==='/')||(code[i]==='#'&&(l==='py'||l==='python'))){
+      let j=code.indexOf('\n',i);j=j===-1?code.length:j;
+      result+='<span class="tok-cmt">'+code.slice(i,j)+'</span>';i=j;continue;
+    }
+    // block comment /* */
+    if(code[i]==='/'&&code[i+1]==='*'){
+      let j=code.indexOf('*/',i+2);j=j===-1?code.length:j+2;
+      result+='<span class="tok-cmt">'+code.slice(i,j)+'</span>';i=j;continue;
+    }
+    // string
+    if(code[i]==='\''||code[i]==='"'||code[i]==='`'){
+      const q=code[i];let j=i+1;
+      while(j<code.length&&code[j]!==q){if(code[j]==='\\')j++;j++;}
+      j++;result+='<span class="tok-str">'+code.slice(i,j)+'</span>';i=j;continue;
+    }
+    // number
+    if(code[i]>='0'&&code[i]<='9'){
+      let j=i;while(j<code.length&&((code[j]>='0'&&code[j]<='9')||code[j]==='.'))j++;
+      result+='<span class="tok-num">'+code.slice(i,j)+'</span>';i=j;continue;
+    }
+    // identifier / keyword
+    if(/[a-zA-Z_$]/.test(code[i])){
+      let j=i;while(j<code.length&&/[a-zA-Z0-9_$]/.test(code[j]))j++;
+      const word=code.slice(i,j);
+      let k=j;while(k<code.length&&(code[k]===' '||code[k]==='\t'))k++;
+      if(KW.has(word))result+='<span class="tok-kw">'+word+'</span>';
+      else if(/^[A-Z]/.test(word))result+='<span class="tok-cls">'+word+'</span>';
+      else if(code[k]==='(')result+='<span class="tok-fn">'+word+'</span>';
+      else result+=word;
+      i=j;continue;
+    }
+    result+=code[i];i++;
+  }
+  return result;
+}
+
+function copyCodeById(cid,bid){
+  const el=document.getElementById(cid);if(!el)return;
+  navigator.clipboard.writeText(el.innerText||el.textContent).then(()=>{
+    const btn=document.getElementById(bid);
+    if(btn){btn.textContent=t('code_copied');btn.classList.add('copied');setTimeout(()=>{btn.textContent=t('code_copy');btn.classList.remove('copied')},2000)}
+  });
+}
+function downloadCode(cid,ext){
+  const code=codeStore.get(cid)||document.getElementById(cid)?.innerText||document.getElementById(cid)?.textContent||'';
+  const blob=new Blob([code],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`code.${ext}`;a.click();URL.revokeObjectURL(a.href);
+}
+function runCode(cid,lang){
+  const el=document.getElementById(cid);if(!el)return;const code=el.innerText;
+  if(lang==='html'){const w=window.open('','_blank','width=800,height=600');w.document.write(code);w.document.close();return}
+  if(lang==='javascript'||lang==='js'){
+    const modal=document.createElement('div');
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px';
+    const box=document.createElement('div');
+    box.style.cssText='background:#0a0a14;border:1px solid #2a2a45;border-radius:16px;width:100%;max-width:600px;overflow:hidden;display:flex;flex-direction:column;max-height:80vh';
+    box.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a45;font-family:var(--font);font-size:13px;font-weight:700;color:#f0f0ff">${t('js_output_title')} <span onclick="this.closest('[style*=position:fixed]').remove()" style="cursor:pointer;color:#9090b8;font-size:18px">✕</span></div><div id="jsout_${cid}" style="padding:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f0;flex:1;overflow-y:auto;min-height:80px;white-space:pre-wrap"></div>`;
+    modal.appendChild(box);modal.onclick=e=>{if(e.target===modal)modal.remove()};document.body.appendChild(modal);
+    const out=document.getElementById('jsout_'+cid);const orig=console.log;const logs=[];
+    console.log=(...a)=>{logs.push(a.map(x=>typeof x==='object'?JSON.stringify(x,null,2):String(x)).join(' '));out.textContent=logs.join('\n');orig(...a)};
+    try{eval(code)}catch(e){out.innerHTML+='<span style="color:#f87171">Error: '+e.message+'</span>'}
+    console.log=orig;return;
+  }
+  showToast(t('toast_run_unsupported')+' '+lang,'err');
+}
+
+// TOAST
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',2500);
+}
+
+// INIT
+function init(){
+  applyFont(currentFont);renderFontGrid();
+  applyTheme(currentTheme);renderThemeGrid();
+  renderLangGrid();
+  applyI18n();
+  if(userName)document.getElementById('nameInput').value=userName;
+  updateNameBadge(false);
+  const m=getModel();
+  document.getElementById('modelPill').textContent=m.badge+' '+m.name;
+  document.getElementById('modelBtnIcon').textContent=m.badge;
+  document.getElementById('modelBtnName').textContent=m.name;
+  document.getElementById('modelBtnSub').textContent=m.api;
+  applyFx();
+  if(window.innerWidth<=700)document.querySelector('.sidebar-toggle').style.display='flex';
+  const order=loadChatOrder();const lastId=loadLastChatId();
+  if(order.length){const tid=(lastId&&order.includes(lastId))?lastId:order[0];loadChat(tid)}
+  else createFirstChat();
+  renderChatList();
+}
+setTimeout(() => {
+  document.getElementById('splash-text').classList.add('visible');
+}, 400);
+
+setTimeout(() => {
+  document.getElementById('splash').classList.add('fade-out');
+  setTimeout(() => document.getElementById('splash').remove(), 650);
+}, 1800);
+
+init();
+</script>
+</body>
+</html>
