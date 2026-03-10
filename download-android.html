@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FernieX-AI для Android — Скачать APK</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --border: rgba(52,211,153,0.12);
+    --accent: #34d399;
+    --accent2: #10b981;
+    --accent3: #6ee7b7;
+    --text: #e8f0ff;
+    --text2: #8899bb;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 70% 20%, rgba(52,211,153,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(16,185,129,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+  nav {
+    display: flex; align-items: center; gap: 16px;
+    padding: 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 60px;
+  }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text2); font-size: 14px; font-weight: 400;
+    text-decoration: none; padding: 8px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+  }
+  .back-btn:hover { color: var(--text); background: rgba(255,255,255,0.07); transform: translateX(-3px); }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-left: auto;
+  }
+
+  .app-hero {
+    display: flex; gap: 40px; align-items: flex-start;
+    margin-bottom: 48px; animation: fadeInUp 0.7s ease both;
+  }
+
+  .app-icon-wrap {
+    width: 110px; height: 110px; border-radius: 28px; flex-shrink: 0;
+    background: linear-gradient(135deg, #0d2b1f, #071a12);
+    border: 1px solid rgba(52,211,153,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    box-shadow: 0 16px 48px rgba(52,211,153,0.15);
+  }
+
+  .app-meta h1 {
+    font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800;
+    letter-spacing: -1px; margin-bottom: 8px;
+  }
+
+  .version-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25);
+    color: var(--accent); font-size: 12px; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 14px;
+  }
+
+  .tagline { font-size: 16px; color: var(--text2); line-height: 1.6; font-weight: 300; max-width: 500px; }
+
+  /* WARNING BANNER */
+  .apk-warn {
+    background: rgba(251,191,36,0.07);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 16px; padding: 16px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 28px; animation: fadeInUp 0.7s ease both 0.05s;
+  }
+  .warn-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .warn-text { font-size: 13px; color: #fbbf24; line-height: 1.6; font-weight: 300; }
+  .warn-text strong { font-weight: 500; }
+
+  .download-box {
+    background: linear-gradient(145deg, #0b1e15 0%, #07120e 100%);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 24px; padding: 32px;
+    margin-bottom: 32px;
+    animation: fadeInUp 0.7s ease both 0.1s;
+  }
+
+  .download-box-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+
+  .file-info { display: flex; align-items: center; gap: 16px; }
+  .file-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .file-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+  .file-ext { font-size: 12px; color: var(--text2); }
+
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--accent2), #059669);
+    color: white; font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500; padding: 14px 32px;
+    border-radius: 14px; border: none; cursor: pointer; text-decoration: none;
+    box-shadow: 0 8px 24px rgba(52,211,153,0.3);
+    transition: all 0.3s; white-space: nowrap;
+  }
+  .dl-btn:hover { box-shadow: 0 12px 36px rgba(52,211,153,0.45); transform: translateY(-2px); }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 2px;
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  }
+
+  .stat-item {
+    padding: 18px 20px; background: rgba(255,255,255,0.02);
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; }
+
+  .section-card {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px 32px; margin-bottom: 20px;
+    animation: fadeInUp 0.7s ease both 0.2s;
+  }
+  .section-card h3 {
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+    color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+  .section-card p { font-size: 15px; color: var(--text2); line-height: 1.75; font-weight: 300; }
+
+  /* INSTALL STEPS */
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+    background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    color: var(--accent);
+  }
+  .step-body .step-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .step-body .step-desc { font-size: 13px; color: var(--text2); font-weight: 300; line-height: 1.5; }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .feat-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 16px 18px; background: rgba(52,211,153,0.04);
+    border: 1px solid rgba(52,211,153,0.1); border-radius: 14px;
+  }
+  .feat-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .feat-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .feat-desc { font-size: 12px; color: var(--text2); font-weight: 300; line-height: 1.4; }
+
+  .req-list { display: flex; flex-direction: column; gap: 10px; }
+  .req-row { display: flex; gap: 16px; font-size: 14px; }
+  .req-key { color: var(--text2); font-weight: 300; min-width: 140px; }
+  .req-val { color: var(--text); font-weight: 400; }
+
+  .changelog-item { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+  .changelog-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    margin-top: 6px; flex-shrink: 0; box-shadow: 0 0 8px rgba(52,211,153,0.5);
+  }
+  .changelog-text { font-size: 14px; color: var(--text2); font-weight: 300; line-height: 1.5; }
+  .changelog-text strong { color: var(--text); font-weight: 500; }
+
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 640px) {
+    .app-hero { flex-direction: column; }
+    .app-icon-wrap { width: 80px; height: 80px; font-size: 36px; border-radius: 20px; }
+    .app-meta h1 { font-size: 28px; }
+    .download-box-header { flex-direction: column; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <nav>
+    <a href="index.html" class="back-btn">← Назад</a>
+    <div class="nav-logo">FernieX-AI</div>
+  </nav>
+
+  <div class="app-hero">
+    <div class="app-icon-wrap">🤖</div>
+    <div class="app-meta">
+      <h1>FernieX-AI Android</h1>
+      <div class="version-badge">● Версия 2.0.0 — актуальная</div>
+      <p class="tagline">ИИ-ассистент в кармане. Быстрый чат, умные ответы и оффлайн-режим для Android 5.1+.</p>
+    </div>
+  </div>
+
+  <!-- APK WARNING -->
+  <div class="apk-warn">
+    <div class="warn-icon">⚠️</div>
+    <div class="warn-text">
+      <strong>Установка из неизвестных источников:</strong> перед установкой APK разрешите установку в настройках Android → Безопасность → Неизвестные источники.
+    </div>
+  </div>
+
+  <div class="download-box">
+    <div class="download-box-header">
+      <div class="file-info">
+        <div class="file-icon">🤖</div>
+        <div>
+          <div class="file-name">FernieX-AI-2.0.0.apk</div>
+          <div class="file-ext">Android Package · APK файл</div>
+        </div>
+      </div>
+      <a href="https://github.com/FernadezTain/FernieX-AI-Chat/raw/main/FernieX-AI-2.0.0.apk" class="dl-btn" onclick="simulateDownload(this);">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2">
+          <path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>
+        </svg>
+        Скачать .apk
+      </a>
+    </div>
+    <div class="divider"></div>
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-label">Размер файла</div><div class="stat-value">3.68 МБ</div></div>
+      <div class="stat-item"><div class="stat-label">Версия</div><div class="stat-value">2.0.0</div></div>
+      <div class="stat-item"><div class="stat-label">Дата выхода</div><div class="stat-value">10 мар 2025</div></div>
+      <div class="stat-item"><div class="stat-label">Android</div><div class="stat-value">5.1+ (API 22+)</div></div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="section-card">
+    <h3>О программе</h3>
+    <p>FernieX-AI для Android — мобильный ИИ-ассистент с поддержкой облачных и локальных нейросетевых моделей. Компактный, быстрый и удобный. Работает на смартфонах с Android 5.1 и выше — даже на бюджетных устройствах.</p>
+  </div>
+
+  <!-- HOW TO INSTALL -->
+  <div class="section-card">
+    <h3>Как установить APK</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Скачайте APK файл</div>
+          <div class="step-desc">Нажмите кнопку «Скачать .apk» выше</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Откройте загруженный файл</div>
+          <div class="step-desc">Найдите APK в папке «Загрузки» и нажмите на него</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Установите и запустите</div>
+          <div class="step-desc">Нажмите «Установить» и дождитесь завершения</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section-card">
+    <h3>Возможности</h3>
+    <div class="features-grid">
+      <div class="feat-item"><div class="feat-icon">📱</div><div><div class="feat-title">Нативный UI</div><div class="feat-desc">Плавный интерфейс под Android</div></div></div>
+    </div>
+  </div>
+
+  <!-- REQUIREMENTS -->
+  <div class="section-card">
+    <h3>Требования и сведения</h3>
+    <div class="req-list">
+      <div class="req-row"><span class="req-key">Платформа</span><span class="req-val">Android 5.1 и выше (API 22+)</span></div>
+      <div class="req-row"><span class="req-key">Архитектура</span><span class="req-val">ARM, ARM64, x86</span></div>
+      <div class="req-row"><span class="req-key">ОЗУ</span><span class="req-val">2 ГБ (рекомендуется 3 ГБ+)</span></div>
+      <div class="req-row"><span class="req-key">Место на диске</span><span class="req-val">3.68 МБ</span></div>
+      <div class="req-row"><span class="req-key">Разработчик</span><span class="req-val">FernieX</span></div>
+      <div class="req-row"><span class="req-key">Лицензия</span><span class="req-val">Бесплатно · Freeware</span></div>
+      <div class="req-row"><span class="req-key">Разрешения</span><span class="req-val">Интернет</span></div>
+    </div>
+  </div>
+
+  <!-- CHANGELOG -->
+  <div class="section-card">
+    <h3>Что нового в 2.0.0</h3>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Анализ изображений</strong> — модель теперь распознаёт текст на фотографиях.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Улучшенная оптимизация</strong> — интерфейс работает до 2× быстрее.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Обновлённый формат</strong> — добавлено корректное отображение математических формул.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Исправление ошибок</strong> — устранены некоторые проблемы и повышена стабильность.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Исправлено отображение меню клавиатуры</strong> — интерфейс теперь отображается корректно.</div></div>
+
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Обновлено меню моделей</strong> — удалена строка поиска для упрощения интерфейса.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Новые стили приветствия</strong> — увеличено количество вариантов приветственного экрана.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Onboarding-экран</strong> — добавлен экран первичного знакомства при первом открытии приложения.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Оптимизация окон вывода</strong> — улучшена производительность и плавность отображения ответов.</div></div>
+<div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Кнопка копирования</strong> — добавлена возможность быстро копировать ответы модели.</div></div>
+  </div>
+</div>
+
+<script>
+function simulateDownload(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg> Подготовка...`;
+  btn.style.opacity = '0.8';
+  setTimeout(() => {
+    btn.innerHTML = `✓ Загрузка началась`;
+    btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+    btn.style.opacity = '1';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 3000);
+  }, 1200);
+}
+</script>
+</body>
+</html>
