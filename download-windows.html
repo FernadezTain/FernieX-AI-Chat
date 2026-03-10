@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FernieX-AI для Windows — Скачать</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1426;
+    --surface2: #121b33;
+    --border: rgba(99,179,255,0.12);
+    --accent: #3d8ef8;
+    --accent2: #00e5ff;
+    --text: #e8f0ff;
+    --text2: #8899bb;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 30% 20%, rgba(61,142,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,229,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+  nav {
+    display: flex; align-items: center; gap: 16px;
+    padding: 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 60px;
+  }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text2); font-size: 14px; font-weight: 400;
+    text-decoration: none; padding: 8px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+  }
+  .back-btn:hover { color: var(--text); background: rgba(255,255,255,0.07); transform: translateX(-3px); }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-left: auto;
+  }
+
+  /* ===== HERO ===== */
+  .app-hero {
+    display: flex; gap: 40px; align-items: flex-start;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.7s ease both;
+  }
+
+  .app-icon-wrap {
+    width: 110px; height: 110px; border-radius: 28px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1e3a5f, #0d1f3c);
+    border: 1px solid rgba(61,142,248,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    box-shadow: 0 16px 48px rgba(61,142,248,0.2);
+  }
+
+  .app-meta h1 {
+    font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800;
+    letter-spacing: -1px; margin-bottom: 8px;
+  }
+
+  .app-meta .version-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(61,142,248,0.1); border: 1px solid rgba(61,142,248,0.25);
+    color: var(--accent2); font-size: 12px; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 14px;
+  }
+
+  .app-meta .tagline {
+    font-size: 16px; color: var(--text2); line-height: 1.6; font-weight: 300;
+    max-width: 500px;
+  }
+
+  /* ===== MAIN DOWNLOAD BOX ===== */
+  .download-box {
+    background: linear-gradient(145deg, #0d1830 0%, #091020 100%);
+    border: 1px solid rgba(61,142,248,0.2);
+    border-radius: 24px; padding: 32px;
+    margin-bottom: 32px;
+    animation: fadeInUp 0.7s ease both 0.1s;
+  }
+
+  .download-box-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+
+  .file-info { display: flex; align-items: center; gap: 16px; }
+  .file-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(61,142,248,0.12); border: 1px solid rgba(61,142,248,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .file-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+  .file-ext { font-size: 12px; color: var(--text2); }
+
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    color: white; font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500; padding: 14px 32px;
+    border-radius: 14px; border: none; cursor: pointer; text-decoration: none;
+    box-shadow: 0 8px 24px rgba(61,142,248,0.35);
+    transition: all 0.3s; white-space: nowrap;
+  }
+  .dl-btn:hover { box-shadow: 0 12px 36px rgba(61,142,248,0.5); transform: translateY(-2px); }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ===== STATS GRID ===== */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 2px;
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  }
+
+  .stat-item {
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.02);
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; }
+
+  /* ===== DESCRIPTION ===== */
+  .section-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px 32px;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.7s ease both 0.2s;
+  }
+
+  .section-card h3 {
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+    color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+
+  .section-card p {
+    font-size: 15px; color: var(--text2); line-height: 1.75; font-weight: 300;
+  }
+
+  /* ===== FEATURES ===== */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+  .feat-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 16px 18px; background: rgba(61,142,248,0.04);
+    border: 1px solid rgba(61,142,248,0.1); border-radius: 14px;
+  }
+
+  .feat-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .feat-text .feat-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .feat-text .feat-desc { font-size: 12px; color: var(--text2); font-weight: 300; line-height: 1.4; }
+
+  /* ===== REQUIREMENTS ===== */
+  .req-list { display: flex; flex-direction: column; gap: 10px; }
+  .req-row { display: flex; gap: 16px; font-size: 14px; }
+  .req-key { color: var(--text2); font-weight: 300; min-width: 140px; }
+  .req-val { color: var(--text); font-weight: 400; }
+
+  /* ===== CHANGELOG ===== */
+  .changelog-item { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+  .changelog-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    margin-top: 6px; flex-shrink: 0; box-shadow: 0 0 8px rgba(61,142,248,0.5);
+  }
+  .changelog-text { font-size: 14px; color: var(--text2); font-weight: 300; line-height: 1.5; }
+  .changelog-text strong { color: var(--text); font-weight: 500; }
+
+  @keyframes fadeInUp {
+    from { opacity:0; transform: translateY(24px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .app-hero { flex-direction: column; }
+    .app-icon-wrap { width: 80px; height: 80px; font-size: 36px; border-radius: 20px; }
+    .app-meta h1 { font-size: 28px; }
+    .download-box-header { flex-direction: column; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <nav>
+    <a href="index.html" class="back-btn">← Назад</a>
+    <div class="nav-logo">FernieX-AI</div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="app-hero">
+    <div class="app-icon-wrap">🤖</div>
+    <div class="app-meta">
+      <h1>FernieX-AI Windows</h1>
+      <div class="version-badge">● Версия 1.0.0 — актуальная</div>
+      <p class="tagline">Полноценный ИИ-ассистент для Windows. Работает локально, быстро и без подписок.</p>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD BOX -->
+  <div class="download-box">
+    <div class="download-box-header">
+      <div class="file-info">
+        <div class="file-icon">🪟</div>
+        <div>
+          <div class="file-name">FernieX-AI-Setup-1.0.0.exe</div>
+          <div class="file-ext">Исполняемый файл · Установщик</div>
+        </div>
+      </div>
+      <span class="dl-btn dl-btn--wip">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.2">
+          <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        В разработке...
+      </span>
+    </div>
+    <div class="divider"></div>
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-label">Размер файла</div><div class="stat-value">-- МБ</div></div>
+      <div class="stat-item"><div class="stat-label">Версия</div><div class="stat-value">1.0.0</div></div>
+      <div class="stat-item"><div class="stat-label">Дата выхода</div><div class="stat-value">-- мар 2025</div></div>
+      <div class="stat-item"><div class="stat-label">Архитектура</div><div class="stat-value">x64 / ARM64</div></div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="section-card">
+    <h3>О программе</h3>
+    <p>FernieX-AI — мощный ИИ-ассистент с поддержкой нескольких нейросетевых моделей. Общайтесь с ИИ в чате, генерируйте текст, код и ответы на вопросы. Поддерживает работу как онлайн, так и полностью оффлайн с локальными моделями. Современный интерфейс, история диалогов и многоязычная поддержка.</p>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section-card">
+    <h3>Возможности</h3>
+    <div class="features-grid">
+      <div class="feat-item">
+        <div class="feat-icon">⚡</div>
+        <div class="feat-text">
+          <div class="feat-title">Быстрый ответ</div>
+          <div class="feat-desc">Оптимизировано для скорости на Windows</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-text">
+          <div class="feat-title">Приватность</div>
+          <div class="feat-desc">Локальный режим без отправки данных</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-text">
+          <div class="feat-title">Несколько моделей</div>
+          <div class="feat-desc">GPT, Claude, Gemini и локальные LLM</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">💾</div>
+        <div class="feat-text">
+          <div class="feat-title">История чатов</div>
+          <div class="feat-desc">Сохранение и поиск по диалогам</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">📁</div>
+        <div class="feat-text">
+          <div class="feat-title">Файлы и PDF</div>
+          <div class="feat-desc">Загрузка и анализ документов</div>
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon">🎨</div>
+        <div class="feat-text">
+          <div class="feat-title">Тёмная тема</div>
+          <div class="feat-desc">Удобный интерфейс для работы ночью</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUIREMENTS -->
+  <div class="section-card">
+    <h3>Системные требования</h3>
+    <div class="req-list">
+      <div class="req-row"><span class="req-key">ОС</span><span class="req-val">Windows 10 / 11 (64-bit)</span></div>
+      <div class="req-row"><span class="req-key">Процессор</span><span class="req-val">Intel Core i3 / AMD Ryzen 3 и выше</span></div>
+      <div class="req-row"><span class="req-key">ОЗУ</span><span class="req-val">4 ГБ (рекомендуется 8 ГБ)</span></div>
+      <div class="req-row"><span class="req-key">Диск</span><span class="req-val">200 МБ свободного места</span></div>
+      <div class="req-row"><span class="req-key">Интернет</span><span class="req-val">Для онлайн-моделей</span></div>
+      <div class="req-row"><span class="req-key">Разработчик</span><span class="req-val">FernieX</span></div>
+      <div class="req-row"><span class="req-key">Лицензия</span><span class="req-val">Бесплатно · Freeware</span></div>
+    </div>
+  </div>
+
+  <!-- CHANGELOG -->
+  <div class="section-card">
+    <h3>Что нового в 1.0.0</h3>
+    <div class="changelog-item"><div class="changelog-dot"></div><div class="changelog-text"><strong>Улучшенная оптимизация</strong> — интерфейс работает в 2× быстрее</div></div>
+  </div>
+</div>
+
+<script>
+function simulateDownload(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg> Подготовка...`;
+  btn.style.opacity = '0.8';
+  setTimeout(() => {
+    btn.innerHTML = `✓ Загрузка началась`;
+    btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+    btn.style.opacity = '1';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 3000);
+  }, 1200);
+}
+</script>
+</body>
+</html>
