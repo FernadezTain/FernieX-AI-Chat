@@ -95,7 +95,7 @@ header{position:relative;z-index:20;display:flex;align-items:center;justify-cont
 .model-notify{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;margin:8px auto;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:20px;font-size:11px;color:var(--t2);max-width:400px;animation:fadeUp .3s ease;white-space:nowrap}
 .model-notify .arrow{color:var(--accent)}.model-notify .old-m{color:var(--t3);text-decoration:line-through}.model-notify .new-m{color:var(--accent);font-weight:700}
 
-.chat-wrap{position:relative;z-index:2;flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 0 8px;-webkit-overflow-scrolling:touch}
+.chat-wrap{position:relative;z-index:2;flex:1;overflow-y:auto;overflow-x:hidden;padding:100px 0 120px;-webkit-overflow-scrolling:touch}
 .chat-wrap::-webkit-scrollbar{width:4px}
 .chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .messages{max-width:860px;margin:0 auto;padding:0 14px;display:flex;flex-direction:column;gap:14px}
@@ -541,7 +541,7 @@ body:not([data-theme]) .msg-action-btn:hover,body[data-theme=""] .msg-action-btn
   border-color:rgba(214,107,61,.28);
   color:var(--text);
 }
-body:not([data-theme]) .main,body[data-theme=""] .main{padding:18px;gap:14px;}
+body:not([data-theme]) .main,body[data-theme=""] .main{padding:0;gap:0;}
 body:not([data-theme]) header,body[data-theme=""] header,
 body:not([data-theme]) .input-bar,body[data-theme=""] .input-bar{
   margin:0 auto;
@@ -550,7 +550,7 @@ body:not([data-theme]) .input-bar,body[data-theme=""] .input-bar{
   border-radius:26px;
   box-shadow:0 20px 50px rgba(99,75,47,.08);
 }
-body:not([data-theme]) header,body[data-theme=""] header{padding:14px 18px;min-height:72px;}
+body:not([data-theme]) header,body[data-theme=""] header{padding:14px 18px;min-height:72px;position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:1180px;border-radius:26px !important;border:1px solid rgba(123,92,57,.1) !important;box-shadow:0 20px 50px rgba(99,75,47,.08);z-index:20;}
 body:not([data-theme]) .header-left::after,body[data-theme=""] .header-left::after{
   content:'FernieX';font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin-left:8px;
 }
@@ -1697,6 +1697,7 @@ async function toggleRecording(){
       };
       speechRecognition.onend=()=>{
         if(isRecording)stopRecording();
+        updateSendMicBtn();
       };
       speechRecognition.start();
       isRecording=true;
@@ -1717,7 +1718,8 @@ function stopRecording(){
   micBtn.style.background='linear-gradient(135deg,#d66b3d,#b64832)';
   micBtn.style.animation='none';
   micBtn.innerHTML=micSVG();
-  updateSendMicBtn();
+  // После отправки сообщения поле пустое — показать микрофон
+  setTimeout(()=>updateSendMicBtn(),100);
   if(inputEl.value.trim()){
     showToast('✓ Распознано! Нажмите отправить','ok');
   }
