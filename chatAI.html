@@ -45,7 +45,8 @@ body.no-fx .orb{opacity:0}
 @keyframes of2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
 @keyframes of3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
 
-.sidebar{position:fixed;top:0;left:0;height:100%;z-index:11;transform:translateX(-100%);width:80vw;max-width:300px;background:rgba(8,8,15,.97);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.sidebar{position:fixed;top:20px;left:20px;height:calc(100% - 40px);z-index:11;transform:translateX(calc(-100% - 20px));width:80vw;max-width:280px;background:rgba(255,250,243,.92);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid rgba(123,92,57,.1);border-radius:26px;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1);box-shadow:18px 0 40px rgba(76,54,31,.1)}
+[data-theme="light"] .sidebar{background:rgba(255,250,243,.95)}
 [data-theme="light"] .sidebar{background:rgba(245,245,250,.98)}
 .sidebar.open{transform:translateX(0)}
 .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9;opacity:0;transition:opacity .3s;pointer-events:none}
@@ -95,7 +96,7 @@ header{position:relative;z-index:20;display:flex;align-items:center;justify-cont
 .model-notify{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;margin:8px auto;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:20px;font-size:11px;color:var(--t2);max-width:400px;animation:fadeUp .3s ease;white-space:nowrap}
 .model-notify .arrow{color:var(--accent)}.model-notify .old-m{color:var(--t3);text-decoration:line-through}.model-notify .new-m{color:var(--accent);font-weight:700}
 
-.chat-wrap{position:relative;z-index:2;flex:1;overflow-y:auto;overflow-x:hidden;padding:100px 0 120px;-webkit-overflow-scrolling:touch}
+.chat-wrap{position:fixed;top:90px;left:0;right:0;bottom:100px;z-index:2;overflow-y:auto;overflow-x:hidden;padding:16px 0;-webkit-overflow-scrolling:touch}
 .chat-wrap::-webkit-scrollbar{width:4px}
 .chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .messages{max-width:860px;margin:0 auto;padding:0 14px;display:flex;flex-direction:column;gap:14px}
@@ -495,10 +496,6 @@ body:not([data-theme]) .model-modal,body[data-theme=""] .model-modal{
   background:rgba(255,250,243,.72);
   backdrop-filter:blur(22px);
   -webkit-backdrop-filter:blur(22px);
-}
-body:not([data-theme]) .sidebar,body[data-theme=""] .sidebar{
-  border-right:1px solid rgba(123,92,57,.1);
-  box-shadow:18px 0 40px rgba(76,54,31,.08);
 }
 body:not([data-theme]) .sidebar-head,body[data-theme=""] .sidebar-head,
 body:not([data-theme]) header,body[data-theme=""] header{
@@ -1025,7 +1022,7 @@ textarea{
   <div style="padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:space-between">
     <div>
       <div style="font-size:14px;font-weight:700;color:var(--text)">FernieX AI</div>
-      <div style="font-size:11px;color:var(--t3);margin-top:2px">Версия 3.0.0</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">Версия 4.0.0 | WebUI</div>
     </div>
     <div style="font-size:24px">✦</div>
   </div>
@@ -1494,7 +1491,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const res=await fetch(`/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:getModel().api,messages,stream:true}),
+      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:4096}),
       signal:abortCtrl.signal
     });
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
