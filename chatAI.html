@@ -297,7 +297,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .nav-row-arrow{font-size:22px;color:var(--t3);font-weight:300;flex-shrink:0;transition:transform .18s}
 .nav-row:hover .nav-row-arrow{transform:translateX(3px);color:var(--accent)}
 
-.personalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:105;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center}
+.personalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:105;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .personalize-overlay.open{opacity:1;pointer-events:all}
 .personalize-panel{position:relative;width:min(580px,92vw);max-height:82vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:106;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.18)}
 .personalize-panel.open{transform:scale(1) translateY(0);opacity:1}
@@ -320,7 +320,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .toast.ok{border-color:rgba(34,197,94,.35);color:#4ade80}
 .toast.err{border-color:rgba(239,68,68,.35);color:#f87171}
 
-.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .settings-overlay.open{opacity:1;pointer-events:all}
 .settings-panel{position:relative;width:min(520px,92vw);max-height:82vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:101;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;overflow-y:auto;box-shadow:0 32px 80px rgba(88,66,41,.18);bottom:auto;left:auto;right:auto;padding-bottom:24px}
 .settings-panel.open{transform:scale(1) translateY(0);opacity:1}
@@ -420,7 +420,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .danger-btn:active{transform:scale(.98)}
 .danger-btn.warn{background:rgba(251,146,60,.07);border-color:rgba(251,146,60,.2);color:#fb923c}
 .danger-btn.warn:hover{background:rgba(251,146,60,.12);border-color:rgba(251,146,60,.4)}
-.model-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center}
+.model-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .model-overlay.open{opacity:1;pointer-events:all}
 .model-modal{position:relative;width:min(480px,92vw);max-height:72vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:151;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.18)}
 .model-modal.open{transform:scale(1) translateY(0);opacity:1}
@@ -1031,7 +1031,7 @@ textarea{
     </div>
     <div class="sp-section">
       <div class="sp-section-title">Модель</div>
-      <div class="model-btn-row" onclick="openModelModal()">
+      <div class="model-btn-row" onclick="closeSettings();setTimeout(()=>openModelModal(true),200)"></div>
         <div class="model-btn-left">
           <div class="model-btn-icon" id="modelBtnIcon">⚡</div>
           <div class="model-btn-info">
@@ -1261,6 +1261,10 @@ function buildChips(container){
 function closeModelModal(){
   document.getElementById('modelOverlay').classList.remove('open');
   document.getElementById('modelModal').classList.remove('open');
+  if(window._modelFromSettings){
+    setTimeout(()=>openSettings(),200);
+    window._modelFromSettings=false;
+  }
 }
 
 function applyTheme(id){currentTheme=id;localStorage.setItem('theme',id);document.body.setAttribute('data-theme',id==='default'?'':id);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===id))}
@@ -1365,9 +1369,25 @@ async function generateChatTitle(msg){
 
 function openSettings(){document.getElementById('settingsOverlay').classList.add('open');document.getElementById('settingsPanel').classList.add('open')}
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');document.getElementById('settingsPanel').classList.remove('open')}
-function openPersonalize(){renderThemeGrid();renderFontGrid();renderLangGrid();document.getElementById('personalizeOverlay').classList.add('open');document.getElementById('personalizePanel').classList.add('open')}
-function closePersonalize(){document.getElementById('personalizeOverlay').classList.remove('open');document.getElementById('personalizePanel').classList.remove('open')}
-function openModelModal(){document.getElementById('modelOverlay').classList.add('open');document.getElementById('modelModal').classList.add('open');renderModelList('');}
+function openPersonalize(){
+  renderThemeGrid();renderFontGrid();renderLangGrid();
+  closeSettings();
+  setTimeout(()=>{
+    document.getElementById('personalizeOverlay').classList.add('open');
+    document.getElementById('personalizePanel').classList.add('open');
+  },200);
+}
+function closePersonalize(){
+  document.getElementById('personalizeOverlay').classList.remove('open');
+  document.getElementById('personalizePanel').classList.remove('open');
+  setTimeout(()=>openSettings(),200);
+}
+function openModelModal(fromSettings=false){
+  window._modelFromSettings=fromSettings;
+  document.getElementById('modelOverlay').classList.add('open');
+  document.getElementById('modelModal').classList.add('open');
+  renderModelList('');
+}
 function clearModelSearch(){document.getElementById('modelSearch').value='';document.getElementById('searchClear').classList.remove('visible');renderModelList('');document.getElementById('modelSearch').focus()}
 function filterModels(q){document.getElementById('searchClear').classList.toggle('visible',q.length>0);renderModelList(q.toLowerCase().trim())}
 function renderModelList(q){
