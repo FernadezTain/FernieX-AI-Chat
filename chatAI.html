@@ -1104,7 +1104,7 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
   </div>
   <div class="input-hint" id="inputHint">Tap — отправить</div>
 </div>
-<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()"></div>
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
 <div class="settings-panel" id="settingsPanel">
   <div class="sp-handle"></div>
   <div class="sp-header">
@@ -1170,8 +1170,9 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     </div>
   </div>
 </div>
+</div>
 
-<div class="personalize-overlay" id="personalizeOverlay" onclick="closePersonalize()"></div>
+<div class="personalize-overlay" id="personalizeOverlay" onclick="if(event.target===this)closePersonalize()">
 <div class="personalize-panel" id="personalizePanel">
   <div class="pp-drag"></div>
   <div class="pp-header">
@@ -1207,11 +1208,12 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     </div>
   </div>
 </div>
+</div>
 
 <div class="toast" id="toast"></div>
 <div class="name-toast" id="nameToast"></div>
 
-<div class="model-overlay" id="modelOverlay" onclick="if(event.target===this)closeModelModal()"></div>
+<div class="model-overlay" id="modelOverlay" onclick="if(event.target===this)closeModelModal()">
 <div class="model-modal" id="modelModal">
   <div class="sp-handle"></div>
   <div class="mm-header">
@@ -1219,6 +1221,7 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     <div class="sp-close" onclick="closeModelModal()">✕</div>
   </div>
   <div class="mm-list" id="modelList"></div>
+</div>
 </div>
 
 <script>
