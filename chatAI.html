@@ -596,27 +596,45 @@ body[data-theme] .model-btn-name,
 body[data-theme] .toggle-label,
 body[data-theme] .name-row-label,
 body[data-theme] .font-name,
-body[data-theme] .mm-name{color:var(--text);}
+body[data-theme] .mm-name,
+body[data-theme] .sp-title,
+body[data-theme] .pp-title,
+body[data-theme] .lang-btn,
+body[data-theme] .theme-btn-label,
+body[data-theme] .chat-item-name{color:var(--text);}
 body[data-theme] .nav-row-sub,
 body[data-theme] .model-btn-sub,
 body[data-theme] .toggle-desc,
 body[data-theme] .name-row-sub,
 body[data-theme] .font-preview,
 body[data-theme] .mm-desc,
-body[data-theme] .mm-preset{color:var(--t3);}
+body[data-theme] .mm-preset{color:var(--t2);}
 body[data-theme] .sp-section-title,
 body[data-theme] .pp-section-title,
 body[data-theme] .chat-group-label{color:var(--t3);}
 body[data-theme] .header-left::after{content:none;}
 body[data-theme] .main{padding:0;gap:0;}
 body[data-theme] header{
-  margin:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;
-  box-shadow:none;padding:10px 16px;min-height:56px;
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 28px);max-width:1100px;
+  border-radius:20px !important;border:1px solid var(--border2) !important;
+  background:var(--surface) !important;
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+  padding:10px 16px;min-height:52px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
 }
 body[data-theme] .input-bar{
-  margin:0;width:100%;border-radius:0;border-left:none;border-right:none;border-bottom:none;
-  box-shadow:none;padding:10px 16px;
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 28px);max-width:860px;
+  border-radius:16px !important;border:1px solid var(--border2) !important;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  padding:0;margin:0;
 }
+body[data-theme] .chat-wrap{top:80px;bottom:90px;}
+
+
+
+
 body:not([data-theme]) .chat-wrap,body[data-theme=""] .chat-wrap{padding:0;display:flex;justify-content:center;}
 body:not([data-theme]) .messages,body[data-theme=""] .messages{width:min(980px,100%);margin:0;padding:8px 0;gap:18px;}
 body:not([data-theme]) .empty,body[data-theme=""] .empty{
