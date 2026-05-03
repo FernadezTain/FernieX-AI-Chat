@@ -836,6 +836,12 @@ body:not([data-theme]) .input-inner,body[data-theme=""] .input-inner{
   border-color:rgba(123,92,57,.14);
   border-radius:22px;
   padding:12px;
+  box-shadow:0 8px 32px rgba(88,66,41,.12);
+}
+body:not([data-theme]) .input-bar,body[data-theme=""] .input-bar{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
 }
 body[data-theme] .input-inner{
   background:var(--s2);
@@ -1662,36 +1668,58 @@ function updateSendMicBtn(){
   else{sendBtn.classList.add('hidden');micBtn.style.display='flex'}
 }
 
+let speechRecognition=null;
+
 async function toggleRecording(){
   const micBtn=document.getElementById('micBtn');
   if(!isRecording){
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      audioChunks=[];
-      mediaRecorder=new MediaRecorder(stream);
-      mediaRecorder.ondataavailable=e=>{if(e.data.size>0)audioChunks.push(e.data)};
-      mediaRecorder.onstop=()=>{
-        const blob=new Blob(audioChunks,{type:'audio/webm'});
-        pendingAudioBlob=blob;
-        stream.getTracks().forEach(t=>t.stop());
-        micBtn.innerHTML=micSVG();
-        micBtn.style.background='linear-gradient(135deg,#d66b3d,#b64832)';
-        micBtn.style.animation='none';
-        isRecording=false;
-        // показать кнопку отправить
-        document.getElementById('sendBtn').classList.remove('hidden');
-        micBtn.style.display='none';
-        showToast('🎙 Готово! Нажмите отправить','ok');
+      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SpeechRecognition){showToast('⚠️ Браузер не поддерживает распознавание речи','err');return}
+      speechRecognition=new SpeechRecognition();
+      speechRecognition.lang='ru-RU';
+      speechRecognition.continuous=true;
+      speechRecognition.interimResults=true;
+      let finalTranscript='';
+      speechRecognition.onresult=e=>{
+        let interim='';
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript;
+          else interim+=e.results[i][0].transcript;
+        }
+        inputEl.value=finalTranscript+interim;
+        inputEl.style.height='auto';
+        inputEl.style.height=Math.min(inputEl.scrollHeight,140)+'px';
       };
-      mediaRecorder.start();
+      speechRecognition.onerror=e=>{
+        showToast('⚠️ Ошибка микрофона: '+e.error,'err');
+        stopRecording();
+      };
+      speechRecognition.onend=()=>{
+        if(isRecording)stopRecording();
+      };
+      speechRecognition.start();
       isRecording=true;
       micBtn.style.background='linear-gradient(135deg,#ef4444,#dc2626)';
       micBtn.style.animation='micPulse 1s ease-in-out infinite';
-      micBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/></svg>';
-      showToast('🔴 Запись... нажмите ещё раз чтобы остановить','');
+      micBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+      showToast('🔴 Говорите... нажмите ещё раз чтобы остановить','');
     }catch(e){showToast('⚠️ Нет доступа к микрофону','err')}
   }else{
-    if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+    stopRecording();
+  }
+}
+
+function stopRecording(){
+  isRecording=false;
+  if(speechRecognition){speechRecognition.stop();speechRecognition=null}
+  const micBtn=document.getElementById('micBtn');
+  micBtn.style.background='linear-gradient(135deg,#d66b3d,#b64832)';
+  micBtn.style.animation='none';
+  micBtn.innerHTML=micSVG();
+  updateSendMicBtn();
+  if(inputEl.value.trim()){
+    showToast('✓ Распознано! Нажмите отправить','ok');
   }
 }
 
