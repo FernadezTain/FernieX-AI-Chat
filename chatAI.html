@@ -267,7 +267,7 @@ details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
 .pill-input-wrap{flex:1;display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border2);border-radius:999px;padding:8px 10px 8px 18px;transition:border-color .2s,box-shadow .2s;min-width:0}
 .pill-input-wrap:focus-within{animation:rainbowBorder 3s linear infinite;box-shadow:0 0 0 3px rgba(139,92,246,.2);}
 @keyframes rainbowBorder{0%{border-color:#8b5cf6;box-shadow:0 0 12px rgba(139,92,246,.5)}25%{border-color:#ec4899;box-shadow:0 0 12px rgba(236,72,153,.5)}50%{border-color:#06b6d4;box-shadow:0 0 12px rgba(6,182,212,.5)}75%{border-color:#f97316;box-shadow:0 0 12px rgba(249,115,22,.5)}100%{border-color:#8b5cf6;box-shadow:0 0 12px rgba(139,92,246,.5)}}
-textarea{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:16px;color:var(--text);resize:none;line-height:1.6;max-height:120px;overflow-y:auto;padding:0;-webkit-user-select:text;user-select:text;}
+textarea{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:16px;color:var(--text);resize:none;line-height:1.5;min-height:22px;max-height:200px;overflow-y:auto;padding:0;-webkit-user-select:text;user-select:text;}
 textarea::placeholder{color:var(--t3)}
 textarea::-webkit-scrollbar{width:3px}
 textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -900,8 +900,8 @@ body[data-theme] .input-inner{
   box-shadow:0 0 0 4px rgba(214,107,61,.08);
 }
 textarea{
-  min-height:52px;
-  padding:8px 4px 6px;
+  min-height:auto;
+  padding:0;
   font-size:15px;
 }
 .pill-mic-btn{
@@ -1554,7 +1554,18 @@ function setLoadingState(loading){isLoading=loading;sendBtnEl.disabled=loading;s
 function stopGeneration(){if(abortCtrl){abortCtrl.abort();abortCtrl=null}}
 function buildSystemPrompt(){let p=t('system_lang')+'\n';if(userName)p+=`Имя пользователя: ${userName}. Обращайся к нему по имени.\n`;p+=`\nТолько если пользователь ЯВНО просит узнать погоду в конкретном городе (например "погода в Москве", "какая погода в Киренске", "weather in London") — ответь ТОЛЬКО: WEATHER:название_города\nНе используй WEATHER: для приветствий, вопросов без города, или если погода не упоминается явно. Так же учти что ты работаешь в окружении FernieX-AI разработанной сервисом FernieX Prod. (prodaction). - ты можешь отвечать в Telegram боте @FernieXBot, на официальном сайте и в приложениях для Android и Windows. НО ты остаешься моделью Mistral!`;return p.trim()}
 
-inputEl.addEventListener('input',()=>{inputEl.style.height='auto';inputEl.style.height=Math.min(inputEl.scrollHeight,140)+'px';updateSendMicBtn()});
+inputEl.addEventListener('input',()=>{
+  inputEl.style.height='auto';
+  const sh=inputEl.scrollHeight;
+  inputEl.style.height=Math.min(sh,200)+'px';
+  const wrap=document.getElementById('pillInputWrap');
+  if(wrap){
+    const multi=sh>48||inputEl.value.includes('\n');
+    wrap.style.borderRadius=multi?'18px':'999px';
+    wrap.style.alignItems=multi?'flex-end':'center';
+  }
+  updateSendMicBtn();
+});
 inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
 
 async function sendMessage(){
