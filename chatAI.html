@@ -263,30 +263,34 @@ details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
 
 .input-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;padding:0;background:transparent;border:none;width:calc(100% - 40px);max-width:860px;flex-shrink:0}
 [data-theme="light"] .input-bar{background:transparent}
-.input-inner{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:6px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 9px 9px 16px;transition:border-color .2s,box-shadow .2s}
-.input-row{display:flex;align-items:flex-end;gap:9px;width:100%}
-.image-preview-wrap{display:none;position:relative;width:72px;height:72px;flex-shrink:0}
-.image-preview-wrap.show{display:block}
-.image-preview-wrap img{width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border2)}
-.image-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;border:none;line-height:1}
-.input-inner:focus-within{border-color:transparent;animation:rainbowBorder 3s linear infinite;box-shadow:0 0 0 3px rgba(139,92,246,.25);}
+.input-pill-row{display:flex;align-items:center;gap:8px;width:100%}
+.pill-input-wrap{flex:1;display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border2);border-radius:999px;padding:8px 10px 8px 18px;transition:border-color .2s,box-shadow .2s;min-width:0}
+.pill-input-wrap:focus-within{animation:rainbowBorder 3s linear infinite;box-shadow:0 0 0 3px rgba(139,92,246,.2);}
 @keyframes rainbowBorder{0%{border-color:#8b5cf6;box-shadow:0 0 12px rgba(139,92,246,.5)}25%{border-color:#ec4899;box-shadow:0 0 12px rgba(236,72,153,.5)}50%{border-color:#06b6d4;box-shadow:0 0 12px rgba(6,182,212,.5)}75%{border-color:#f97316;box-shadow:0 0 12px rgba(249,115,22,.5)}100%{border-color:#8b5cf6;box-shadow:0 0 12px rgba(139,92,246,.5)}}
-textarea{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:16px;color:var(--text);resize:none;line-height:1.6;max-height:140px;overflow-y:auto;padding-top:1px;-webkit-user-select:text;user-select:text;}
+textarea{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:16px;color:var(--text);resize:none;line-height:1.6;max-height:120px;overflow-y:auto;padding:0;-webkit-user-select:text;user-select:text;}
 textarea::placeholder{color:var(--t3)}
 textarea::-webkit-scrollbar{width:3px}
 textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.input-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.stop-btn{width:36px;height:36px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0;color:#f87171;font-size:14px}
-.stop-btn:hover{background:rgba(239,68,68,.3);border-color:#ef4444}
-.stop-btn.hidden{display:none}
-.send-btn{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--a2));border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .18s,transform .12s;flex-shrink:0}
-.send-btn:hover{opacity:.85}
-.send-btn:active{transform:scale(.91)}
-.send-btn:disabled{opacity:.4;cursor:not-allowed}
-.send-btn.hidden{display:none}
-.send-btn svg{width:17px;height:17px;fill:#fff}
+.pill-inner-btn{width:32px;height:32px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff}
+.pill-inner-btn:hover{opacity:.85}
+.pill-inner-btn:active{transform:scale(.91)}
+.pill-inner-btn:disabled{opacity:.4;cursor:not-allowed}
+.pill-side-btn{width:46px;height:46px;border-radius:50%;border:none;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.pill-side-btn:hover{background:var(--s2);color:var(--text)}
+.pill-side-btn:active{transform:scale(.93)}
+.pill-mic-btn{background:linear-gradient(135deg,var(--accent),var(--a2));color:#fff;box-shadow:0 4px 14px rgba(139,92,246,.35)}
+.pill-mic-btn:hover{opacity:.88;background:linear-gradient(135deg,var(--accent),var(--a2))}
+.pill-mic-btn.recording{animation:micPulse 1s ease-in-out infinite;background:linear-gradient(135deg,#ef4444,#dc2626)}
+.stop-btn{display:none}
+.send-btn{display:none}
+.input-actions{display:none}
+.input-inner{display:none}
 .input-hint{display:none}
 .input-hint.warn{display:none}
+.image-preview-wrap{display:none;position:relative;width:64px;height:64px;flex-shrink:0}
+.image-preview-wrap.show{display:block}
+.image-preview-wrap img{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border2)}
+.image-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;border:none;line-height:1}
 
 .nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all .18s;gap:10px}
 .nav-row:hover{background:var(--s3);border-color:var(--accent)}
@@ -900,23 +904,23 @@ textarea{
   padding:8px 4px 6px;
   font-size:15px;
 }
-.send-btn{
-  width:44px;
-  height:44px;
-  border-radius:16px;
+.pill-mic-btn{
   background:linear-gradient(135deg,#d66b3d,#b64832);
   box-shadow:0 16px 28px rgba(182,72,50,.22);
 }
-.stop-btn{
-  width:44px;
-  height:44px;
-  border-radius:16px;
+body:not([data-theme]) .pill-input-wrap,body[data-theme=""] .pill-input-wrap{
+  background:rgba(255,255,255,.74);
+  border-color:rgba(123,92,57,.14);
+  box-shadow:0 8px 32px rgba(88,66,41,.12);
 }
-.input-hint{
-  margin-top:10px;
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+body:not([data-theme]) .pill-inner-btn,body[data-theme=""] .pill-inner-btn{
+  background:linear-gradient(135deg,#d66b3d,#b64832);
+  box-shadow:0 4px 12px rgba(182,72,50,.3);
+}
+body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pill-side-btn:not(.pill-mic-btn){
+  background:rgba(255,255,255,.7);
+  border:1px solid rgba(123,92,57,.12);
+  color:#6b5a4a;
 }
 @media (max-width: 900px){
   body::before{inset:10px;border-radius:24px}
@@ -1082,28 +1086,29 @@ textarea{
     <div class="messages" id="messages"></div>
   </div>
 <div class="input-bar">
-<div class="input-inner">
-      <div class="image-preview-wrap" id="imagePreviewWrap">
-        <img id="imagePreview" src="" alt=""/>
-        <button class="image-preview-remove" onclick="removeImage()">✕</button>
-      </div>
-      <div class="input-row">
-        <textarea id="inputMsg" rows="1" placeholder="Напишите сообщение..."></textarea>
-        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
-        <div class="input-actions">
-          <button class="icon-btn" id="attachBtn" onclick="document.getElementById('imageInput').click()" style="flex-shrink:0" title="Прикрепить фото">📎</button>
-          <button class="stop-btn hidden" id="stopBtn" onclick="stopGeneration()">■</button>
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-          </button>
-          <button class="send-btn" id="micBtn" onclick="toggleRecording()" style="display:flex;background:linear-gradient(135deg,#d66b3d,#b64832)">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M12 1a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3zm-1 16.93A7 7 0 0 1 5 11H3a9 9 0 0 0 8 8.94V22h2v-2.06A9 9 0 0 0 21 11h-2a7 7 0 0 1-6 6.93z"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="input-hint" id="inputHint">Tap — отправить</div>
+  <div class="image-preview-wrap" id="imagePreviewWrap" style="margin-bottom:8px;margin-left:52px">
+    <img id="imagePreview" src="" alt=""/>
+    <button class="image-preview-remove" onclick="removeImage()">✕</button>
   </div>
+  <div class="input-pill-row">
+    <button class="pill-side-btn" id="attachBtn" onclick="document.getElementById('imageInput').click()" title="Прикрепить фото">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H9v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S6 2.79 6 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+    </button>
+    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
+    <div class="pill-input-wrap" id="pillInputWrap">
+      <textarea id="inputMsg" rows="1" placeholder="Сообщение..."></textarea>
+      <button class="pill-inner-btn" id="stopBtn" onclick="stopGeneration()" style="display:none" title="Стоп">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <button class="pill-inner-btn" id="sendBtn" onclick="sendMessage()" title="Отправить">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+    <button class="pill-side-btn pill-mic-btn" id="micBtn" onclick="toggleRecording()" title="Голос">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 1a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V4a3 3 0 0 1 3-3zm-1 16.93A7 7 0 0 1 5 11H3a9 9 0 0 0 8 8.94V22h2v-2.06A9 9 0 0 0 21 11h-2a7 7 0 0 1-6 6.93z"/></svg>
+    </button>
+  </div>
+  <div class="input-hint" id="inputHint">Tap — отправить</div>
 </div>
 <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()"></div>
 <div class="settings-panel" id="settingsPanel">
@@ -1548,7 +1553,7 @@ function appendMsg(role,content){hideEmpty();return appendMsgRaw(role,content,fa
 function appendTyping(){hideEmpty();const wrap=document.createElement('div');wrap.className='msg ai';wrap.id='typingWrap';const av=document.createElement('div');av.className='avatar';av.innerHTML='<span class="avatar-star">✦</span>';const bub=document.createElement('div');bub.className='bubble';bub.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';wrap.appendChild(av);wrap.appendChild(bub);messagesEl.appendChild(wrap);scrollBottom()}
 function removeTyping(){const t=document.getElementById('typingWrap');if(t)t.remove()}
 function appendErr(msg){hideEmpty();const wrap=document.createElement('div');wrap.className='msg ai';const av=document.createElement('div');av.className='avatar';av.innerHTML='<span class="avatar-star">✦</span>';const e=document.createElement('div');e.className='err-bubble';e.textContent='⚠ '+msg;wrap.appendChild(av);wrap.appendChild(e);messagesEl.appendChild(wrap);scrollBottom()}
-function setLoadingState(loading){isLoading=loading;sendBtnEl.disabled=loading;stopBtnEl.classList.toggle('hidden',!loading);sendBtnEl.classList.toggle('hidden',loading);const hint=document.getElementById('inputHint');if(hint){hint.textContent=loading?t('stop_hint'):'Tap — отправить';hint.classList.toggle('warn',loading)}inputEl.placeholder=loading?t('writing'):'Напишите сообщение...'}
+function setLoadingState(loading){isLoading=loading;sendBtnEl.disabled=loading;stopBtnEl.style.display=loading?'flex':'none';sendBtnEl.style.display=loading?'none':'flex';inputEl.placeholder=loading?t('writing'):'Сообщение...'}
 function stopGeneration(){if(abortCtrl){abortCtrl.abort();abortCtrl=null}}
 function buildSystemPrompt(){let p=t('system_lang')+'\n';if(userName)p+=`Имя пользователя: ${userName}. Обращайся к нему по имени.\n`;p+=`\nТолько если пользователь ЯВНО просит узнать погоду в конкретном городе (например "погода в Москве", "какая погода в Киренске", "weather in London") — ответь ТОЛЬКО: WEATHER:название_города\nНе используй WEATHER: для приветствий, вопросов без города, или если погода не упоминается явно. Так же учти что ты работаешь в окружении FernieX-AI разработанной сервисом FernieX Prod. (prodaction). - ты можешь отвечать в Telegram боте @FernieXBot, на официальном сайте и в приложениях для Android и Windows. НО ты остаешься моделью Mistral!`;return p.trim()}
 
@@ -1816,8 +1821,15 @@ function updateSendMicBtn(){
   const sendBtn=document.getElementById('sendBtn');
   const micBtn=document.getElementById('micBtn');
   if(!sendBtn||!micBtn)return;
-  if(text||pendingImageFile){sendBtn.classList.remove('hidden');micBtn.style.display='none'}
-  else{sendBtn.classList.add('hidden');micBtn.style.display='flex'}
+  if(text||pendingImageFile){
+    sendBtn.style.display='flex';
+    micBtn.style.opacity='0.4';
+    micBtn.style.pointerEvents='none';
+  }else{
+    sendBtn.style.display='none';
+    micBtn.style.opacity='1';
+    micBtn.style.pointerEvents='all';
+  }
 }
 
 let speechRecognition=null;
@@ -1853,9 +1865,9 @@ async function toggleRecording(){
       };
       speechRecognition.start();
       isRecording=true;
-      micBtn.style.background='linear-gradient(135deg,#ef4444,#dc2626)';
+  micBtn.style.background='linear-gradient(135deg,#ef4444,#dc2626)';
       micBtn.style.animation='micPulse 1s ease-in-out infinite';
-      micBtn.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+      micBtn.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
       showToast('🔴 Говорите... нажмите ещё раз чтобы остановить','');
     }catch(e){showToast('⚠️ Нет доступа к микрофону','err')}
   }else{
@@ -1867,7 +1879,7 @@ function stopRecording(){
   isRecording=false;
   if(speechRecognition){speechRecognition.stop();speechRecognition=null}
   const micBtn=document.getElementById('micBtn');
-  micBtn.style.background='linear-gradient(135deg,#d66b3d,#b64832)';
+  micBtn.style.background='';
   micBtn.style.animation='none';
   micBtn.innerHTML=micSVG();
   // После отправки сообщения поле пустое — показать микрофон
