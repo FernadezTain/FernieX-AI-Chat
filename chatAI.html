@@ -299,7 +299,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 .personalize-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:105;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .personalize-overlay.open{opacity:1;pointer-events:all}
-.personalize-panel{position:relative;width:min(580px,92vw);max-height:82vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:106;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.18)}
+.personalize-panel{position:relative;width:min(560px,88vw);max-height:80vh;background:rgba(255,250,243,.97);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:106;transform:scale(.92) translateY(20px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.2);margin:auto}
 .personalize-panel.open{transform:scale(1) translateY(0);opacity:1}
 .pp-drag{display:none}
 .pp-header{display:flex;align-items:center;gap:12px;padding:20px 24px 16px;border-bottom:1px solid rgba(123,92,57,.08);flex-shrink:0}
@@ -322,7 +322,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .settings-overlay.open{opacity:1;pointer-events:all}
-.settings-panel{position:relative;width:min(520px,92vw);max-height:82vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:101;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;overflow-y:auto;box-shadow:0 32px 80px rgba(88,66,41,.18);bottom:auto;left:auto;right:auto;padding-bottom:24px}
+.settings-panel{position:relative;width:min(480px,88vw);max-height:80vh;background:rgba(255,250,243,.97);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:101;transform:scale(.92) translateY(20px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;overflow-y:auto;box-shadow:0 32px 80px rgba(88,66,41,.2);padding-bottom:24px;margin:auto}
 .settings-panel.open{transform:scale(1) translateY(0);opacity:1}
 .settings-panel::-webkit-scrollbar{width:3px}
 .settings-panel::-webkit-scrollbar-thumb{background:rgba(123,92,57,.2);border-radius:3px}
@@ -422,7 +422,7 @@ textarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .danger-btn.warn:hover{background:rgba(251,146,60,.12);border-color:rgba(251,146,60,.4)}
 .model-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
 .model-overlay.open{opacity:1;pointer-events:all}
-.model-modal{position:relative;width:min(480px,92vw);max-height:72vh;background:rgba(255,250,243,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:151;transform:scale(.92) translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.18)}
+.model-modal{position:relative;width:min(440px,88vw);max-height:70vh;background:rgba(255,250,243,.97);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(123,92,57,.12);border-radius:28px;z-index:151;transform:scale(.92) translateY(20px);opacity:0;transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(88,66,41,.2);margin:auto}
 .model-modal.open{transform:scale(1) translateY(0);opacity:1}
 .mm-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 14px;flex-shrink:0}
 .mm-search-wrap{display:none}
@@ -995,7 +995,7 @@ textarea{
     <div class="input-hint" id="inputHint">Tap — отправить</div>
   </div>
 </div>
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()"></div>
 <div class="settings-panel" id="settingsPanel">
   <div class="sp-handle"></div>
   <div class="sp-header">
@@ -1031,12 +1031,12 @@ textarea{
     </div>
     <div class="sp-section">
       <div class="sp-section-title">Модель</div>
-      <div class="model-btn-row" onclick="closeSettings();setTimeout(()=>openModelModal(true),200)"></div>
+      <div class="model-btn-row" onclick="closeSettings();setTimeout(()=>openModelModal(true),200)">
         <div class="model-btn-left">
           <div class="model-btn-icon" id="modelBtnIcon">⚡</div>
           <div class="model-btn-info">
-            <div class="model-btn-name" id="modelBtnName">Step 3.5 Flash</div>
-            <div class="model-btn-sub" id="modelBtnSub">@preset/step</div>
+            <div class="model-btn-name" id="modelBtnName">Mistral Small</div>
+            <div class="model-btn-sub" id="modelBtnSub">mistral-small-latest</div>
           </div>
         </div>
         <div class="model-btn-arrow">›</div>
@@ -1102,7 +1102,7 @@ textarea{
 <div class="toast" id="toast"></div>
 <div class="name-toast" id="nameToast"></div>
 
-<div class="model-overlay" id="modelOverlay" onclick="closeModelModal()"></div>
+<div class="model-overlay" id="modelOverlay" onclick="if(event.target===this)closeModelModal()"></div>
 <div class="model-modal" id="modelModal">
   <div class="sp-handle"></div>
   <div class="mm-header">
