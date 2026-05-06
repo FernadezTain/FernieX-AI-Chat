@@ -1799,43 +1799,126 @@ bub.innerHTML=renderMarkdown(processedFull);
 
 const LARGE_LINES=100;
 function renderMarkdown(text){
-  // Защищаем LaTeX до экранирования HTML
-  const mathBlocks=[];
-  text=text.replace(/\$\$([^$]+)\$\$/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:true});return`%%MATH_${id}%%`});
-  text=text.replace(/\$([^$\n]+)\$/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
-  text=text.replace(/\\\(([^)]+)\\\)/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
-  text=text.replace(/\\\[([^\]]+)\\\]/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:true});return`%%MATH_${id}%%`});
-  // Обработка как закрытых, так и незакрытых блоков кода
-text=text.replace(/```([\w-]*)\n?([\s\S]*?)(```|$)/g,(_,lang,code,closer)=>{
-    const idx=blocks.length;
-    // Если блок не закрыт — всё равно сохраняем, но не добавляем лишний %% если это конец строки
-    blocks.push({lang:lang.trim()||'code',code:code.trimEnd(),closed:closer==='```'});
-    return`%%CB_${idx}%%`;
-});
-  const tablePlaceholders=[];
-  html=parseTables(html).replace(/<div class="md-table-wrap">[\s\S]*?<\/div>/g,match=>{const idx=tablePlaceholders.length;tablePlaceholders.push(match);return`%%TABLE_${idx}%%`});
-  html=html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/(?<!\w)\*([^*\n]+)\*(?!\w)/g,'<em>$1</em>').replace(/(?<!\w)_([^_\n]+)_(?!\w)/g,'<em>$1</em>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/^---+$/gm,'<hr>').replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/^\d+\. (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/\n/g,'<br>');
-  html=html.replace(/<(pre|ul|ol|h[123]|blockquote|hr|div)([^>]*)><br>/g,'<$1$2>').replace(/<br><\/(pre|ul|ol|h[123]|blockquote|div)>/g,'</$1>');
-  html=html.replace(/%%CB_(\d+)%%/g,(_,i)=>{
-    const{lang,code}=blocks[i];const lines=code.split('\n').length;const esc=escHtml(code);const hi=syntaxHighlight(esc,lang);const id='cb_'+Date.now()+'_'+i;codeStore.set(id,code);const lbl=lang&&lang!=='code'?lang.toUpperCase():'CODE';const ext=langToExt(lang);
-    if(lines>=LARGE_LINES){const prevLines=code.split('\n').slice(0,4).map(escHtml).join('\n');const isTruncated=!blocks[i].closed;return`<div style="background:var(--s2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2)"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)">&lt;/&gt; ${lbl}${isTruncated?' ⚠️ обрезано':''}</span><button style="background:var(--s3);border:1px solid var(--border2);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;color:#c4b5fd;cursor:pointer" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button></div><div style="padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);line-height:1.5;white-space:pre;overflow:hidden;max-height:64px">${prevLines}</div><div style="font-size:10px;color:var(--t3);padding:6px 14px 10px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border)">📄 ${lines} строк${isTruncated?' • ответ обрезан':''}</div><code id="${id}" style="display:none">${hi}</code></div>`}
-    return`<pre><div class="code-header"><span class="code-lang">&lt;/&gt; ${lbl}</span><div class="code-actions"><button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button></div></div><code id="${id}">${hi}</code></pre>`;
-  });
-tablePlaceholders.forEach((tp,i)=>{html=html.replace(`%%TABLE_${i}%%`,tp)});
-  // Вставляем LaTeX
-  mathBlocks.forEach((m,i)=>{
-    try{
-      const rendered=katex.renderToString(m.expr,{displayMode:m.display,throwOnError:false,output:'html'});
-      html=html.replace(`%%MATH_${i}%%`,m.display?`<div style="overflow-x:auto;padding:6px 0;text-align:center">${rendered}</div>`:rendered);
-    }catch{
-      html=html.replace(`%%MATH_${i}%%`,m.display?`<code>$$${m.expr}$$</code>`:`<code>$${m.expr}$</code>`);
-    }
-  });
-  html=parseAsciiTables(html);
-  html=parseAsciiCharts(html);
-  return html;
-}
+    // 1. Защита LaTeX
+    const mathBlocks=[];
+    text=text.replace(/\$\$([^$]+)\$\$/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:true});return`%%MATH_${id}%%`});
+    text=text.replace(/\$([^\n$]+)\$/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
+    text=text.replace(/\\\(([^)]+)\\\)/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
+    text=text.replace(/\\\[([^\]]+)\\\]/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:true});return`%%MATH_${id}%%`});
 
+    // 2. Обработка блоков кода (включая обрезанные)
+    const blocks=[];
+    
+    // Сначала нормализуем переносы строк для надежности
+    let processedText = text;
+    
+    // Regex захватывает и закрытые, и незакрытые блоки (до конца строки)
+    // Если блок не закрыт, мы все равно его берем, но помечаем
+    processedText = processedText.replace(/```([\w-]*)\n?([\s\S]*?)(```|$)/g, (_, lang, code, closer) => {
+        const idx = blocks.length;
+        // Если блок не был закрыт (closer не равен ```), добавим его искусственно в конец кода для корректного отображения
+        // Но в массив blocks сохраняем "как есть" или с фиксом
+        let finalCode = code.trimEnd();
+        blocks.push({
+            lang: lang.trim() || 'code', 
+            code: finalCode, 
+            closed: closer === '```'
+        });
+        return `%%CB_${idx}%%`;
+    });
+
+    let html = processedText;
+
+    // 3. Таблицы
+    const tablePlaceholders=[];
+    html = parseTables(html).replace(/<div class="md-table-wrap">[\s\S]*?<\/div>/g, match => {
+        const idx = tablePlaceholders.length;
+        tablePlaceholders.push(match);
+        return `%%TABLE_${idx}%%`;
+    });
+
+    // 4. Базовое экранирование HTML и форматирование
+    html = html.replace(/&/g,'&amp;')
+               .replace(/</g,'&lt;')
+               .replace(/>/g,'&gt;')
+               .replace(/`([^\`\n]+)`/g,'<code>$1</code>')
+               .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+               .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+               .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+               .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+               .replace(/__(.+?)__/g,'<strong>$1</strong>')
+               .replace(/(?<!\w)\*([^\*\n]+)\*(?!\w)/g,'<em>$1</em>')
+               .replace(/(?<!\w)_([ ^_\n]+)_(?!\w)/g,'<em>$1</em>')
+               .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+               .replace(/^---+$/gm,'<hr>')
+               .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
+               .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+               .replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>'+m+'</ul>')
+               .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+               .replace(/\n/g,'<br>');
+
+    // Убираем лишние <br> после блочных элементов
+    html = html.replace(/<(pre|ul|ol|h[123]|blockquote|hr|div)([^>]*)><br>/g,'<$1$2>')
+               .replace(/<br><\/(pre|ul|ol|h[123]|blockquote|div)>/g,'</$1>');
+
+    // 5. Рендеринг блоков кода
+    html = html.replace(/%%CB_(\d+)%%/g, (_, i) => {
+        const b = blocks[i];
+        if (!b) return '';
+        
+        const { lang, code, closed } = b;
+        const lines = code.split('\n').length;
+        const esc = escHtml(code);
+        const hi = syntaxHighlight(esc, lang);
+        const id = 'cb_' + Date.now() + '_' + i;
+        
+        codeStore.set(id, code);
+        const lbl = lang && lang !== 'code' ? lang.toUpperCase() : 'CODE';
+        
+        // Индикатор обрезки
+        const truncWarning = !closed ? ' <span style="color:#f87171;font-size:10px">(обрезано)</span>' : '';
+
+        if (lines >= LARGE_LINES) {
+            const prevLines = code.split('\n').slice(0, 4).map(escHtml).join('\n');
+            return `<div style="background:var(--s2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:8px 0">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2)">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)">&lt;/&gt; ${lbl}${truncWarning}</span>
+                    <button style="background:var(--s3);border:1px solid var(--border2);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;color:#c4b5fd;cursor:pointer" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button>
+                </div>
+                <div style="padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);line-height:1.5;white-space:pre;overflow:hidden;max-height:64px">${prevLines}</div>
+                <div style="font-size:10px;color:var(--t3);padding:6px 14px 10px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border)">📄 ${lines} строк</div>
+                <code id="${id}" style="display:none">${hi}</code>
+            </div>`;
+        }
+        
+        return `<pre><div class="code-header">
+            <span class="code-lang">&lt;/&gt; ${lbl}${truncWarning}</span>
+            <div class="code-actions">
+                <button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button>
+            </div>
+        </div><code id="${id}">${hi}</code></pre>`;
+    });
+
+    // 6. Восстановление таблиц
+    tablePlaceholders.forEach((tp, i) => {
+        html = html.replace(`%%TABLE_${i}%%`, tp);
+    });
+
+    // 7. Восстановление LaTeX
+    mathBlocks.forEach((m, i) => {
+        try {
+            const rendered = katex.renderToString(m.expr, { displayMode: m.display, throwOnError: false, output: 'html' });
+            html = html.replace(`%%MATH_${i}%%`, m.display ? `<div style="overflow-x:auto;padding:6px 0;text-align:center">${rendered}</div>` : rendered);
+        } catch {
+            html = html.replace(`%%MATH_${i}%%`, m.display ? `<code>$$${m.expr}$$</code>` : `<code>$${m.expr}$</code>`);
+        }
+    });
+
+    html = parseAsciiTables(html);
+    html = parseAsciiCharts(html);
+    
+    return html;
+}
 function parseAsciiTables(html){
   // Парсим markdown-таблицы с | (уже обработаны parseTables) и ASCII-box таблицы вида +---+---+
   return html.replace(/(&lt;br&gt;|\n|^)((?:[+][+\-=]+)+[+](?:&lt;br&gt;|\n)(?:[|][^+\n]*)+(?:&lt;br&gt;|\n)(?:[+][+\-=]+)+[+](?:(?:&lt;br&gt;|\n)(?:[|][^+\n]*)+(?:&lt;br&gt;|\n)(?:[+][+\-=]+)+[+])*)/gm,(match,pre,block)=>{
