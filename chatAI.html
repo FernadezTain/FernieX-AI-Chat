@@ -1744,7 +1744,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const res=await fetch(`/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:4096}),
+      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
       signal:abortCtrl.signal
     });
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
@@ -1776,7 +1776,13 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
         }).catch(()=>{bub.innerHTML=`<span style="color:#f87171">⚠ ${t('weather_error')}</span>`});
 return;
       }
-      thinkDetails.classList.add('done');thinkDetails.open=false;thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';bub.innerHTML=renderMarkdown(full);
+      thinkDetails.classList.add('done');thinkDetails.open=false;thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';// Закрываем незакрытые блоки кода перед рендером
+let processedFull = full;
+const backticks = (processedFull.match(/```/g) || []).length;
+if (backticks % 2 === 1) { processedFull += '\n```'; }
+// Также закрываем незакрытые $ для LaTeX
+if ((processedFull.match(/\$/g) || []).length % 2 === 1) { processedFull += '$'; }
+bub.innerHTML=renderMarkdown(processedFull);
       const actions2=document.createElement('div');actions2.className='msg-actions';
     const copyBtn2=document.createElement('div');copyBtn2.className='msg-action-btn';
     copyBtn2.innerHTML='<span>⎘</span><span>Копировать</span>';
@@ -1799,14 +1805,20 @@ function renderMarkdown(text){
   text=text.replace(/\$([^$\n]+)\$/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
   text=text.replace(/\\\(([^)]+)\\\)/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:false});return`%%MATH_${id}%%`});
   text=text.replace(/\\\[([^\]]+)\\\]/g,(_,expr)=>{const id=mathBlocks.length;mathBlocks.push({expr,display:true});return`%%MATH_${id}%%`});
-  const blocks=[];let html=text.replace(/```([\w-]*)\n?([\s\S]*?)```/g,(_,lang,code)=>{const idx=blocks.length;blocks.push({lang:lang.trim()||'code',code:code.trimEnd()});return`%%CB_${idx}%%`});
+  // Обработка как закрытых, так и незакрытых блоков кода
+text=text.replace(/```([\w-]*)\n?([\s\S]*?)(```|$)/g,(_,lang,code,closer)=>{
+    const idx=blocks.length;
+    // Если блок не закрыт — всё равно сохраняем, но не добавляем лишний %% если это конец строки
+    blocks.push({lang:lang.trim()||'code',code:code.trimEnd(),closed:closer==='```'});
+    return`%%CB_${idx}%%`;
+});
   const tablePlaceholders=[];
   html=parseTables(html).replace(/<div class="md-table-wrap">[\s\S]*?<\/div>/g,match=>{const idx=tablePlaceholders.length;tablePlaceholders.push(match);return`%%TABLE_${idx}%%`});
   html=html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>').replace(/(?<!\w)\*([^*\n]+)\*(?!\w)/g,'<em>$1</em>').replace(/(?<!\w)_([^_\n]+)_(?!\w)/g,'<em>$1</em>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/^---+$/gm,'<hr>').replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/^\d+\. (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/\n/g,'<br>');
   html=html.replace(/<(pre|ul|ol|h[123]|blockquote|hr|div)([^>]*)><br>/g,'<$1$2>').replace(/<br><\/(pre|ul|ol|h[123]|blockquote|div)>/g,'</$1>');
   html=html.replace(/%%CB_(\d+)%%/g,(_,i)=>{
     const{lang,code}=blocks[i];const lines=code.split('\n').length;const esc=escHtml(code);const hi=syntaxHighlight(esc,lang);const id='cb_'+Date.now()+'_'+i;codeStore.set(id,code);const lbl=lang&&lang!=='code'?lang.toUpperCase():'CODE';const ext=langToExt(lang);
-    if(lines>=LARGE_LINES){const prevLines=code.split('\n').slice(0,4).map(escHtml).join('\n');return`<div style="background:var(--s2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2)"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)">&lt;/&gt; ${lbl}</span><button style="background:var(--s3);border:1px solid var(--border2);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;color:#c4b5fd;cursor:pointer" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button></div><div style="padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);line-height:1.5;white-space:pre;overflow:hidden;max-height:64px">${prevLines}</div><div style="font-size:10px;color:var(--t3);padding:6px 14px 10px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border)">📄 ${lines} строк</div><code id="${id}" style="display:none">${hi}</code></div>`}
+    if(lines>=LARGE_LINES){const prevLines=code.split('\n').slice(0,4).map(escHtml).join('\n');const isTruncated=!blocks[i].closed;return`<div style="background:var(--s2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border2)"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)">&lt;/&gt; ${lbl}${isTruncated?' ⚠️ обрезано':''}</span><button style="background:var(--s3);border:1px solid var(--border2);border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;color:#c4b5fd;cursor:pointer" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button></div><div style="padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);line-height:1.5;white-space:pre;overflow:hidden;max-height:64px">${prevLines}</div><div style="font-size:10px;color:var(--t3);padding:6px 14px 10px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border)">📄 ${lines} строк${isTruncated?' • ответ обрезан':''}</div><code id="${id}" style="display:none">${hi}</code></div>`}
     return`<pre><div class="code-header"><span class="code-lang">&lt;/&gt; ${lbl}</span><div class="code-actions"><button class="code-copy-btn" id="btn_${id}" onclick="copyCodeById('${id}','btn_${id}')">⎘ Копировать</button></div></div><code id="${id}">${hi}</code></pre>`;
   });
 tablePlaceholders.forEach((tp,i)=>{html=html.replace(`%%TABLE_${i}%%`,tp)});
