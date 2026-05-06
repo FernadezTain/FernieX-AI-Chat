@@ -1152,7 +1152,17 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
       </div>
     </div>
     <div class="sp-section">
-  <div class="sp-section-title">О приложении</div>
+      <div class="sp-section-title">Режим</div>
+      <div class="toggle-row" onclick="toggleDevMode()" style="cursor:pointer">
+        <div class="toggle-info">
+          <div class="toggle-label">🛠️ Режим разработчика</div>
+          <div class="toggle-desc">Жёсткий проф. промпт · Код без компромиссов</div>
+        </div>
+        <div class="toggle" id="devModeToggle"></div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">О приложении</div>
   <div style="padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:space-between">
     <div>
       <div style="font-size:14px;font-weight:700;color:var(--text)">FernieX AI</div>
@@ -1314,6 +1324,7 @@ let currentLang=localStorage.getItem('lang')||'ru';
 let userName=localStorage.getItem('userName')||'';
 let fxEnabled=localStorage.getItem('fx')!=='0';
 let currentModelId=localStorage.getItem('modelId')||'mistral-small';
+let devModeEnabled=localStorage.getItem('devMode')==='1';
 let currentFont=localStorage.getItem('font')||'Outfit';
 let currentTheme=localStorage.getItem('theme')||'default';
 let currentChatId=null;
@@ -1552,8 +1563,57 @@ function removeTyping(){const t=document.getElementById('typingWrap');if(t)t.rem
 function appendErr(msg){hideEmpty();const wrap=document.createElement('div');wrap.className='msg ai';const av=document.createElement('div');av.className='avatar';av.innerHTML='<span class="avatar-star">✦</span>';const e=document.createElement('div');e.className='err-bubble';e.textContent='⚠ '+msg;wrap.appendChild(av);wrap.appendChild(e);messagesEl.appendChild(wrap);scrollBottom()}
 function setLoadingState(loading){isLoading=loading;sendBtnEl.disabled=loading;stopBtnEl.style.display=loading?'flex':'none';sendBtnEl.style.display=loading?'none':'flex';inputEl.placeholder=loading?t('writing'):'Сообщение...'}
 function stopGeneration(){if(abortCtrl){abortCtrl.abort();abortCtrl=null}}
-function buildSystemPrompt(){let p=t('system_lang')+'\n';if(userName)p+=`Имя пользователя: ${userName}. Обращайся к нему по имени.\n`;p+=`\nТолько если пользователь ЯВНО просит узнать погоду в конкретном городе (например "погода в Москве", "какая погода в Киренске", "weather in London") — ответь ТОЛЬКО: WEATHER:название_города\nНе используй WEATHER: для приветствий, вопросов без города, или если погода не упоминается явно. Так же учти что ты работаешь в окружении FernieX-AI разработанной сервисом FernieX Prod. (prodaction). - ты можешь отвечать в Telegram боте @FernieXBot, на официальном сайте и в приложениях для Android и Windows. НО ты остаешься моделью Mistral!`;return p.trim()}
+const DEV_SYSTEM_PROMPT=`You are an elite-level software engineer and technical expert. Developer Mode is ACTIVE. Strict professional mode engaged.
 
+IDENTITY & BEHAVIOR:
+- You are a seasoned senior engineer with deep expertise in all major languages, frameworks, architectures, DevOps, databases, algorithms, and system design.
+- You communicate like a professional: direct, precise, no filler words, no hand-holding, no excessive politeness.
+- You treat the user as an equally skilled developer unless they indicate otherwise.
+- Never say "Great question!", "Certainly!", "Of course!", "Sure!" or any similar sycophantic openers. Ever.
+
+CODE QUALITY — NON-NEGOTIABLE:
+- Every snippet you write is production-ready: proper error handling, edge cases covered, no lazy stubs.
+- Never write "// TODO", "// add your logic here", "pass", or any placeholder. If you don't have enough info — ask ONE precise clarifying question, then write complete code.
+- Follow language-specific best practices automatically: PEP8 for Python, ESLint standard for JS/TS, effective Go idioms, RAII in C++, etc.
+- Always choose the most performant and idiomatic approach. Mention Big-O if it matters.
+- For any function longer than ~20 lines, briefly note its time/space complexity.
+- If you see a bug or anti-pattern in the user's code — point it out even if they didn't ask. Be blunt, not rude.
+- Prefer explicit over implicit. Prefer readable over clever unless performance demands it.
+
+RESPONSE FORMAT:
+- Lead with the solution, not with the explanation. Code first, context after.
+- Use code blocks with correct language tags always.
+- Structure long answers with clear headers (##).
+- For multi-file changes, label each file clearly.
+- When comparing approaches, use a concise table.
+- Strip all redundant prose. If something can be said in 5 words, don't use 20.
+
+TECHNICAL DEPTH:
+- Go deep by default. Assume the user wants to understand the "why", not just the "what".
+- Cite relevant RFCs, specs, official docs, or well-known papers when applicable.
+- For architecture questions: always consider scalability, failure modes, and trade-offs.
+- For security-related code: proactively mention potential vulnerabilities (SQLi, XSS, SSRF, race conditions, etc.) and how to mitigate them.
+- For performance questions: consider CPU cache, memory layout, I/O bounds, and concurrency.
+
+DEBUGGING MODE:
+- When given broken code, do NOT just fix it. Explain what was wrong, why it was wrong, and what the correct mental model is.
+- If there are multiple issues, list ALL of them, not just the first one you spot.
+
+WHAT YOU NEVER DO:
+- Never produce vague, wishy-washy answers like "it depends on your use case" without following up with concrete options and clear trade-off analysis.
+- Never truncate code with "..." or "rest of the code remains the same". Always provide the full implementation.
+- Never suggest outdated approaches when modern, better alternatives exist.
+- Never ignore the user's tech stack — adapt to it.
+
+You respond in the same language the user writes in. If they write in Russian — respond in Russian. If English — English. Match their register.`;
+
+function buildSystemPrompt(){
+  let p=t('system_lang')+'\n';
+  if(userName)p+=`Имя пользователя: ${userName}. Обращайся к нему по имени.\n`;
+  if(devModeEnabled)p=DEV_SYSTEM_PROMPT+'\n\n'+p;
+  p+=`\nТолько если пользователь ЯВНО просит узнать погоду в конкретном городе (например "погода в Москве", "какая погода в Киренске", "weather in London") — ответь ТОЛЬКО: WEATHER:название_города\nНе используй WEATHER: для приветствий, вопросов без города, или если погода не упоминается явно. Так же учти что ты работаешь в окружении FernieX-AI разработанной сервисом FernieX Prod. (prodaction). - ты можешь отвечать в Telegram боте @FernieXBot, на официальном сайте и в приложениях для Android и Windows. НО ты остаешься моделью Mistral!`;
+  return p.trim();
+}
 inputEl.addEventListener('input',()=>{
   inputEl.style.height='auto';
   const sh=inputEl.scrollHeight;
@@ -1998,10 +2058,29 @@ function obFinish(){
   },1300);
 }
 
+function toggleDevMode(){
+  devModeEnabled=!devModeEnabled;
+  localStorage.setItem('devMode',devModeEnabled?'1':'0');
+  document.getElementById('devModeToggle').classList.toggle('on',devModeEnabled);
+  const pill=document.getElementById('modelPill');
+  if(devModeEnabled){
+    pill.style.background='linear-gradient(135deg,rgba(163,230,53,.18),rgba(34,197,94,.12))';
+    pill.style.borderColor='rgba(163,230,53,.4)';
+    pill.style.color='#a3e635';
+    showToast('🛠️ Dev Mode включён','ok');
+  } else {
+    pill.style.background='';
+    pill.style.borderColor='';
+    pill.style.color='';
+    showToast('Dev Mode выключен','');
+  }
+}
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',2500)}
 
 function init(){
   applyFont(currentFont);renderFontGrid();applyTheme(currentTheme);renderThemeGrid();renderLangGrid();applyI18n();
+  document.getElementById('devModeToggle').classList.toggle('on',devModeEnabled);
+  if(devModeEnabled){const pill=document.getElementById('modelPill');pill.style.background='linear-gradient(135deg,rgba(163,230,53,.18),rgba(34,197,94,.12))';pill.style.borderColor='rgba(163,230,53,.4)';pill.style.color='#a3e635';}
   initOnboarding();
   if(userName)document.getElementById('nameInput').value=userName;
   updateNameBadge(false);const m=getModel();
@@ -2014,6 +2093,8 @@ function init(){
   else if(order.length){createFirstChat()}
   else{createFirstChat()}
   renderChatList();updateSendMicBtn();
+setInterval(()=>localStorage.setItem('fx_last_active',Date.now()),30000);
+window.addEventListener('beforeunload',()=>localStorage.setItem('fx_last_active',Date.now()));
   setTimeout(()=>{document.getElementById('splash-text').classList.add('visible')},400);
   setTimeout(()=>{document.getElementById('splash').classList.add('fade-out');setTimeout(()=>document.getElementById('splash').remove(),650)},1800);
 }
