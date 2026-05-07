@@ -1034,7 +1034,11 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     <div class="ob-content">
       <h1 class="ob-title">Привет!</h1>
       <p class="ob-desc">Это <strong>FernieX AI</strong> — сервис предоставляющий доступ к LLM моделям с удобной оболочкой для общения.</p>
-      <button class="ob-btn" onclick="obNext(1)">Продолжить</button>
+      <div id="ob-no-auth-warn" style="display:none;margin-top:4px;padding:10px 14px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:12px;font-size:13px;color:#ff6b6b;">
+        ⚠️ Вы не вошли в FernieID. Войдите чтобы продолжить.
+      </div>
+      <button class="ob-btn" onclick="obNext(1)" id="ob-continue-btn" style="display:none">Продолжить</button>
+      <button class="ob-btn" onclick="loginViaFernieID()" style="background:linear-gradient(135deg,rgba(180,141,255,0.35),rgba(126,184,255,0.25));border:1px solid rgba(180,141,255,0.5);font-size:13px;">🔐 Войти через FernieID</button>
 <button class="ob-btn" onclick="loginViaFernieID()" style="margin-top:10px;background:linear-gradient(135deg,rgba(180,141,255,0.35),rgba(126,184,255,0.25));border:1px solid rgba(180,141,255,0.5);font-size:13px;">🔐 Войти через FernieID</button>
     </div>
   </div>
@@ -2122,13 +2126,27 @@ function removeImage(){
 }
 
 function initOnboarding(){
-  if(localStorage.getItem('onboarded')==='1')return;
+  const _session = localStorage.getItem('fernieid_session');
+if(!_session){
+  localStorage.removeItem('onboarded');
+}
+if(localStorage.getItem('onboarded')==='1')return;
   // Скрыть основной UI
   document.querySelector('.main').style.visibility='hidden';
   document.querySelector('.sidebar').style.visibility='hidden';
   const ob=document.getElementById('onboarding');
   ob.style.display='flex';
-  setTimeout(()=>document.getElementById('ob-screen1').classList.add('visible'),100);
+  setTimeout(()=>{
+    document.getElementById('ob-screen1').classList.add('visible');
+    const s=localStorage.getItem('fernieid_session');
+    if(!s){
+      document.getElementById('ob-no-auth-warn').style.display='block';
+      document.getElementById('ob-continue-btn').style.display='none';
+    } else {
+      document.getElementById('ob-no-auth-warn').style.display='none';
+      document.getElementById('ob-continue-btn').style.display='block';
+    }
+  },100);
 }
 
 const FERNIEID_API = 'https://ferniex-id.vercel.app';
