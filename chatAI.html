@@ -1696,7 +1696,7 @@ function clearAllChats(){localStorage.removeItem('fx_chats');localStorage.remove
 
 async function generateChatTitle(msg){
   try{
-    const res=await fetch(`/api/chat`,{
+    const res=await fetch(`https://ferniex-id.vercel.app/api/chat`,{
       method:'POST', headers:{'Content-Type':'application/json','x-user-id':JSON.parse(localStorage.getItem('fernieid_session')||'{}')?.userId||''},
       body:JSON.stringify({model:getModel().api,messages:[{role:'user',content:t('title_prompt')+msg}],max_tokens:20,stream:false})
     });
@@ -1721,7 +1721,7 @@ async function loadTokenUsageFull(){
     const s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
     const uid=s?.userId||s?.id;
     if(!uid)return;
-    const r=await fetch(`/api/chat/usage/${uid}`);
+    const r=await fetch(`https://ferniex-id.vercel.app/api/chat/usage/${uid}`);
     const d=await r.json();
     if(!d.success)return;
     const used=d.used||0,limit=d.limit||200000,remaining=Math.max(0,limit-used);
@@ -1801,10 +1801,10 @@ function selectModel(id){const prev=getModel();currentModelId=id;localStorage.se
 const WEATHER_ICONS={clear:'☀️',clouds:'☁️',rain:'🌧️',drizzle:'🌦️',thunderstorm:'⛈️',snow:'❄️',mist:'🌫️',haze:'🌫️',fog:'🌫️',smoke:'🌫️',dust:'💨',sand:'💨',tornado:'🌪️'};
 function getWeatherIcon(main){return WEATHER_ICONS[(main||'').toLowerCase()]||'🌡️'}
 async function fetchWeather(city){
-  const geo=await fetch(`/api/weather?endpoint=geo/1.0/direct&q=${encodeURIComponent(city)}&limit=1`).then(r=>r.json());
+  const geo=await fetch(`https://ferniex-id.vercel.app/api/weather?endpoint=geo/1.0/direct&q=${encodeURIComponent(city)}&limit=1`).then(r=>r.json());
   if(!geo||!geo.length)return null;
   const{lat,lon,name,country}=geo[0];
-  const forecast=await fetch(`/api/weather?endpoint=data/2.5/forecast&lat=${lat}&lon=${lon}&units=metric&lang=ru`).then(r=>r.json());
+  const forecast=await fetch(`https://ferniex-id.vercel.app/api/weather?endpoint=data/2.5/forecast&lat=${lat}&lon=${lon}&units=metric&lang=ru`).then(r=>r.json());
   if(!forecast||!forecast.list)return null;
   return{name,country,lat,lon,list:forecast.list};
 }
@@ -2001,7 +2001,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
   const messages=[{role:'system',content:systemPrompt},...cleanHistory];
   abortCtrl=new AbortController();let stopped=false;
   try{
-    const res=await fetch(`/api/chat`,{
+    const res=await fetch(`https://ferniex-id.vercel.app/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
