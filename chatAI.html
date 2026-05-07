@@ -1766,7 +1766,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const res=await fetch(`/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
+      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192,userId:JSON.parse(localStorage.getItem('fernieid_session')||'{}')?.userId||null}),
       signal:abortCtrl.signal
     });
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'Error '+res.status)}
