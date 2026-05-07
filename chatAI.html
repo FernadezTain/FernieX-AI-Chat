@@ -2004,7 +2004,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const res=await fetch(`/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      bbody:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
+      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
       signal:abortCtrl.signal
     });
     if(!res.ok){
