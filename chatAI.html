@@ -1755,7 +1755,7 @@ async function loadTokenUsage(){
     if(navSub)navSub.textContent=fmt(used)+' / '+fmt(limit)+' · '+pct+'%';
   }catch{document.getElementById('token-usage-section').style.display='none';}
 }
-  try{
+try{
     const s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
     if(!s?.userId){document.getElementById('token-usage-section').style.display='none';return;}
     const r=await fetch(`/api/chat/usage/${s.userId}`);
