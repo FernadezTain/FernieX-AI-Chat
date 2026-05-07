@@ -2218,11 +2218,31 @@ function loginViaFernieID(){
       const lastId=loadLastChatId();
       if(lastId&&loadChats()[lastId])selectChat(lastId);
     });
-    document.getElementById('onboarding').style.display='none';
-    document.querySelector('.main').style.visibility='';
-    document.querySelector('.sidebar').style.visibility='';
-    updateNameBadge(true);
-    showToast('✓ Вошёл как '+e.data.username,'ok');
+    document.getElementById('onboarding').style.opacity='0';
+    document.getElementById('onboarding').style.transition='opacity .4s ease';
+    setTimeout(()=>{
+      document.getElementById('onboarding').style.display='none';
+      const main=document.querySelector('.main');
+      const sidebar=document.querySelector('.sidebar');
+      main.style.visibility='';
+      sidebar.style.visibility='';
+      main.style.opacity='0';
+      sidebar.style.opacity='0';
+      main.style.transform='translateY(18px)';
+      sidebar.style.transform='translateX(-18px)';
+      main.style.transition='opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1)';
+      sidebar.style.transition='opacity .45s cubic-bezier(.22,1,.36,1), transform .45s cubic-bezier(.22,1,.36,1)';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          main.style.opacity='1';
+          main.style.transform='translateY(0)';
+          sidebar.style.opacity='1';
+          sidebar.style.transform='translateX(0)';
+        });
+      });
+      updateNameBadge(true);
+      setTimeout(()=>showToast('✓ Вошёл как '+e.data.username,'ok'), 400);
+    }, 400);
   });
 }
 function obNext(from){
