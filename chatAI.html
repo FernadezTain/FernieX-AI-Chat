@@ -1113,6 +1113,20 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     <div class="sp-close" onclick="closeSettings()">✕</div>
   </div>
   <div class="sp-body">
+    <div class="sp-section" id="fernieid-profile-section" style="display:none">
+      <div class="sp-section-title">FernieID Аккаунт</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid rgba(180,141,255,0.25);border-radius:14px;margin-bottom:8px">
+        <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,rgba(180,141,255,0.4),rgba(126,184,255,0.3));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔐</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:var(--text)" id="sp-fernie-username">—</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px" id="sp-fernie-id">FernieID</div>
+        </div>
+        <div style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:100px;background:rgba(78,205,196,0.12);border:1px solid rgba(78,205,196,0.25);color:#4ecdc4">● Online</div>
+      </div>
+      <div class="danger-btn" onclick="logoutFernieID()" style="margin-top:4px">
+        🚪 Выйти из FernieID
+      </div>
+    </div>
     <div class="sp-section">
       <div class="sp-section-title">Ваше имя</div>
       <div class="name-row">
@@ -1518,7 +1532,8 @@ async function generateChatTitle(msg){
   return msg.slice(0,30)+(msg.length>30?'...':'');
 }
 
-function openSettings(){document.getElementById('settingsOverlay').classList.add('open');document.getElementById('settingsPanel').classList.add('open')}
+function openSettings(){
+  updateFernieIDProfile();document.getElementById('settingsOverlay').classList.add('open');document.getElementById('settingsPanel').classList.add('open')}
 function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open');document.getElementById('settingsPanel').classList.remove('open')}
 function openPersonalize(){
   renderThemeGrid();renderFontGrid();renderLangGrid();
@@ -2140,6 +2155,33 @@ async function syncChatsToServer(userId){
       body: JSON.stringify({ userId, chats, chat_order: order })
     });
   } catch(e) { console.warn('save failed', e); }
+}
+
+function updateFernieIDProfile(){
+  try {
+    const s = JSON.parse(localStorage.getItem('fernieid_session'));
+    const section = document.getElementById('fernieid-profile-section');
+    if (s?.userId && s?.username) {
+      section.style.display = 'block';
+      document.getElementById('sp-fernie-username').textContent = s.username;
+      document.getElementById('sp-fernie-id').textContent = '#fernieid-' + String(s.userId).padStart(4,'0');
+    } else {
+      section.style.display = 'none';
+    }
+  } catch { document.getElementById('fernieid-profile-section').style.display = 'none'; }
+}
+
+function logoutFernieID(){
+  localStorage.removeItem('fernieid_session');
+  localStorage.removeItem('fernieid_username');
+  localStorage.removeItem('onboarded');
+  localStorage.removeItem('fx_chats');
+  localStorage.removeItem('fx_chat_order');
+  localStorage.removeItem('fx_last_chat');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('nameManual');
+  closeSettings();
+  location.reload();
 }
 
 function loginViaFernieID(){
