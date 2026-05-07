@@ -968,17 +968,20 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
   /* ── Bottom sheet overlays ── */
   .settings-overlay,
   .personalize-overlay,
-  .model-overlay{
+  .model-overlay,
+  #tokenOverlay,
+  #modesOverlay{
     align-items:flex-end !important;
     justify-content:center !important;
     padding:0 !important;
     background:rgba(0,0,0,.55) !important;
   }
-
   /* ── Panels become bottom sheets ── */
   .settings-panel,
   .personalize-panel,
-  .model-modal{
+  .model-modal,
+  #tokenPanel,
+  #modesPanel{
     width:100% !important;
     max-width:100% !important;
     max-height:88vh !important;
@@ -992,7 +995,9 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
   }
   .settings-panel.open,
   .personalize-panel.open,
-  .model-modal.open{
+  .model-modal.open,
+  #tokenPanel.open,
+  #modesPanel.open{
     transform:translateY(0) !important;
     pointer-events:all !important;
   }
@@ -1326,7 +1331,8 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
     </div>
   </div>
 </div>
-</div> onclick="if(event.target===this)closeModesPanel()">
+</div>
+<div class="settings-overlay" id="modesOverlay" onclick="if(event.target===this)closeModesPanel()">
 <div class="settings-panel" id="modesPanel">
   <div class="sp-handle"></div>
   <div class="sp-header">
@@ -1746,8 +1752,12 @@ async function loadTokenUsage(){
     if(!s?.userId){document.getElementById('token-usage-section').style.display='none';return;}
     const r=await fetch(`/api/chat/usage/${s.userId}`);
     const d=await r.json();
-    if(!d.success){document.getElementById('token-usage-section').style.display='none';return;}
     document.getElementById('token-usage-section').style.display='';
+    if(!d.success){
+      const navSub=document.getElementById('token-nav-sub');
+      if(navSub)navSub.textContent='Нажмите для деталей';
+      return;
+    }
     const used=d.used||0,limit=d.limit||200000;
     const pct=Math.min(100,Math.round(used/limit*100));
     const fmt=n=>n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(0)+'K':n.toLocaleString('ru-RU');
