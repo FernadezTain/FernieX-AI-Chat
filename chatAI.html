@@ -1035,6 +1035,7 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
       <h1 class="ob-title">Привет!</h1>
       <p class="ob-desc">Это <strong>FernieX AI</strong> — сервис предоставляющий доступ к LLM моделям с удобной оболочкой для общения.</p>
       <button class="ob-btn" onclick="obNext(1)">Продолжить</button>
+<button class="ob-btn" onclick="loginViaFernieID()" style="margin-top:10px;background:linear-gradient(135deg,rgba(180,141,255,0.35),rgba(126,184,255,0.25));border:1px solid rgba(180,141,255,0.5);font-size:13px;">🔐 Войти через FernieID</button>
     </div>
   </div>
   <div id="ob-screen2" class="ob-screen" style="display:none">
@@ -1356,7 +1357,10 @@ let isLoading=false;
 let abortCtrl=null;
 
 function loadChats(){try{return JSON.parse(localStorage.getItem('fx_chats')||'{}')}catch{return{}}}
-function saveChats(c){localStorage.setItem('fx_chats',JSON.stringify(c))}
+function saveChats(c){
+  localStorage.setItem('fx_chats',JSON.stringify(c));
+  try{const s=JSON.parse(localStorage.getItem('fernieid_session'));if(s?.userId)syncChatsToServer(s.userId);}catch{}
+}
 function loadChatOrder(){try{return JSON.parse(localStorage.getItem('fx_chat_order')||'[]')}catch{return[]}}
 function saveChatOrder(o){localStorage.setItem('fx_chat_order',JSON.stringify(o))}
 function saveLastChatId(id){localStorage.setItem('fx_last_chat',id)}
@@ -2112,6 +2116,54 @@ function initOnboarding(){
   setTimeout(()=>document.getElementById('ob-screen1').classList.add('visible'),100);
 }
 
+const FERNIEID_API = 'https://ferniex-id.vercel.app';
+
+async function syncChatsFromServer(userId){
+  try {
+    const r = await fetch(`${FERNIEID_API}/api/ai-chats/${userId}`);
+    const data = await r.json();
+    if (data.success && Object.keys(data.chats).length) {
+      localStorage.setItem('fx_chats', JSON.stringify(data.chats));
+      localStorage.setItem('fx_chat_order', JSON.stringify(data.chat_order));
+    }
+  } catch(e) { console.warn('sync failed', e); }
+}
+
+async function syncChatsToServer(userId){
+  if (!userId) return;
+  try {
+    const chats = loadChats();
+    const order = loadChatOrder();
+    await fetch(`${FERNIEID_API}/api/ai-chats/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, chats, chat_order: order })
+    });
+  } catch(e) { console.warn('save failed', e); }
+}
+
+function loginViaFernieID(){
+  const popup=window.open('https://ferniex-id.vercel.app?redirect=ferniex-ai','fernieid_login','width=480,height=640,menubar=no,toolbar=no');
+  window.addEventListener('message',function handler(e){
+    if(e.origin!=='https://ferniex-id.vercel.app')return;
+    if(!e.data?.userId||!e.data?.username)return;
+    window.removeEventListener('message',handler);
+    popup?.close();
+    localStorage.setItem('nameManual','1');
+    localStorage.setItem('userName',e.data.username);
+    localStorage.setItem('fernieid_session',JSON.stringify(e.data));
+    localStorage.setItem('onboarded','1');
+    userName=e.data.username;
+    syncChatsFromServer(e.data.userId).then(()=>{
+      renderChatList();
+      const lastId=loadLastChatId();
+      if(lastId&&loadChats()[lastId])selectChat(lastId);
+    });
+    document.getElementById('onboarding').style.display='none';
+    updateNameBadge(true);
+    showToast('✓ Вошёл как '+e.data.username,'ok');
+  });
+}
 function obNext(from){
   const s1=document.getElementById('ob-screen1');
   const s2=document.getElementById('ob-screen2');
