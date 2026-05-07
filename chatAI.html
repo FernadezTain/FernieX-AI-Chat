@@ -1999,6 +1999,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     window._lastOcrText=null;
   }
   const messages=[{role:'system',content:systemPrompt},...cleanHistory];
+  const userId=JSON.parse(localStorage.getItem('fernieid_session')||'{}')?.userId||null;
   abortCtrl=new AbortController();let stopped=false;
   try{
     const res=await fetch(`https://ferniex-id.vercel.app/api/chat`,{
@@ -2061,6 +2062,15 @@ bub.innerHTML=renderMarkdown(processedFull);
     }
     scrollBottom();
     if(!stopped||full.trim()){const chatsNow=loadChats();if(chatsNow[thisChatId]){const h2=chatsNow[thisChatId].history||[];h2.push({role:'assistant',content:full});chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();saveChats(chatsNow)}}
+    // Считаем и сохраняем токены
+    if(full && userId){
+      const tokens = Math.ceil((messages.map(m=>m.content).join('').length + full.length) / 4);
+      fetch(`https://ferniex-id.vercel.app/api/chat/add-tokens`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_id: userId, tokens})
+      }).catch(()=>{});
+    }
     renderChatList();
   }catch(err){removeTyping();if(err.name!=='AbortError')appendErr(err.message||'Unknown error')}
   finally{abortCtrl=null;setLoadingState(false);updateNewChatBtn()}
