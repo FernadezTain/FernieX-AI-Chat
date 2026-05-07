@@ -1719,8 +1719,9 @@ function closeTokenPanel(){
 async function loadTokenUsageFull(){
   try{
     const s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
-    if(!s?.userId)return;
-    const r=await fetch(`/api/chat/usage/${s.userId}`);
+    const uid=s?.userId||s?.id;
+    if(!uid)return;
+    const r=await fetch(`/api/chat/usage/${uid}`);
     const d=await r.json();
     if(!d.success)return;
     const used=d.used||0,limit=d.limit||200000,remaining=Math.max(0,limit-used);
@@ -1749,8 +1750,9 @@ async function loadTokenUsageFull(){
 async function loadTokenUsage(){
   try{
     const s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
-    if(!s?.userId){document.getElementById('token-usage-section').style.display='none';return;}
-    const r=await fetch(`/api/chat/usage/${s.userId}`);
+    const uid=s?.userId||s?.id;
+    if(!uid){document.getElementById('token-usage-section').style.display='none';return;}
+    const r=await fetch(`/api/chat/usage/${uid}`);
     const d=await r.json();
     document.getElementById('token-usage-section').style.display='';
     if(!d.success){
@@ -2002,7 +2004,13 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const res=await fetch(`/api/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:getModel().api,messages,stream:true,max_tokens:8192}),
+      body:JSON.stringify({
+  model:getModel().api,
+  messages,
+  stream:true,
+  max_tokens:8192,
+  userId: JSON.parse(localStorage.getItem('fernieid_session')||'{}')?.userId || null
+}),
       signal:abortCtrl.signal
     });
     if(!res.ok){
@@ -2615,6 +2623,10 @@ function toggleNoCensor(){
     pill.style.color='';
     showToast('Без цензуры выключено','');
   }
+  const opts=document.getElementById('noCensorOptions');
+  if(opts)opts.style.display=noCensorEnabled?'flex':'none';
+  document.querySelectorAll('.nc-opt-row').forEach(r=>r.classList.toggle('disabled',!noCensorEnabled));
+  updateModeNavLabel();
 }
 function updateModeNavLabel(){
   const sub=document.getElementById('modeNavSub');
