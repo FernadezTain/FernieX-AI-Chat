@@ -2241,6 +2241,7 @@ function loginViaFernieID(){
         });
       });
       updateNameBadge(true);
+      closeSidebar();
       setTimeout(()=>showToast('✓ Вошёл как '+e.data.username,'ok'), 400);
     }, 400);
   });
@@ -2348,6 +2349,8 @@ function toggleDevMode(){
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',2500)}
 
 function init(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
   applyFont(currentFont);renderFontGrid();applyTheme(currentTheme);renderThemeGrid();renderLangGrid();applyI18n();
   document.getElementById('devModeToggle').classList.toggle('on',devModeEnabled);
   if(devModeEnabled){const pill=document.getElementById('modelPill');pill.style.background='linear-gradient(135deg,rgba(163,230,53,.18),rgba(34,197,94,.12))';pill.style.borderColor='rgba(163,230,53,.4)';pill.style.color='#a3e635';}
