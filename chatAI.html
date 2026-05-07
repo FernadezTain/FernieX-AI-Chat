@@ -1752,7 +1752,7 @@ async function loadTokenUsage(){
     const s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
     const uid=s?.userId||s?.id;
     if(!uid){document.getElementById('token-usage-section').style.display='none';return;}
-    const r=await fetch(`/api/chat/usage/${uid}`);
+    const r=await fetch(`https://ferniex-id.vercel.app/api/chat/usage/${uid}`);
     const d=await r.json();
     document.getElementById('token-usage-section').style.display='';
     if(!d.success){
