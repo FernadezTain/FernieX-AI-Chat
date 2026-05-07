@@ -2064,7 +2064,13 @@ bub.innerHTML=renderMarkdown(processedFull);
     if(!stopped||full.trim()){const chatsNow=loadChats();if(chatsNow[thisChatId]){const h2=chatsNow[thisChatId].history||[];h2.push({role:'assistant',content:full});chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();saveChats(chatsNow)}}
     // Считаем и сохраняем токены
     if(full && userId){
-      const tokens = Math.ceil((messages.map(m=>m.content).join('').length + full.length) / 4);
+      const countTokens = str => {
+        const cyr = (str.match(/[а-яёА-ЯЁ]/g)||[]).length;
+        const other = str.length - cyr;
+        return Math.ceil(cyr / 2.5 + other / 4);
+      };
+      const historyText = messages.map(m => m.content).join('');
+      const tokens = countTokens(historyText) + countTokens(full);
       fetch(`https://ferniex-id.vercel.app/api/chat/add-tokens`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
