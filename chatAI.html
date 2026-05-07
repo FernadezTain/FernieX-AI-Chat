@@ -1910,7 +1910,7 @@ inputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preven
 async function sendMessage(){
   // Проверка авторизации FernieID
   const session=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
-  if(!session.userId){
+  if(!session.userId && !session.id){
     alert('⚠️ Пожалуйста, войдите в FernieID перед отправкой сообщения!');
     return;
   }
