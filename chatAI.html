@@ -31,16 +31,42 @@
 [data-theme="coffee"]{--accent:#c8956c;--a2:#a0522d;--a3:#deb887;--bg:#0f0b08;--surface:#1c1410;--s2:#251c16;--s3:#30241c;--border:#3c2e22;--border2:#4a382c;--ubg:#1c1008;--uborder:rgba(200,149,108,.35);--text:#f5e6d8;--t2:#b09080;--t3:#6a5040}
 
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+@media(max-width:768px){
+  /* Убиваем backdrop-filter — главный лаг на iPhone */
+  .sidebar,.settings-panel,.personalize-panel,.model-modal,
+  #tokenPanel,#modesPanel,header,.input-bar,.input-inner,
+  .pill-input-wrap,#kursovayaModal,#explainModal{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  /* Отключаем тяжёлые тени */
+  .msg.user .avatar,.empty-gem,.study-gem,.logo-gem{
+    box-shadow:none !important;
+    animation:none !important;
+  }
+  /* Отключаем noise — SVG feTurbulence грузит CPU */
+  .noise{display:none !important;}
+  /* Отключаем орбы с blur */
+  .orb{display:none !important;}
+  /* Упрощаем анимации сообщений */
+  .msg{animation:none !important;}
+  /* Убираем тяжёлый transition у body */
+  body{transition:none !important;}
+  /* Отключаем will-change чтобы не жрал память */
+  *{will-change:auto !important;}
+}
 body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;flex-direction:row;position:relative;overscroll-behavior:none;transition:background .3s,color .3s}
 #bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0;transition:opacity .6s}
 body.no-fx #bgCanvas{opacity:0}
 .noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E")}
 body.no-fx .noise{opacity:0}
-.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;will-change:transform}
 .o1{width:500px;height:500px;background:radial-gradient(circle,rgba(139,92,246,.12),transparent 70%);top:-150px;left:-150px;animation:of1 9s ease-in-out infinite}
 .o2{width:400px;height:400px;background:radial-gradient(circle,rgba(236,72,153,.09),transparent 70%);bottom:-100px;right:-100px;animation:of2 11s ease-in-out infinite}
 .o3{width:300px;height:300px;background:radial-gradient(circle,rgba(6,182,212,.06),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:of3 14s ease-in-out infinite}
 body.no-fx .orb{opacity:0}
+body.is-scrolling .msg{animation:none !important;}
+body.is-scrolling .bubble{transition:none !important;}
 @keyframes of1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,25px)}}
 @keyframes of2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
 @keyframes of3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
@@ -98,7 +124,7 @@ header{position:relative;z-index:20;display:flex;align-items:center;justify-cont
 .model-notify{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 14px;margin:8px auto;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:20px;font-size:11px;color:var(--t2);max-width:400px;animation:fadeUp .3s ease;white-space:nowrap}
 .model-notify .arrow{color:var(--accent)}.model-notify .old-m{color:var(--t3);text-decoration:line-through}.model-notify .new-m{color:var(--accent);font-weight:700}
 
-.chat-wrap{position:fixed;top:90px;left:0;right:0;bottom:100px;z-index:2;overflow-y:auto;overflow-x:hidden;padding:16px 0;-webkit-overflow-scrolling:touch}
+.chat-wrap{position:fixed;top:90px;left:0;right:0;bottom:100px;z-index:2;overflow-y:auto;overflow-x:hidden;padding:16px 0;-webkit-overflow-scrolling:touch;transform:translateZ(0);will-change:scroll-position;}
 .chat-wrap::-webkit-scrollbar{width:4px}
 .chat-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .messages{max-width:860px;margin:0 auto;padding:0 14px;display:flex;flex-direction:column;gap:14px}
@@ -1082,6 +1108,18 @@ body:not([data-theme]) .schip.exam,body[data-theme=""] .schip.exam{background:rg
 .ssubj:active{transform:scale(.96)}
 body:not([data-theme]) .ssubj,body[data-theme=""] .ssubj{background:rgba(255,255,255,.75);border-color:rgba(79,70,229,.2);color:#3730a3}
 
+/* ═══ AI FILE CARDS ═══ */
+.ai-file-card{display:inline-flex;align-items:center;gap:12px;margin:8px 0;padding:12px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:16px;max-width:360px;width:100%;transition:all .2s;}
+.ai-file-card:hover{background:rgba(99,102,241,.13);border-color:rgba(99,102,241,.45);transform:translateY(-1px);}
+body:not([data-theme]) .ai-file-card,body[data-theme=""] .ai-file-card{background:rgba(255,255,255,.82);border-color:rgba(99,102,241,.22);box-shadow:0 6px 20px rgba(88,66,41,.07);}
+.ai-file-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ai-file-info{flex:1;min-width:0;}
+.ai-file-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ai-file-size{font-size:11px;color:var(--t2);margin-top:2px;}
+.ai-file-dl{padding:7px 14px;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:all .18s;box-shadow:0 4px 14px rgba(79,70,229,.3);}
+.ai-file-dl:hover{opacity:.88;transform:translateY(-1px);}
+.ai-file-dl:active{transform:scale(.96);}
+
 /* ═══ LIGHT RAYS ═══ */
 .rays-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 .rays-bg::before,.rays-bg::after{content:'';position:absolute;inset:-50%;border-radius:50%;animation:raysShift 18s ease-in-out infinite alternate;}
@@ -1181,6 +1219,8 @@ body[data-theme] .km-input,body[data-theme] .km-textarea,body[data-theme] .km-se
 }
 body[data-theme] #explainModal{background:var(--surface);border-color:var(--border2);}
 #explainOverlay.open #explainModal{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+
+
 </style>
 </head>
 <body>
@@ -3220,16 +3260,212 @@ buildEmptyState=function(){
   return _origBuildEmptyState();
 };
 
+/* ═══ AI FILE CREATION ═══ */
+const FILE_ICONS={
+  js:'🟨',ts:'🟦',py:'🐍',html:'🌐',css:'🎨',
+  json:'📋',md:'📝',txt:'📄',csv:'📊',
+  doc:'📘',docx:'📘',pdf:'📕',
+  zip:'📦',xml:'📰',sql:'🗄️',sh:'⚙️',
+  java:'☕',cpp:'⚙️',c:'⚙️',php:'🐘',
+  rb:'💎',rs:'🦀',go:'🐹',swift:'🍎',
+  kt:'🟣',vue:'💚',jsx:'⚛️',tsx:'⚛️',
+};
+
+function getFileIcon(ext){return FILE_ICONS[ext.toLowerCase()]||'📄';}
+
+function formatBytes(n){
+  if(n<1024)return n+' Б';
+  if(n<1048576)return (n/1024).toFixed(1)+' КБ';
+  return (n/1048576).toFixed(2)+' МБ';
+}
+
+function parseAIFiles(text){
+  const TAG_OPEN=/\/f-x_ai_createfile\s*\n/gi;
+  const TAG_CLOSE=/\/f-x_ai_createfile_finish/gi;
+  if(!TAG_OPEN.test(text))return null;
+
+  const parts=[];
+  let lastIndex=0;
+  const fullRe=/\/f-x_ai_createfile\s*\n([\s\S]*?)\/f-x_ai_createfile_finish/gi;
+  let match;
+
+  while((match=fullRe.exec(text))!==null){
+    // текст до блока
+    if(match.index>lastIndex){
+      parts.push({type:'text',content:text.slice(lastIndex,match.index)});
+    }
+    // парсим блок
+    const block=match[1];
+    const extLine=block.match(/^Расширение:\s*\.?(\w+)/im);
+    const ext=extLine?extLine[1].toLowerCase():'txt';
+    // имя файла — опциональная строка "Имя: ..."
+    const nameLine=block.match(/^Имя:\s*(.+)/im);
+    const fileName=nameLine?nameLine[1].trim():`file_${Date.now()}.${ext}`;
+    // содержимое — всё после строки "Содержимое:" или сразу после мета-строк
+    let content=block
+      .replace(/^Расширение:.*\n?/im,'')
+      .replace(/^Имя:.*\n?/im,'')
+      .replace(/^Содержимое:\s*\n?/im,'')
+      .trim();
+    parts.push({type:'file',ext,fileName,content});
+    lastIndex=match.index+match[0].length;
+  }
+  // остаток текста
+  if(lastIndex<text.length){
+    parts.push({type:'text',content:text.slice(lastIndex)});
+  }
+  return parts;
+}
+
+function buildFileCard(fileObj){
+  const {ext,fileName,content}=fileObj;
+  const icon=getFileIcon(ext);
+  const bytes=new TextEncoder().encode(content).length;
+  const sizeStr=formatBytes(bytes);
+  const id='fc_'+Math.random().toString(36).slice(2);
+  // сохраняем данные временно
+  window._aiFiles=window._aiFiles||{};
+  window._aiFiles[id]={fileName,content,ext};
+
+  return `<div class="ai-file-card">
+    <div class="ai-file-icon">${icon}</div>
+    <div class="ai-file-info">
+      <div class="ai-file-name">${fileName}</div>
+      <div class="ai-file-size">${sizeStr} · .${ext}</div>
+    </div>
+    <button class="ai-file-dl" onclick="downloadAIFile('${id}')">⬇ Скачать</button>
+  </div>`;
+}
+
+function downloadAIFile(id){
+  const f=window._aiFiles&&window._aiFiles[id];
+  if(!f)return;
+  const blob=new Blob([f.content],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=f.fileName;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+/* Патч renderBubble — встраиваем карточки файлов */
+const _origRenderMD=typeof renderMarkdown==='function'?renderMarkdown.bind({}):null;
+function renderBubbleWithFiles(raw,el){
+  const parts=parseAIFiles(raw);
+  if(!parts){
+    el.innerHTML=_origRenderMD?_origRenderMD(raw):raw;
+    return;
+  }
+  let html='';
+  parts.forEach(p=>{
+    if(p.type==='text'){
+      html+=_origRenderMD?_origRenderMD(p.content.trim()):p.content;
+    } else {
+      html+=buildFileCard(p);
+    }
+  });
+  el.innerHTML=html;
+}
+/* Патч addMessage чтобы использовать renderBubbleWithFiles */
+const _origAddMessage=typeof addMessage==='function'?addMessage.bind({}):null;
+if(_origAddMessage){
+  addMessage=function(role,text,opts){
+    const result=_origAddMessage(role,text,opts);
+    if(role==='ai'||role==='assistant'){
+      // находим последний ai bubble и перерендериваем
+      const bubbles=document.querySelectorAll('.msg.ai .bubble');
+      if(bubbles.length){
+        const last=bubbles[bubbles.length-1];
+        if(last&&parseAIFiles(last.textContent||last.innerText)){
+          renderBubbleWithFiles(text,last);
+        }
+      }
+    }
+    return result;
+  };
+}
+
 /* Патч buildSystemPrompt под учёбу */
+const FILE_CREATION_INSTRUCTION=`
+## Создание файлов
+Если пользователь просит создать файл (код, документ, скрипт и т.д.) — используй специальный формат:
+
+/f-x_ai_createfile
+Расширение: .py
+Имя: my_script.py
+Содержимое:
+# здесь идёт содержимое файла
+print("Hello World")
+/f-x_ai_createfile_finish
+
+Поддерживаемые расширения: .py .js .ts .html .css .json .md .txt .csv .xml .sql .sh .java .cpp .c .php .rb .rs .go .swift .kt .vue .jsx .tsx .doc .docx и другие текстовые форматы.
+Правила:
+- Используй этот формат всегда когда создаёшь файл с кодом или текстом
+- Строка "Имя:" — желательное имя файла (придумай осмысленное)
+- После /f-x_ai_createfile_finish продолжай объяснение как обычно
+- Можно создавать несколько файлов подряд в одном ответе
+`;
+
 const _origBuildSystemPrompt=buildSystemPrompt.bind({});
 buildSystemPrompt=function(){
+  let base;
   if(studyMode&&_studyPrompt){
     let p=_studyPrompt;
     if(userName)p+=`\n\nИмя пользователя: ${userName}. Обращайся к нему по имени.`;
-    return p.trim();
+    base=p.trim();
+  } else {
+    base=_origBuildSystemPrompt();
   }
-  return _origBuildSystemPrompt();
+  return base+'\n'+FILE_CREATION_INSTRUCTION;
 };
+/* ═══ MOBILE PERFORMANCE ═══ */
+(function(){
+  const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const isLowEnd=isMobile&&(navigator.hardwareConcurrency<=4||navigator.deviceMemory<=2);
+
+  if(isMobile){
+    // Принудительно включаем no-fx на мобильных (отключает canvas и тяжёлые анимации)
+    document.body.classList.add('no-fx');
+    localStorage.setItem('noFx','1');
+
+    // Отключаем bgCanvas полностью
+    const canvas=document.getElementById('bgCanvas');
+    if(canvas){canvas.style.display='none';}
+
+    // Убираем noise
+    const noise=document.querySelector('.noise');
+    if(noise)noise.remove();
+
+    // Убираем орбы
+    document.querySelectorAll('.orb').forEach(o=>o.remove());
+
+    // Пассивные обработчики для скролла — убирает предупреждения и лаги
+    const chatWrap=document.getElementById('chatWrap')||document.querySelector('.chat-wrap');
+    if(chatWrap){
+      chatWrap.addEventListener('touchstart',()=>{},{passive:true});
+      chatWrap.addEventListener('touchmove',()=>{},{passive:true});
+    }
+
+    // Отключаем transition при скролле (iOS дёргается)
+    let scrollTimer;
+    const scrollEl=chatWrap;
+    if(scrollEl){
+      scrollEl.addEventListener('scroll',()=>{
+        document.body.classList.add('is-scrolling');
+        clearTimeout(scrollTimer);
+        scrollTimer=setTimeout(()=>document.body.classList.remove('is-scrolling'),150);
+      },{passive:true});
+    }
+  }
+
+  if(isLowEnd){
+    // На слабых устройствах отключаем ВСЕ анимации
+    const style=document.createElement('style');
+    style.textContent='*{animation-duration:.01ms !important;transition-duration:.01ms !important;}';
+    document.head.appendChild(style);
+  }
+})();
 
 init();
 applyStudyToggleUI();
