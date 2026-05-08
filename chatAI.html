@@ -2772,37 +2772,56 @@ function loginViaFernieID(){
     localStorage.setItem('fernieid_session',JSON.stringify(e.data));
     localStorage.setItem('onboarded','1');
     userName=e.data.username;
+    // Сначала тянем чаты, ПОТОМ показываем UI
     syncChatsFromServer(e.data.userId).then(()=>{
       renderChatList();
       const lastId=loadLastChatId();
-      if(lastId&&loadChats()[lastId])selectChat(lastId);
-    });
-    document.getElementById('onboarding').style.opacity='0';
-    document.getElementById('onboarding').style.transition='opacity .4s ease';
-    setTimeout(()=>{
-      document.getElementById('onboarding').style.display='none';
-      const main=document.querySelector('.main');
-      const sidebar=document.querySelector('.sidebar');
-      main.style.visibility='';
-      sidebar.style.visibility='';
-      main.style.opacity='0';
-      sidebar.style.opacity='0';
-      main.style.transform='translateY(18px)';
-      sidebar.style.transform='translateX(-18px)';
-      main.style.transition='opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1)';
-      sidebar.style.transition='opacity .45s cubic-bezier(.22,1,.36,1), transform .45s cubic-bezier(.22,1,.36,1)';
-      requestAnimationFrame(()=>{
+      const chats=loadChats();
+      const order=loadChatOrder();
+      if(lastId&&chats[lastId]) loadChat(lastId);
+      else if(order.length) loadChat(order[0]);
+      else createFirstChat();
+      document.getElementById('onboarding').style.opacity='0';
+      document.getElementById('onboarding').style.transition='opacity .4s ease';
+      setTimeout(()=>{
+        document.getElementById('onboarding').style.display='none';
+        const main=document.querySelector('.main');
+        const sidebar=document.querySelector('.sidebar');
+        main.style.visibility='';
+        sidebar.style.visibility='';
+        main.style.opacity='0';
+        sidebar.style.opacity='0';
+        main.style.transform='translateY(18px)';
+        sidebar.style.transform='translateX(-18px)';
+        main.style.transition='opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1)';
+        sidebar.style.transition='opacity .45s cubic-bezier(.22,1,.36,1), transform .45s cubic-bezier(.22,1,.36,1)';
         requestAnimationFrame(()=>{
-          main.style.opacity='1';
-          main.style.transform='translateY(0)';
-          sidebar.style.opacity='1';
-          sidebar.style.transform='translateX(0)';
+          requestAnimationFrame(()=>{
+            main.style.opacity='1';
+            main.style.transform='translateY(0)';
+            sidebar.style.opacity='1';
+            sidebar.style.transform='translateX(0)';
+          });
         });
-      });
-      updateNameBadge(true);
-      closeSidebar();
-      setTimeout(()=>showToast('✓ Вошёл как '+e.data.username,'ok'), 400);
-    }, 400);
+        updateNameBadge(true);
+        closeSidebar();
+        setTimeout(()=>showToast('✓ Вошёл как '+e.data.username,'ok'),400);
+      },400);
+    }).catch(()=>{
+      // Если синк упал — всё равно показываем UI
+      document.getElementById('onboarding').style.opacity='0';
+      document.getElementById('onboarding').style.transition='opacity .4s ease';
+      setTimeout(()=>{
+        document.getElementById('onboarding').style.display='none';
+        const main=document.querySelector('.main');
+        const sidebar=document.querySelector('.sidebar');
+        main.style.visibility='';sidebar.style.visibility='';
+        main.style.opacity='1';sidebar.style.opacity='1';
+        main.style.transform='none';sidebar.style.transform='none';
+        updateNameBadge(true);closeSidebar();
+        createFirstChat();renderChatList();
+      },400);
+    });
   });
 }
 function obNext(from){
@@ -2997,14 +3016,32 @@ function init(){
   if(userName)document.getElementById('nameInput').value=userName;
   updateNameBadge(false);const m=getModel();
   document.getElementById('modelPill').textContent=m.badge+' '+m.name;document.getElementById('modelBtnIcon').textContent=m.badge;document.getElementById('modelBtnName').textContent=m.name;document.getElementById('modelBtnSub').textContent=m.api;
-  applyFx();const order=loadChatOrder();const lastId=loadLastChatId();
+  applyFx();
+  // Сначала показываем локальные данные мгновенно
+  const order=loadChatOrder();const lastId=loadLastChatId();
   const lastActive=parseInt(localStorage.getItem('fx_last_active')||'0');
   const fiveMin=5*60*1000;
   const shouldResume=lastId&&order.includes(lastId)&&(Date.now()-lastActive<fiveMin);
   if(order.length&&shouldResume){loadChat(lastId)}
-  else if(order.length){createFirstChat()}
+  else if(order.length){loadChat(order[0])}
   else{createFirstChat()}
   renderChatList();updateSendMicBtn();
+  // Затем тянем свежие данные с сервера (каждый запуск)
+  try{
+    const _s=JSON.parse(localStorage.getItem('fernieid_session')||'{}');
+    if(_s?.userId){
+      syncChatsFromServer(_s.userId).then(()=>{
+        const newOrder=loadChatOrder();
+        const newLastId=loadLastChatId();
+        if(newOrder.length){
+          if(newLastId&&newOrder.includes(newLastId))loadChat(newLastId);
+          else loadChat(newOrder[0]);
+        }
+        renderChatList();
+        showToast('✓ Чаты синхронизированы','ok');
+      });
+    }
+  }catch{}
 setInterval(()=>localStorage.setItem('fx_last_active',Date.now()),30000);
 window.addEventListener('beforeunload',()=>localStorage.setItem('fx_last_active',Date.now()));
   setTimeout(()=>{document.getElementById('splash-text').classList.add('visible')},400);
