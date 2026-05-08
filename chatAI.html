@@ -2911,22 +2911,22 @@ function handleExamSubject(exam,subject){
 }
 
 /* Патч buildEmptyState под учёбу */
-const _origBuildEmptyState=buildEmptyState;
-function buildEmptyState(){
+const _origBuildEmptyState=buildEmptyState.bind({});
+buildEmptyState=function(){
   if(studyMode)return buildStudyEmptyState();
   return _origBuildEmptyState();
-}
+};
 
 /* Патч buildSystemPrompt под учёбу */
-const _origBuildSystemPrompt=buildSystemPrompt;
-function buildSystemPrompt(){
+const _origBuildSystemPrompt=buildSystemPrompt.bind({});
+buildSystemPrompt=function(){
   if(studyMode&&_studyPrompt){
     let p=_studyPrompt;
     if(userName)p+=`\n\nИмя пользователя: ${userName}. Обращайся к нему по имени.`;
     return p.trim();
   }
   return _origBuildSystemPrompt();
-}
+};
 
 init();
 applyStudyToggleUI();
