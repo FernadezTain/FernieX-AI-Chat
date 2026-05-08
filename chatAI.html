@@ -203,6 +203,9 @@ body[data-theme=""] .ascii-chart-title{color:#93877a}
 .ascii-chart-axis-line{flex:1;height:1px;background:var(--border2)}
 
 .bubble .md-table-wrap{overflow-x:auto;margin:10px 0;border-radius:10px;border:1px solid var(--border2)}
+.bubble .md-table-wrap::-webkit-scrollbar{height:4px}
+.bubble .md-table-wrap::-webkit-scrollbar-track{background:transparent}
+.bubble .md-table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--accent),var(--a2));border-radius:4px}
 .bubble table{border-collapse:collapse;width:100%;font-size:13px;min-width:320px}
 .bubble thead{background:rgba(139,92,246,.1)}
 .bubble th{padding:9px 14px;text-align:left;font-weight:700;color:var(--accent);border-bottom:1px solid rgba(139,92,246,.25);white-space:nowrap}
@@ -1039,7 +1042,8 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
 }
 
 /* ═══ STUDY MODE ═══ */
-.study-toggle{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:28px;padding:6px 12px 6px 8px;cursor:pointer;user-select:none;box-shadow:0 2px 12px rgba(0,0,0,.25);transition:all .25s cubic-bezier(.34,1.2,.64,1)}
+.study-toggle{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:28px;padding:5px 10px 5px 7px;cursor:pointer;user-select:none;box-shadow:0 2px 12px rgba(0,0,0,.25);transition:all .25s cubic-bezier(.34,1.2,.64,1);max-width:110px;overflow:hidden}
+@media(max-width:480px){.st-label{display:none}.study-toggle{padding:5px 7px;max-width:none}}
 .study-toggle:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(99,102,241,.3);border-color:rgba(99,102,241,.5)}
 .study-toggle:active{transform:scale(.96)}
 .st-track{width:36px;height:20px;border-radius:10px;background:var(--s3);position:relative;flex-shrink:0;transition:background .3s}
@@ -2845,8 +2849,14 @@ function toggleStudyMode(){
   studyMode=!studyMode;
   localStorage.setItem('studyMode',studyMode?'1':'0');
   _studyPrompt=null;
+  if(studyMode){
+    if(devModeEnabled){devModeEnabled=false;localStorage.setItem('devMode','0');document.getElementById('devModeToggle2')?.classList.remove('on');const pill=document.getElementById('modelPill');pill.style.background='';pill.style.borderColor='';pill.style.color='';}
+    if(noCensorEnabled){noCensorEnabled=false;localStorage.setItem('noCensor','0');document.getElementById('noCensorToggle2')?.classList.remove('on');const opts=document.getElementById('noCensorOptions');if(opts)opts.style.display='none';document.querySelectorAll('.nc-opt-row').forEach(r=>r.classList.add('disabled'));const pill=document.getElementById('modelPill');pill.style.background='';pill.style.borderColor='';pill.style.color='';}
+    showToast('📚 Режим учёбы включён. Dev и Без цензуры отключены.','ok');
+  } else {
+    showToast('✦ Обычный режим','ok');
+  }
   applyStudyToggleUI();
-  showToast(studyMode?'📚 Режим учёбы включён':'✦ Обычный режим','ok');
   const msgs=document.getElementById('messages');
   if(msgs.querySelector('#emptyState')){msgs.innerHTML='';msgs.appendChild(buildEmptyState());}
 }
