@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>FernieX AI</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -230,6 +230,8 @@ body[data-theme=""] .ascii-chart-title{color:#93877a}
 .thinking-block.stopped .thinking-label{color:#f87171}
 .thinking-toggle-icon{font-size:10px;color:var(--t3);transition:transform .2s;flex-shrink:0}
 details.thinking-block[open] .thinking-toggle-icon{transform:rotate(90deg)}
+.thinking-block.think-open .thinking-toggle-icon{transform:rotate(90deg)}
+.thinking-block:not(.think-open) .thinking-content{display:none}
 .thinking-content{padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2);line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;border-top:1px solid var(--border)}
 .thinking-content::-webkit-scrollbar{width:3px}
 .thinking-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -2068,8 +2070,8 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     const wrap=document.createElement('div');wrap.className='msg ai';
     const av=document.createElement('div');av.className='avatar spinning';av.innerHTML='<span class="avatar-star">✦</span>';
     const thinkId='tk_'+Date.now();
-    const thinkDetails=document.createElement('details');thinkDetails.className='thinking-block';thinkDetails.open=false;
-    thinkDetails.innerHTML=`<summary class="thinking-summary"><div class="thinking-spinner"></div><div class="thinking-check">✓</div><div class="thinking-stopped-icon">■</div><span class="thinking-label">${t('thinking')}</span><span class="thinking-toggle-icon">›</span></summary><div class="thinking-content" id="${thinkId}"></div>`;
+    const thinkDetails=document.createElement('div');thinkDetails.className='thinking-block';
+    thinkDetails.innerHTML=`<div class="thinking-summary" onclick="this.parentElement.classList.toggle('think-open')"><div class="thinking-spinner"></div><div class="thinking-check">✓</div><div class="thinking-stopped-icon">■</div><span class="thinking-label">${t('thinking')}</span><span class="thinking-toggle-icon">›</span></div><div class="thinking-content" id="${thinkId}"></div>`;
     const thinkContent=thinkDetails.querySelector(`#${thinkId}`);
     const bub=document.createElement('div');bub.className='bubble';bub.style.display='none';
     const col=document.createElement('div');col.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;gap:6px';
@@ -2077,14 +2079,14 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
     let full='';const reader=res.body.getReader();const dec=new TextDecoder();
     let buf='';
     try{
-      while(true){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop()||'';for(const line of lines){if(!line.startsWith('data: '))continue;const data=line.slice(6).trim();if(data==='[DONE]')break;try{const delta=JSON.parse(data)?.choices?.[0]?.delta?.content||'';if(delta){full+=delta;thinkContent.textContent=full;const wc=full.split(' ').length;const label=wc<15?'🔍 Анализирую...':wc<40?'📝 Формулирую...':wc<100?'⚙️ Обрабатываю...':'✍️ Завершаю...';thinkDetails.querySelector('.thinking-label').textContent=label;thinkDetails.open=true;scrollBottom()}}catch{}}}
+      while(true){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop()||'';for(const line of lines){if(!line.startsWith('data: '))continue;const data=line.slice(6).trim();if(data==='[DONE]')break;try{const delta=JSON.parse(data)?.choices?.[0]?.delta?.content||'';if(delta){full+=delta;thinkContent.textContent=full;const wc=full.split(' ').length;const label=wc<15?'🔍 Анализирую...':wc<40?'📝 Формулирую...':wc<100?'⚙️ Обрабатываю...':'✍️ Завершаю...';thinkDetails.querySelector('.thinking-label').textContent=label;thinkDetails.classList.add('think-open');scrollBottom()}}catch{}}}
     }catch(readErr){if(readErr.name==='AbortError'){stopped=true}else throw readErr}
     av.classList.remove('spinning');
-    if(stopped){thinkDetails.classList.add('stopped');thinkDetails.open=false;thinkDetails.querySelector('.thinking-label').textContent=t('thinking_stopped');bub.style.display='';if(full.trim()){bub.innerHTML=renderMarkdown(full)}else{bub.innerHTML=`<span style="color:var(--t3);font-size:12px">■ ${t('thinking_stopped')}</span>`}}
+    if(stopped){thinkDetails.classList.add('stopped');thinkDetails.classList.remove('think-open');thinkDetails.querySelector('.thinking-label').textContent=t('thinking_stopped');bub.style.display='';if(full.trim()){bub.innerHTML=renderMarkdown(full)}else{bub.innerHTML=`<span style="color:var(--t3);font-size:12px">■ ${t('thinking_stopped')}</span>`}}
     else{
       const weatherMatch=full.trim().match(/^WEATHER:(.+)$/i);
       if(weatherMatch){
-        const cityName=weatherMatch[1].trim();thinkDetails.classList.add('done');thinkDetails.open=false;thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';bub.innerHTML=`<span style="color:var(--t2);font-size:12px">🌡️ ${t('weather_loading')}</span>`;scrollBottom();
+        const cityName=weatherMatch[1].trim();thinkDetails.classList.add('done');thinkDetails.classList.remove('think-open');thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';bub.innerHTML=`<span style="color:var(--t2);font-size:12px">🌡️ ${t('weather_loading')}</span>`;scrollBottom();
         fetchWeather(cityName).then(data=>{
           if(!data){bub.innerHTML=`<span style="color:#f87171">⚠ ${t('weather_city_not_found')}: ${escHtml(cityName)}</span>`;const chatsNow=loadChats();if(chatsNow[thisChatId]){const h2=chatsNow[thisChatId].history||[];h2.push({role:'assistant',content:`WEATHER_NOT_FOUND:${cityName}`});chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();saveChats(chatsNow)}}
           else{bub.innerHTML=renderWeatherCard(data,cityName);const chatsNow=loadChats();if(chatsNow[thisChatId]){const h2=chatsNow[thisChatId].history||[];h2.push({role:'assistant',content:`WEATHER_DATA:${JSON.stringify({city:cityName,data:{name:data.name,country:data.country,list:data.list}})}`});chatsNow[thisChatId].history=h2;chatsNow[thisChatId].updatedAt=Date.now();saveChats(chatsNow)}}
@@ -2092,7 +2094,7 @@ const cleanHistory=history.map(m=>{if(m._nameOverride)return{role:'system',conte
         }).catch(()=>{bub.innerHTML=`<span style="color:#f87171">⚠ ${t('weather_error')}</span>`});
 return;
       }
-      thinkDetails.classList.add('done');thinkDetails.open=false;thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';// Закрываем незакрытые блоки кода перед рендером
+      thinkDetails.classList.add('done');thinkDetails.classList.remove('think-open');thinkDetails.querySelector('.thinking-label').textContent=t('thinking_done');bub.style.display='';// Закрываем незакрытые блоки кода перед рендером
 let processedFull = full;
 const backticks = (processedFull.match(/```/g) || []).length;
 if (backticks % 2 === 1) { processedFull += '\n```'; }
