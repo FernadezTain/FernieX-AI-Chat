@@ -654,9 +654,9 @@ body[data-theme] .chat-wrap{top:80px;bottom:90px;}
 body:not([data-theme]) .chat-wrap,body[data-theme=""] .chat-wrap{padding:0;display:flex;justify-content:center;}
 body:not([data-theme]) .messages,body[data-theme=""] .messages{width:min(980px,100%);margin:0;padding:8px 0;gap:18px;}
 body:not([data-theme]) .empty,body[data-theme=""] .empty{
-  min-height:64vh;border:1px solid rgba(123,92,57,.1);border-radius:34px;
-  background:linear-gradient(180deg,rgba(255,253,248,.86),rgba(250,244,234,.78));
-  box-shadow:0 28px 80px rgba(88,66,41,.08);
+  min-height:64vh;border:none;border-radius:34px;
+  background:transparent;box-shadow:none;
+  position:relative;overflow:visible;
 }
 body:not([data-theme]) .empty h2,body[data-theme=""] .empty h2{
   font-size:34px;font-weight:800;background:none;-webkit-text-fill-color:unset;color:var(--text);letter-spacing:-.04em;
@@ -1055,7 +1055,7 @@ body:not([data-theme]) .pill-side-btn:not(.pill-mic-btn),body[data-theme=""] .pi
 .st-label{font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;transition:color .2s}
 .study-toggle.on .st-label{color:#818cf8}
 .study-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52vh;gap:16px;padding:40px 20px;text-align:center;animation:fadeUp .6s ease}
-body:not([data-theme]) .study-empty,body[data-theme=""] .study-empty{min-height:64vh;border:1px solid rgba(79,70,229,.12);border-radius:34px;background:linear-gradient(180deg,rgba(238,240,255,.9),rgba(224,228,255,.82));box-shadow:0 28px 80px rgba(79,70,229,.09)}
+body:not([data-theme]) .study-empty,body[data-theme=""] .study-empty{min-height:64vh;border:none;border-radius:34px;background:transparent;box-shadow:none;}
 .study-gem{width:68px;height:68px;background:linear-gradient(135deg,#4f46e5,#6366f1);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 0 36px rgba(79,70,229,.5);animation:studyGlow 3s ease-in-out infinite,gemBounceIn .8s cubic-bezier(.34,1.56,.64,1)}
 body.no-fx .study-gem{animation:none;box-shadow:0 0 18px rgba(79,70,229,.3)}
 @keyframes studyGlow{0%,100%{box-shadow:0 0 28px rgba(79,70,229,.5)}50%{box-shadow:0 0 55px rgba(99,102,241,.85),0 0 80px rgba(79,70,229,.3)}}
@@ -1081,9 +1081,203 @@ body:not([data-theme]) .schip.exam,body[data-theme=""] .schip.exam{background:rg
 .ssubj:hover{background:linear-gradient(135deg,rgba(79,70,229,.18),rgba(99,102,241,.1));border-color:rgba(99,102,241,.5);color:#c7d2fe;transform:translateY(-2px)}
 .ssubj:active{transform:scale(.96)}
 body:not([data-theme]) .ssubj,body[data-theme=""] .ssubj{background:rgba(255,255,255,.75);border-color:rgba(79,70,229,.2);color:#3730a3}
+
+/* ═══ LIGHT RAYS ═══ */
+.rays-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.rays-bg::before,.rays-bg::after{content:'';position:absolute;inset:-50%;border-radius:50%;animation:raysShift 18s ease-in-out infinite alternate;}
+.rays-bg::before{
+  background:conic-gradient(from 0deg at 50% 50%,
+    transparent 0deg,rgba(139,92,246,.13) 30deg,transparent 60deg,
+    transparent 120deg,rgba(236,72,153,.10) 150deg,transparent 180deg,
+    transparent 240deg,rgba(139,92,246,.09) 270deg,transparent 300deg,
+    transparent 360deg);
+  filter:blur(38px);
+  animation:raysShift 20s ease-in-out infinite alternate;
+}
+.rays-bg::after{
+  background:conic-gradient(from 90deg at 45% 55%,
+    transparent 0deg,rgba(239,68,68,.10) 40deg,transparent 80deg,
+    transparent 160deg,rgba(139,92,246,.08) 200deg,transparent 240deg,
+    transparent 320deg,rgba(239,68,68,.07) 350deg,transparent 360deg);
+  filter:blur(52px);
+  animation:raysShift2 26s ease-in-out infinite alternate;
+}
+@keyframes raysShift{
+  0%{transform:rotate(0deg) scale(1);}
+  50%{transform:rotate(14deg) scale(1.06);}
+  100%{transform:rotate(-8deg) scale(.97);}
+}
+@keyframes raysShift2{
+  0%{transform:rotate(0deg) scale(1.04);}
+  50%{transform:rotate(-20deg) scale(.98);}
+  100%{transform:rotate(16deg) scale(1.08);}
+}
+
+/* ═══ KURSOVAYA MODAL ═══ */
+#kursovayaOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#kursovayaOverlay.open{opacity:1;pointer-events:all;}
+#kursovayaModal{
+  width:min(520px,94vw);max-height:90vh;overflow-y:auto;
+  background:rgba(255,252,248,.97);
+  backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border:1px solid rgba(123,92,57,.15);border-radius:28px;
+  box-shadow:0 32px 80px rgba(88,66,41,.18);
+  transform:scale(.92) translateY(20px);opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;
+  padding:28px 28px 24px;display:flex;flex-direction:column;gap:18px;
+}
+body[data-theme] #kursovayaModal{background:var(--surface);border-color:var(--border2);box-shadow:0 32px 80px rgba(0,0,0,.45);}
+#kursovayaOverlay.open #kursovayaModal{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+.km-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.km-title{font-size:18px;font-weight:800;color:var(--text,#1f1d1a);display:flex;align-items:center;gap:9px;}
+.km-close{width:32px;height:32px;border-radius:10px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--t2,#5f564c);transition:all .18s;flex-shrink:0;}
+.km-close:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#ef4444;}
+.km-hint{font-size:13px;color:var(--t2,#5f564c);line-height:1.6;padding:11px 14px;background:rgba(79,70,229,.07);border:1px solid rgba(79,70,229,.15);border-radius:12px;}
+.km-fields{display:flex;flex-direction:column;gap:14px;}
+.km-field{display:flex;flex-direction:column;gap:6px;}
+.km-label{font-size:11px;font-weight:700;color:var(--t2,#5f564c);letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:5px;}
+.km-label .km-opt{font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3,#93877a);font-size:11px;}
+.km-input,.km-textarea,.km-select{
+  width:100%;font-family:var(--font,'Space Grotesk',sans-serif);font-size:14px;
+  color:var(--text,#1f1d1a);background:rgba(255,255,255,.8);
+  border:1px solid rgba(123,92,57,.16);border-radius:12px;padding:10px 14px;
+  outline:none;transition:border-color .18s,box-shadow .18s;resize:none;
+}
+body[data-theme] .km-input,body[data-theme] .km-textarea,body[data-theme] .km-select{background:var(--s2);border-color:var(--border2);color:var(--text);}
+.km-input:focus,.km-textarea:focus,.km-select:focus{border-color:rgba(79,70,229,.45);box-shadow:0 0 0 3px rgba(79,70,229,.1);}
+.km-textarea{min-height:76px;line-height:1.6;}
+.km-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.km-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.km-row2{grid-template-columns:1fr;}}
+.km-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:4px;}
+.km-btn-cancel{padding:10px 20px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.09);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--t2,#5f564c);cursor:pointer;transition:all .18s;}
+.km-btn-cancel:hover{background:rgba(0,0,0,.09);}
+.km-btn-go{padding:10px 26px;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:all .18s;box-shadow:0 8px 22px rgba(79,70,229,.32);}
+.km-btn-go:hover{opacity:.88;transform:translateY(-1px);}
+.km-btn-go:active{transform:scale(.97);}
+
+/* ═══ EXPLAIN MODAL ═══ */
+#explainOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#explainOverlay.open{opacity:1;pointer-events:all;}
+#explainModal{
+  width:min(420px,94vw);
+  background:rgba(255,252,248,.97);
+  backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  border:1px solid rgba(123,92,57,.15);border-radius:28px;
+  box-shadow:0 32px 80px rgba(88,66,41,.18);
+  transform:scale(.92) translateY(20px);opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.34,1.2,.64,1),opacity .3s;
+  padding:28px;display:flex;flex-direction:column;gap:18px;
+}
+body[data-theme] #explainModal{background:var(--surface);border-color:var(--border2);}
+#explainOverlay.open #explainModal{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
 </style>
 </head>
 <body>
+<!-- RAYS BACKGROUND -->
+<div class="rays-bg"></div>
+
+<!-- KURSOVAYA MODAL -->
+<div id="kursovayaOverlay">
+  <div id="kursovayaModal">
+    <div class="km-header">
+      <div class="km-title">🎓 Курсовая работа</div>
+      <div class="km-close" onclick="closeKursovayaModal()">✕</div>
+    </div>
+    <div class="km-hint">Уточни пару моментов — и я сразу приступлю к работе над твоей курсовой 🤝</div>
+    <div class="km-fields">
+      <div class="km-field">
+        <div class="km-label">Тема курсовой</div>
+        <input id="km-tema" class="km-input" type="text" placeholder="Например: Влияние социальных сетей на молодёжь"/>
+      </div>
+      <div class="km-row2">
+        <div class="km-field">
+          <div class="km-label">Предмет <span class="km-opt">(необязательно)</span></div>
+          <input id="km-predmet" class="km-input" type="text" placeholder="Социология, Право..."/>
+        </div>
+        <div class="km-field">
+          <div class="km-label">Тип работы</div>
+          <select id="km-type" class="km-select">
+            <option value="курсовая">Курсовая работа</option>
+            <option value="реферат">Реферат</option>
+            <option value="дипломная">Дипломная работа</option>
+            <option value="эссе">Эссе</option>
+          </select>
+        </div>
+      </div>
+      <div class="km-field">
+        <div class="km-label">Объём <span class="km-opt">(необязательно)</span></div>
+        <input id="km-volume" class="km-input" type="text" placeholder="Например: 30 страниц, 3 главы"/>
+      </div>
+      <div class="km-field">
+        <div class="km-label">Требования и пожелания <span class="km-opt">(необязательно)</span></div>
+        <textarea id="km-req" class="km-textarea" placeholder="ГОСТ оформление, список литературы, конкретные разделы, стиль..."></textarea>
+      </div>
+      <div class="km-field">
+        <div class="km-label">Уровень обучения <span class="km-opt">(необязательно)</span></div>
+        <select id="km-level" class="km-select">
+          <option value="">Не указан</option>
+          <option value="школа">Школа</option>
+          <option value="колледж/СПО">Колледж / СПО</option>
+          <option value="бакалавриат">Бакалавриат</option>
+          <option value="магистратура">Магистратура</option>
+          <option value="аспирантура">Аспирантура</option>
+        </select>
+      </div>
+    </div>
+    <div class="km-actions">
+      <button class="km-btn-cancel" onclick="closeKursovayaModal()">Отмена</button>
+      <button class="km-btn-go" onclick="submitKursovaya()">🚀 Начать</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPLAIN TOPIC MODAL -->
+<div id="explainOverlay">
+  <div id="explainModal">
+    <div class="km-header">
+      <div class="km-title">💡 Объяснить тему</div>
+      <div class="km-close" onclick="closeExplainModal()">✕</div>
+    </div>
+    <div class="km-hint">Укажи тему и уровень — объясню понятно и с примерами ✨</div>
+    <div class="km-fields">
+      <div class="km-field">
+        <div class="km-label">Тема</div>
+        <input id="ex-tema" class="km-input" type="text" placeholder="Например: Теорема Пифагора, Фотосинтез..."/>
+      </div>
+      <div class="km-row2">
+        <div class="km-field">
+          <div class="km-label">Предмет <span class="km-opt">(необязательно)</span></div>
+          <input id="ex-predmet" class="km-input" type="text" placeholder="Математика, Биология..."/>
+        </div>
+        <div class="km-field">
+          <div class="km-label">Уровень</div>
+          <select id="ex-level" class="km-select">
+            <option value="просто">Объясни просто</option>
+            <option value="школа" selected>Школьный уровень</option>
+            <option value="студент">Студенческий</option>
+            <option value="углублённо">Углублённо</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="km-actions">
+      <button class="km-btn-cancel" onclick="closeExplainModal()">Отмена</button>
+      <button class="km-btn-go" onclick="submitExplain()">💡 Объяснить</button>
+    </div>
+  </div>
+</div>
+
 <div id="onboarding" style="display:none">
   <div id="ob-screen1" class="ob-screen">
     <div class="ob-star">✦</div>
@@ -2880,7 +3074,12 @@ function renderStudyMainChips(area){
     <div class="study-row">
       <div class="schip" onclick="handleStudyChip('konspekt')">✏️ Написать конспект</div>
       <div class="schip" onclick="handleStudyChip('table')">📊 Составить таблицу</div>
-      <div class="schip" onclick="handleStudyChip('kursovaya')">🎓 Курсовая работа</div>
+      <div class="schip" onclick="openKursovayaModal()">🎓 Курсовая работа</div>
+    </div>
+    <div class="study-row">
+      <div class="schip" onclick="openExplainModal()">💡 Объяснить тему</div>
+      <div class="schip" onclick="handleStudyChip('zadacha')">🧮 Решить задачу</div>
+      <div class="schip" onclick="handleStudyChip('test')">📝 Проверить знания</div>
     </div>
     <div class="study-row">
       <div class="schip exam" onclick="showExamSubjects('vpr')">📋 Подготовка к ВПР</div>
@@ -2904,14 +3103,106 @@ function showExamSubjects(exam){
   area.innerHTML=html;
 }
 
+/* ── Новые промпты ── */
+STUDY_PROMPTS.explain=`Ты — талантливый преподаватель, умеющий объяснять любые темы понятно и с примерами.
+Правила:
+- Объясняй чётко: суть → примеры → аналогии → итог
+- Адаптируй объяснение под указанный уровень (школа/студент/углублённо)
+- Используй простые аналогии из реальной жизни
+- Заканчивай краткой шпаргалкой «Запомни главное:»
+- Если пользователь не понял — объясни иначе, проще
+- Отвечай на том языке, на котором пишет пользователь`;
+
+STUDY_PROMPTS.zadacha=`Ты — репетитор по решению задач. Помогаешь понять метод, а не просто даёшь ответ.
+Правила:
+- Решай пошагово, объясняй каждый шаг
+- Указывай формулы и законы, которые используешь
+- В конце — краткая проверка ответа
+- Если задача непонятна — попроси уточнить условие
+- Отвечай на том языке, на котором пишет пользователь`;
+
+STUDY_PROMPTS.test=`Ты — преподаватель, проверяющий знания студента в форме мини-теста.
+Правила:
+- Задавай вопросы по теме, которую указал пользователь
+- Давай 4-5 вопросов разного типа: факты, понимание, применение
+- После ответа — оценивай, объясняй ошибки
+- В конце — итог: что знает хорошо, что повторить
+- Отвечай на том языке, на котором пишет пользователь`;
+
 function handleStudyChip(key){
   _studyPrompt=STUDY_PROMPTS[key];
-  const hints={konspekt:'Напиши конспект по теме: ',table:'Составить таблицу: ',kursovaya:'Помоги написать курсовую работу по теме: '};
+  const hints={
+    konspekt:'Напиши конспект по теме: ',
+    table:'Составить таблицу: ',
+    zadacha:'Реши задачу: ',
+    test:'Проверь мои знания по теме: '
+  };
   const inp=document.getElementById('inputMsg');
   inp.value=hints[key]||'';
   inp.focus();
   inp.selectionStart=inp.selectionEnd=inp.value.length;
 }
+
+/* ── Курсовая modal ── */
+function openKursovayaModal(){
+  document.getElementById('kursovayaOverlay').classList.add('open');
+}
+function closeKursovayaModal(){
+  document.getElementById('kursovayaOverlay').classList.remove('open');
+}
+function submitKursovaya(){
+  const tema=document.getElementById('km-tema').value.trim();
+  if(!tema){document.getElementById('km-tema').focus();return;}
+  const predmet=document.getElementById('km-predmet').value.trim();
+  const type=document.getElementById('km-type').value;
+  const volume=document.getElementById('km-volume').value.trim();
+  const req=document.getElementById('km-req').value.trim();
+  const level=document.getElementById('km-level').value;
+  closeKursovayaModal();
+  _studyPrompt=STUDY_PROMPTS.kursovaya;
+  let msg=`Помоги написать ${type} на тему: «${tema}»`;
+  if(predmet)msg+=`\nПредмет: ${predmet}`;
+  if(level)msg+=`\nУровень обучения: ${level}`;
+  if(volume)msg+=`\nОбъём: ${volume}`;
+  if(req)msg+=`\nТребования и пожелания: ${req}`;
+  const inp=document.getElementById('inputMsg');
+  inp.value=msg;
+  inp.focus();
+  setTimeout(()=>{
+    const sendBtn=document.querySelector('.pill-inner-btn,.send-btn');
+    if(sendBtn)sendBtn.click();
+  },80);
+}
+
+/* ── Объяснить тему modal ── */
+function openExplainModal(){
+  document.getElementById('explainOverlay').classList.add('open');
+}
+function closeExplainModal(){
+  document.getElementById('explainOverlay').classList.remove('open');
+}
+function submitExplain(){
+  const tema=document.getElementById('ex-tema').value.trim();
+  if(!tema){document.getElementById('ex-tema').focus();return;}
+  const predmet=document.getElementById('ex-predmet').value.trim();
+  const level=document.getElementById('ex-level').value;
+  closeExplainModal();
+  _studyPrompt=STUDY_PROMPTS.explain;
+  let msg=`Объясни тему: «${tema}»`;
+  if(predmet)msg+=` (предмет: ${predmet})`;
+  msg+=`. Уровень объяснения: ${level}.`;
+  const inp=document.getElementById('inputMsg');
+  inp.value=msg;
+  inp.focus();
+  setTimeout(()=>{
+    const sendBtn=document.querySelector('.pill-inner-btn,.send-btn');
+    if(sendBtn)sendBtn.click();
+  },80);
+}
+
+/* Закрытие по клику вне */
+document.getElementById('kursovayaOverlay').addEventListener('click',function(e){if(e.target===this)closeKursovayaModal();});
+document.getElementById('explainOverlay').addEventListener('click',function(e){if(e.target===this)closeExplainModal();});
 
 function handleExamSubject(exam,subject){
   _studyPrompt=STUDY_PROMPTS[exam];
