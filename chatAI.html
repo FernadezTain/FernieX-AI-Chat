@@ -1107,6 +1107,17 @@ body:not([data-theme]) .schip.exam,body[data-theme=""] .schip.exam{background:rg
 .ssubj:hover{background:linear-gradient(135deg,rgba(79,70,229,.18),rgba(99,102,241,.1));border-color:rgba(99,102,241,.5);color:#c7d2fe;transform:translateY(-2px)}
 .ssubj:active{transform:scale(.96)}
 body:not([data-theme]) .ssubj,body[data-theme=""] .ssubj{background:rgba(255,255,255,.75);border-color:rgba(79,70,229,.2);color:#3730a3}
+/* ═══ AI FILE CARDS ═══ */
+.ai-file-card{display:flex;align-items:center;gap:12px;margin:8px 0;padding:12px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:16px;max-width:360px;transition:transform .15s,border-color .15s;}
+.ai-file-card:hover{border-color:rgba(99,102,241,.5);transform:translateY(-1px);}
+body:not([data-theme]) .ai-file-card,body[data-theme=""] .ai-file-card{background:rgba(255,255,255,.82);border-color:rgba(99,102,241,.22);box-shadow:0 6px 20px rgba(88,66,41,.07);}
+.ai-file-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ai-file-info{flex:1;min-width:0;}
+.ai-file-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ai-file-size{font-size:11px;color:var(--t2);margin-top:2px;}
+.ai-file-dl{padding:7px 14px;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;box-shadow:0 4px 14px rgba(79,70,229,.3);transition:opacity .15s,transform .15s;}
+.ai-file-dl:hover{opacity:.88;transform:translateY(-1px);}
+.ai-file-dl:active{transform:scale(.96);}
 
 /* ═══ AI FILE CARDS ═══ */
 .ai-file-card{display:inline-flex;align-items:center;gap:12px;margin:8px 0;padding:12px 16px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:16px;max-width:360px;width:100%;transition:all .2s;}
@@ -2334,7 +2345,37 @@ const backticks = (processedFull.match(/```/g) || []).length;
 if (backticks % 2 === 1) { processedFull += '\n```'; }
 // Также закрываем незакрытые $ для LaTeX
 if ((processedFull.match(/\$/g) || []).length % 2 === 1) { processedFull += '$'; }
-bub.innerHTML=renderMarkdown(processedFull);
+// ── AI FILE PARSER ──
+(function(){
+  const FILE_ICONS_MAP={js:'🟨',ts:'🟦',py:'🐍',html:'🌐',css:'🎨',json:'📋',md:'📝',txt:'📄',csv:'📊',doc:'📘',docx:'📘',pdf:'📕',zip:'📦',xml:'📰',sql:'🗄️',sh:'⚙️',java:'☕',cpp:'⚙️',c:'⚙️',php:'🐘',rb:'💎',rs:'🦀',go:'🐹',swift:'🍎',kt:'🟣',vue:'💚',jsx:'⚛️',tsx:'⚛️'};
+  const fileRe=/\/f-x_ai_createfile\s*\n([\s\S]*?)\/f-x_ai_createfile_finish/gi;
+  if(!fileRe.test(processedFull)){bub.innerHTML=renderMarkdown(processedFull);return;}
+  fileRe.lastIndex=0;
+  window._aiFiles=window._aiFiles||{};
+  let html='';let lastIdx=0;let m;
+  while((m=fileRe.exec(processedFull))!==null){
+    // текст до блока
+    const before=processedFull.slice(lastIdx,m.index).trim();
+    if(before)html+=renderMarkdown(before);
+    // парсим блок
+    const block=m[1];
+    const extM=block.match(/^Расширение:\s*\.?(\w+)/im);
+    const ext=extM?extM[1].toLowerCase():'txt';
+    const nameM=block.match(/^Имя:\s*(.+)/im);
+    const fileName=nameM?nameM[1].trim():`file_${Date.now()}.${ext}`;
+    let content=block.replace(/^Расширение:.*\n?/im,'').replace(/^Имя:.*\n?/im,'').replace(/^Содержимое:\s*\n?/im,'').trim();
+    const icon=FILE_ICONS_MAP[ext]||'📄';
+    const bytes=new TextEncoder().encode(content).length;
+    const size=bytes<1024?bytes+' Б':bytes<1048576?(bytes/1024).toFixed(1)+' КБ':(bytes/1048576).toFixed(2)+' МБ';
+    const id='fc_'+Math.random().toString(36).slice(2,9);
+    window._aiFiles[id]={fileName,content,ext};
+    html+=`<div class="ai-file-card"><div class="ai-file-icon">${icon}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" onclick="(function(){var f=window._aiFiles['${id}'];if(!f)return;var b=new Blob([f.content],{type:'text/plain;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=f.fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(u),2000)})()">⬇ Скачать</button></div>`;
+    lastIdx=m.index+m[0].length;
+  }
+  const after=processedFull.slice(lastIdx).trim();
+  if(after)html+=renderMarkdown(after);
+  bub.innerHTML=html;
+})();
       const actions2=document.createElement('div');actions2.className='msg-actions';
     const copyBtn2=document.createElement('div');copyBtn2.className='msg-action-btn';
     copyBtn2.innerHTML='<span>⎘</span><span>Копировать</span>';
