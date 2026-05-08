@@ -3347,7 +3347,7 @@ function buildFileCard(fileObj){
       <div class="ai-file-name">${fileName}</div>
       <div class="ai-file-size">${sizeStr} · .${ext}</div>
     </div>
-    <button class="ai-file-dl" onclick="downloadAIFile('${id}')">⬇ Скачать</button>
+    <button class="ai-file-dl" onclick="downloadAIFile('${id}')">Скачать</button>
   </div>`;
 }
 
@@ -3423,7 +3423,7 @@ function getFileFromStorage(id){
 
 function buildFileCardHtml(id,fileName,ext,size){
   const icon=_FILE_ICONS[ext]||'📄';
-  return `<div class="ai-file-card" data-fileid="${id}"><div class="ai-file-icon">${icon}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" data-fileid="${id}">⬇ Скачать</button></div>`;
+  return `<div class="ai-file-card" data-fileid="${id}"><div class="ai-file-icon">${icon}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" data-fileid="${id}">Скачать</button></div>`;
 }
 
 function renderBubbleContent(bub,raw){
@@ -3608,7 +3608,7 @@ function printAsPdf(f,btn){
   win.document.close();
   btn.textContent='✓ Открыто';
   btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
-  setTimeout(()=>{btn.textContent='⬇ Скачать';btn.style.background='';},3000);
+  setTimeout(()=>{btn.textContent='Скачать';btn.style.background='';},3000);
 }
 
 /* ── AI file download delegate ── */
@@ -3644,7 +3644,7 @@ document.addEventListener('click',function(e){
     setTimeout(()=>URL.revokeObjectURL(url),3000);
     btn.textContent='✓ Скачано';
     btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
-    setTimeout(()=>{btn.textContent='⬇ Скачать';btn.style.background='';},2500);
+    setTimeout(()=>{btn.textContent='Скачать';btn.style.background='';},2500);
   }catch(err){console.error('Download error:',err);}
 });
 
