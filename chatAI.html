@@ -2360,7 +2360,7 @@ if ((processedFull.match(/\$/g) || []).length % 2 === 1) { processedFull += '$';
     const size=bytes<1024?bytes+' Б':bytes<1048576?(bytes/1024).toFixed(1)+' КБ':(bytes/1048576).toFixed(2)+' МБ';
     const id='fc_'+Math.random().toString(36).slice(2,9);
     window._aiFiles[id]={fileName,content,ext};
-    html+=`<div class="ai-file-card"><div class="ai-file-icon">${icon}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" onclick="(function(){var f=window._aiFiles['${id}'];if(!f)return;var b=new Blob([f.content],{type:'text/plain;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=f.fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(u),2000)})()">⬇ Скачать</button></div>`;
+    html+=`<div class="ai-file-card"><div class="ai-file-icon">${icon}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" data-fileid="${id}">⬇ Скачать</button></div>`;
     lastIdx=m.index+m[0].length;
   }
   const after=processedFull.slice(lastIdx).trim();
@@ -3496,6 +3496,30 @@ buildSystemPrompt=function(){
     document.head.appendChild(style);
   }
 })();
+
+/* ── AI file download delegate ── */
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.ai-file-dl');
+  if(!btn)return;
+  const id=btn.dataset.fileid;
+  const f=window._aiFiles&&window._aiFiles[id];
+  if(!f){console.warn('File not found:',id);return;}
+  try{
+    const blob=new Blob([f.content],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=f.fileName;
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    btn.textContent='✓ Скачано';
+    btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
+    setTimeout(()=>{btn.textContent='⬇ Скачать';btn.style.background='';},2500);
+  }catch(err){console.error('Download error:',err);}
+});
 
 init();
 applyStudyToggleUI();
