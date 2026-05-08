@@ -62,9 +62,9 @@ body.is-scrolling .bubble{transition:none !important;}
 @keyframes of2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
 @keyframes of3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
 
-.sidebar{position:fixed;top:20px;left:20px;height:calc(100% - 40px);z-index:11;transform:translateX(calc(-100% - 20px));width:80vw;max-width:280px;background:var(--surface);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--border);border-radius:26px;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1);box-shadow:18px 0 40px rgba(0,0,0,.2)}
+.sidebar{position:fixed;top:20px;left:20px;height:calc(100% - 40px);z-index:11;transform:translateX(calc(-100% - 20px));opacity:0;width:80vw;max-width:280px;background:var(--surface);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--border);border-radius:26px;display:flex;flex-direction:column;transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease;box-shadow:18px 0 40px rgba(0,0,0,.2)}
 [data-theme="light"] .sidebar{background:rgba(245,245,250,.98);border-color:rgba(180,180,200,.3)}
-.sidebar.open{transform:translateX(0)}
+.sidebar.open{transform:translateX(0);opacity:1}
 .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9;opacity:0;transition:opacity .3s;pointer-events:none}
 .sidebar-overlay.show{opacity:1;pointer-events:all}
 .sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;gap:8px;flex-shrink:0;padding-top:calc(14px + env(safe-area-inset-top))}
@@ -553,7 +553,7 @@ body:not([data-theme]) .input-bar,body[data-theme=""] .input-bar,
 body:not([data-theme]) .settings-panel,body[data-theme=""] .settings-panel,
 body:not([data-theme]) .personalize-panel,body[data-theme=""] .personalize-panel,
 body:not([data-theme]) .model-modal,body[data-theme=""] .model-modal{
-  background:rgba(255,250,243,.72);
+  background:rgba(255,250,243,.98);
   backdrop-filter:blur(22px);
   -webkit-backdrop-filter:blur(22px);
 }
@@ -1825,8 +1825,8 @@ function saveChats(c){
   try{const s=JSON.parse(localStorage.getItem('fernieid_session'));if(s?.userId)syncChatsToServer(s.userId);}catch{}
 }
 function loadChatOrder(){try{return JSON.parse(localStorage.getItem('fx_chat_order')||'[]')}catch{return[]}}
-function saveChatOrder(o){localStorage.setItem('fx_chat_order',JSON.stringify(o))}
-function saveLastChatId(id){localStorage.setItem('fx_last_chat',id)}
+function saveChatOrder(o){localStorage.setItem('fx_chat_order',JSON.stringify(o));try{const s=JSON.parse(localStorage.getItem('fernieid_session'));if(s?.userId)syncChatsToServer(s.userId);}catch{}}
+function saveLastChatId(id){localStorage.setItem('fx_last_chat',id);try{const s=JSON.parse(localStorage.getItem('fernieid_session'));if(s?.userId)syncChatsToServer(s.userId);}catch{}}
 function loadLastChatId(){return localStorage.getItem('fx_last_chat')||null}
 function getModel(){return MODELS.find(m=>m.id===currentModelId)||MODELS[0]}
 function t(k){return I18N[currentLang]?.[k]??I18N.ru?.[k]??k}
@@ -2691,10 +2691,30 @@ const FERNIEID_API = 'https://ferniex-id.vercel.app';
 async function syncChatsFromServer(userId){
   try {
     const r = await fetch(`${FERNIEID_API}/api/ai-chats/${userId}`);
+    if (!r.ok) { console.warn('sync failed: HTTP', r.status); return; }
     const data = await r.json();
-    if (data.success && Object.keys(data.chats).length) {
-      localStorage.setItem('fx_chats', JSON.stringify(data.chats));
-      localStorage.setItem('fx_chat_order', JSON.stringify(data.chat_order));
+    if (!data.success) { console.warn('sync failed:', data.error); return; }
+    const serverChats = data.chats || {};
+    const serverOrder = data.chat_order || [];
+    if (Object.keys(serverChats).length) {
+      // Мёрджим: объединяем серверные и локальные чаты, побеждает более новый
+      const localChats = loadChats();
+      const merged = { ...localChats };
+      for (const id of Object.keys(serverChats)) {
+        const sc = serverChats[id];
+        const lc = localChats[id];
+        if (!lc || (sc.updatedAt || 0) >= (lc.updatedAt || 0)) merged[id] = sc;
+      }
+      // Порядок: серверный как база, добавляем локальные которых нет
+      const localOrder = loadChatOrder();
+      const mergedOrder = [...serverOrder];
+      for (const id of localOrder) { if (!mergedOrder.includes(id) && merged[id]) mergedOrder.push(id); }
+      localStorage.setItem('fx_chats', JSON.stringify(merged));
+      localStorage.setItem('fx_chat_order', JSON.stringify(mergedOrder));
+      // Восстанавливаем последний чат если сервер знает его
+      if (data.last_chat_id && merged[data.last_chat_id]) {
+        localStorage.setItem('fx_last_chat', data.last_chat_id);
+      }
     }
   } catch(e) { console.warn('sync failed', e); }
 }
@@ -2704,10 +2724,11 @@ async function syncChatsToServer(userId){
   try {
     const chats = loadChats();
     const order = loadChatOrder();
+    const last_chat_id = loadLastChatId();
     await fetch(`${FERNIEID_API}/api/ai-chats/save`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, chats, chat_order: order })
+      body: JSON.stringify({ userId, chats, chat_order: order, last_chat_id })
     });
   } catch(e) { console.warn('save failed', e); }
 }
