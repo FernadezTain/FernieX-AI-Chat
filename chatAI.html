@@ -3431,12 +3431,13 @@ const FILE_CREATION_INSTRUCTION=`
 print("Hello World")
 /f-x_ai_createfile_finish
 
-Поддерживаемые расширения: .py .js .ts .html .css .json .md .txt .csv .xml .sql .sh .java .cpp .c .php .rb .rs .go .swift .kt .vue .jsx .tsx .doc .docx и другие текстовые форматы.
+Поддерживаемые расширения: .py .js .ts .html .css .json .md .txt .csv .xml .sql .sh .java .cpp .c .php .rb .rs .go .swift .kt .vue .jsx .tsx и другие текстовые форматы.
 Правила:
 - Используй этот формат всегда когда создаёшь файл с кодом или текстом
 - Строка "Имя:" — желательное имя файла (придумай осмысленное)
 - После /f-x_ai_createfile_finish продолжай объяснение как обычно
 - Можно создавать несколько файлов подряд в одном ответе
+- ВАЖНО: никогда не используй расширения .pdf .doc .docx — для документов используй .md или .txt, система сама предложит красивое скачивание
 `;
 
 const _origBuildSystemPrompt=buildSystemPrompt.bind({});
@@ -3497,6 +3498,65 @@ buildSystemPrompt=function(){
   }
 })();
 
+/* ── Markdown → HTML конвертер для печати ── */
+function mdToHtml(md){
+  let h=md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^#{6}\s(.+)/gm,'<h6>$1</h6>')
+    .replace(/^#{5}\s(.+)/gm,'<h5>$1</h5>')
+    .replace(/^#{4}\s(.+)/gm,'<h4>$1</h4>')
+    .replace(/^#{3}\s(.+)/gm,'<h3>$1</h3>')
+    .replace(/^#{2}\s(.+)/gm,'<h2>$1</h2>')
+    .replace(/^#{1}\s(.+)/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^\d+\.\s(.+)/gm,'<li class="ol">$1</li>')
+    .replace(/^[-*]\s(.+)/gm,'<li>$1</li>')
+    .replace(/\n\n/g,'</p><p>');
+  // оборачиваем li в ul/ol
+  h=h.replace(/(<li class="ol">.*?<\/li>(\s*<li class="ol">.*?<\/li>)*)/gs,'<ol>$1</ol>');
+  h=h.replace(/(<li>(?!.*class=).*?<\/li>(\s*<li>(?!.*class=).*?<\/li>)*)/gs,'<ul>$1</ul>');
+  h=h.replace(/class="ol"/g,'');
+  return '<p>'+h+'</p>';
+}
+
+function downloadAsMd(f,btn){
+  const blob=new Blob([f.content],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=f.fileName;a.style.display='none';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+function printAsPdf(f,btn){
+  const name=f.fileName.replace(/\.[^.]+$/,'')||'документ';
+  const bodyHtml=mdToHtml(f.content);
+  const win=window.open('','_blank','width=800,height=600');
+  if(!win){alert('Разрешите всплывающие окна для печати PDF');return;}
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${name}</title><style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.8;color:#1a1a1a;padding:40px 60px;max-width:800px;margin:0 auto}
+    h1{font-size:24px;font-weight:800;margin:24px 0 12px;color:#111}
+    h2{font-size:20px;font-weight:700;margin:20px 0 10px;color:#222}
+    h3{font-size:16px;font-weight:700;margin:16px 0 8px;color:#333}
+    p{margin:8px 0}
+    ul,ol{padding-left:24px;margin:8px 0}
+    li{margin:4px 0}
+    strong{font-weight:700}
+    em{font-style:italic}
+    code{background:#f0f0f0;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px}
+    hr{border:none;border-top:1px solid #ddd;margin:20px 0}
+    @media print{body{padding:20px 30px}@page{margin:1.5cm}}
+  </style></head><body>${bodyHtml}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+  win.document.close();
+  btn.textContent='✓ Открыто';
+  btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
+  setTimeout(()=>{btn.textContent='⬇ Скачать';btn.style.background='';},3000);
+}
+
 /* ── AI file download delegate ── */
 document.addEventListener('click',function(e){
   const btn=e.target.closest('.ai-file-dl');
@@ -3505,15 +3565,28 @@ document.addEventListener('click',function(e){
   const f=window._aiFiles&&window._aiFiles[id];
   if(!f){console.warn('File not found:',id);return;}
   try{
-    const blob=new Blob([f.content],{type:'text/plain;charset=utf-8'});
+    const ext=(f.ext||'txt').toLowerCase();
+    // .md файлы — открываем печать как PDF
+    if(ext==='md'){
+      printAsPdf(f,btn);
+      return;
+    }
+    const MIME={
+      txt:'text/plain',html:'text/html',css:'text/css',
+      js:'text/javascript',ts:'text/typescript',
+      json:'application/json',xml:'application/xml',
+      csv:'text/csv',py:'text/x-python',sh:'text/x-shellscript',
+      sql:'application/sql',java:'text/x-java',cpp:'text/x-c++src',
+      c:'text/x-csrc',php:'text/x-php',rb:'text/x-ruby',
+      rs:'text/x-rustsrc',go:'text/x-go',swift:'text/x-swift',
+      kt:'text/x-kotlin',vue:'text/x-vue',jsx:'text/jsx',tsx:'text/tsx',
+    };
+    const mime=MIME[ext]||'text/plain';
+    const blob=new Blob([f.content],{type:mime+';charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;
-    a.download=f.fileName;
-    a.style.display='none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href=url;a.download=f.fileName;a.style.display='none';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url),3000);
     btn.textContent='✓ Скачано';
     btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
