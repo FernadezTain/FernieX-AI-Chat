@@ -330,19 +330,68 @@ function drawGlow(){
   ctx.fillStyle=g3;ctx.fillRect(0,0,W,H);
 }
 
+// chatTransition: 0=login full grid, 1=chat only input area
+let chatProgress = 0;
+let chatTransitioning = false;
+let chatTransitionStart = 0;
+const CHAT_TRANSITION_DUR = 1800; // ms
+
 (function loop(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#07070f';ctx.fillRect(0,0,W,H);
   drawGlow();
 
   const now = Date.now() / 1000;
+
+  // Animate transition progress
+  if(chatTransitioning){
+    const elapsed = Date.now() - chatTransitionStart;
+    chatProgress = Math.min(1, elapsed / CHAT_TRANSITION_DUR);
+    // ease in-out cubic
+    const t = chatProgress < 0.5 ? 4*chatProgress*chatProgress*chatProgress : 1-Math.pow(-2*chatProgress+2,3)/2;
+    chatProgress = t;
+    if(elapsed >= CHAT_TRANSITION_DUR) chatTransitioning = false;
+  }
+
+  // In login mode: full bottom grid (yPos threshold 0.38)
+  // In chat mode: only around input bar (bottom ~18% of screen)
+  const loginThresh = 0.38;
+  const chatThresh  = 0.82;
+  const yThresh = loginThresh + (chatThresh - loginThresh) * chatProgress;
+
+  // Also shrink horizontal: in chat, only within ~input width centered
+  const inputW = Math.min(760, W); // matches max-width of input
+  const inputX0 = (W - inputW) / 2;
+  const inputX1 = inputX0 + inputW;
+  // lerp: login=full width, chat=input width + padding
+  const xPad = 60;
+  const xMin = inputX0 - xPad;
+  const xMax = inputX1 + xPad;
+  // fade out cells outside horizontal bounds in chat mode
+  const hMaskStrength = chatProgress; // 0=no mask, 1=full mask
+
   gridCells.forEach(c=>{
     const yPos = c.y / H;
-    if(yPos < 0.38) return;
-    const vertFade = Math.min(1, (yPos - 0.38) / 0.22);
+    if(yPos < yThresh) return;
+
+    // vertical fade from threshold
+    const fadeRange = 0.20;
+    const vertFade = Math.min(1, (yPos - yThresh) / fadeRange);
+
+    // horizontal mask in chat mode
+    let hFade = 1;
+    if(hMaskStrength > 0){
+      const margin = 40;
+      if(c.x < xMin - margin) hFade = 0;
+      else if(c.x < xMin) hFade = (c.x - (xMin - margin)) / margin;
+      else if(c.x > xMax + margin) hFade = 0;
+      else if(c.x > xMax) hFade = 1 - (c.x - xMax) / margin;
+      hFade = 1 - hMaskStrength * (1 - hFade);
+    }
+
     const pulse = 0.5 + 0.5 * Math.sin(now * c.speed + c.phase);
     const baseA = 0.1 + vertFade * 0.6;
-    const a = baseA * (0.35 + 0.65 * pulse) * vertFade;
+    const a = baseA * (0.35 + 0.65 * pulse) * vertFade * hFade;
     drawDiamond(c.x, c.y, c.size, a, c.color);
   });
 
@@ -446,13 +495,15 @@ function enterChat(userData){
     const timeWord=h<12?'Доброе утро':h<17?'Привет':' Добрый вечер';
     document.getElementById('chatTitle').innerHTML=`${timeWord}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
     mode='chat';
-    RINGS.forEach(r=>{r.cx=W/2+(Math.random()-.5)*W*.1;r.cy=H*.5+(Math.random()-.5)*H*.15;});
+    chatTransitioning = true;
+    chatTransitionStart = Date.now();
+    chatProgress = 0;
   },500);
 }
 
 // Auto-login if session saved
 const saved=FernieID.getUser();
-if(saved) enterChat(saved);
+if(saved){ chatProgress=1; enterChat(saved); }
 
 // ── CHAT ──
 let started=false;
