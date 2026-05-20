@@ -55,10 +55,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .user-chip:hover{background:rgba(255,255,255,.09);color:#fff}
 .user-chip .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c5));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
 
-.chat-body{flex:1;width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 16px;overflow:hidden}
+.chat-body{flex:1;width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;overflow:hidden;position:relative;}
 .chat-welcome{text-align:center;animation:fadeUp .7s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.chat-title{font-size:clamp(26px,3.5vw,40px);font-weight:400;letter-spacing:-.3px;line-height:1.25;margin-bottom:0}
+.chat-title{font-size:clamp(26px,3.5vw,40px);font-weight:400;letter-spacing:-.3px;line-height:1.25;margin-bottom:20px;transition:opacity .45s ease,transform .45s ease;}
+.chat-title.hide{opacity:0;transform:translateY(-20px);pointer-events:none;}
 .chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:640px}
 .chip{padding:10px 17px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;font-size:13.5px;color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap}
 .chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
@@ -79,7 +80,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .typing span:nth-child(3){background:var(--c4);animation-delay:.3s}
 @keyframes tp{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-5px);opacity:1}}
 
-.input-wrap{width:100%;max-width:760px;padding:0 20px 28px;flex-shrink:0}
+.input-wrap{width:100%;max-width:760px;padding:0 20px 28px;flex-shrink:0;}
+.input-wrap.centered{position:fixed;left:50%;transform:translateX(-50%);top:50%;margin-top:36px;padding:0 20px;width:100%;max-width:760px;transition:none;}
+.input-wrap.to-bottom{transition:top .65s cubic-bezier(.4,0,.2,1),margin-top .65s cubic-bezier(.4,0,.2,1);}
 .input-pill{width:100%;background:rgba(20,18,38,0.92);border:1px solid rgba(255,255,255,.07);border-radius:28px;padding:8px 8px 8px 22px;display:flex;align-items:center;gap:6px;transition:border-color .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(0,0,0,.4)}
 .input-pill:focus-within{border-color:rgba(66,133,244,.3);box-shadow:0 4px 32px rgba(66,133,244,.12)}
 .inp-ta{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:15px;color:#fff;resize:none;max-height:150px;min-height:24px;line-height:1.6;padding:8px 0;scrollbar-width:none;caret-color:var(--c1)}
@@ -375,7 +378,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
     </div>
     <div class="msgs" id="msgs"></div>
   </div>
-  <div class="input-wrap">
+  <div class="input-wrap centered" id="inputWrap">
     <div class="input-pill">
       <textarea class="inp-ta" id="msgIn" placeholder="Спросите FernieX..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
@@ -620,7 +623,10 @@ function confirmLogout(){
   document.getElementById('msgs').innerHTML='';
   document.getElementById('msgs').classList.remove('on');
   document.getElementById('chatWelcome').style.display='';
-  document.getElementById('chatBody').style.justifyContent='';
+  document.getElementById('chatTitle').classList.remove('hide');
+  document.getElementById('chatBody').style.justifyContent='center';
+  const iw=document.getElementById('inputWrap');
+  iw.className='input-wrap centered';iw.style.cssText='';
   const cs=document.getElementById('chatScreen');
   cs.style.opacity='0';cs.style.transition='opacity .4s';
   setTimeout(()=>{
@@ -821,11 +827,27 @@ if(saved){chatProgress=1;enterChat(saved);}
 
 // ── CHAT ──
 let started=false;
-function useChip(el){document.getElementById('msgIn').value=el.textContent.slice(2).trim();sendMsg();}
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
   if(!txt)return;
-  if(!started){started=true;document.getElementById('chatWelcome').style.display='none';document.getElementById('msgs').classList.add('on');document.getElementById('chatBody').style.justifyContent='flex-start';}
+  if(!started){
+    started=true;
+    // прячем заголовок
+    document.getElementById('chatTitle').classList.add('hide');
+    // инпут едет вниз
+    const iw=document.getElementById('inputWrap');
+    iw.classList.add('to-bottom');
+    iw.style.top='100%';
+    iw.style.marginTop='-80px';
+    setTimeout(()=>{
+      // переключаем в нормальный flow
+      iw.classList.remove('centered','to-bottom');
+      iw.style.cssText='';
+      document.getElementById('chatWelcome').style.display='none';
+      document.getElementById('msgs').classList.add('on');
+      document.getElementById('chatBody').style.justifyContent='flex-start';
+    },660);
+  }
   ta.value='';ta.style.height='auto';
   const msgs=document.getElementById('msgs');
   const ub=document.createElement('div');ub.className='msg-u';ub.textContent=txt;msgs.appendChild(ub);
