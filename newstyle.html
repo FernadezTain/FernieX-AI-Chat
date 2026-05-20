@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FernieID</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Google+Sans+Display:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080810;
+  --surface:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.08);
+  --text:#ffffff;
+  --t2:rgba(255,255,255,.6);
+  --t3:rgba(255,255,255,.35);
+  --accent-1:#4285f4;
+  --accent-2:#ea4335;
+  --accent-3:#fbbc04;
+  --accent-4:#34a853;
+  --font:'Google Sans','Segoe UI',sans-serif;
+  --font-display:'Google Sans Display','Google Sans',sans-serif;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--font);color:var(--text);position:relative}
+
+/* ── CANVAS BG ── */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── SCREENS ── */
+.screen{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);
+}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97)}
+.screen.slide-up{transform:translateY(-60px);opacity:0;pointer-events:none}
+
+/* ── GEMINI STAR ── */
+.gemini-star{
+  width:48px;height:48px;margin-bottom:32px;position:relative;
+  animation:starSpin 6s ease-in-out infinite;
+}
+@keyframes starSpin{
+  0%,100%{transform:rotate(0deg) scale(1)}
+  25%{transform:rotate(15deg) scale(1.05)}
+  50%{transform:rotate(0deg) scale(1)}
+  75%{transform:rotate(-15deg) scale(1.05)}
+}
+.gemini-star svg{width:100%;height:100%;filter:drop-shadow(0 0 12px rgba(66,133,244,.5))}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{gap:0}
+.login-greeting{
+  font-family:var(--font-display);
+  font-size:clamp(32px,5vw,52px);
+  font-weight:400;
+  color:var(--text);
+  text-align:center;
+  line-height:1.2;
+  margin-bottom:8px;
+  letter-spacing:-.5px;
+}
+.login-greeting span{
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3),var(--accent-4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:600;
+}
+.login-sub{
+  font-size:16px;color:var(--t2);text-align:center;margin-bottom:48px;font-weight:400;
+}
+
+.login-form{
+  width:100%;max-width:420px;padding:0 24px;display:flex;flex-direction:column;gap:14px;
+}
+.input-field{
+  position:relative;
+}
+.input-field input{
+  width:100%;padding:16px 20px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  font-family:var(--font);font-size:15px;color:var(--text);outline:none;
+  transition:border-color .2s,background .2s;
+  caret-color:var(--accent-1);
+}
+.input-field input::placeholder{color:var(--t3)}
+.input-field input:focus{
+  border-color:rgba(66,133,244,.5);
+  background:rgba(66,133,244,.07);
+}
+
+.btn-primary{
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,var(--accent-1),#5b9cf6);
+  border:none;border-radius:14px;
+  font-family:var(--font);font-size:15px;font-weight:600;color:#fff;
+  cursor:pointer;outline:none;
+  transition:transform .15s,box-shadow .2s,opacity .2s;
+  box-shadow:0 4px 24px rgba(66,133,244,.35);
+  position:relative;overflow:hidden;
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(66,133,244,.5)}
+.btn-primary:active{transform:translateY(0);opacity:.9}
+.btn-primary::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(rgba(255,255,255,.15),transparent);
+  border-radius:inherit;
+}
+
+.login-divider{
+  display:flex;align-items:center;gap:12px;margin:4px 0;
+  color:var(--t3);font-size:13px;
+}
+.login-divider::before,.login-divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.08);
+}
+
+.btn-google{
+  width:100%;padding:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  font-family:var(--font);font-size:14px;font-weight:500;color:var(--t2);
+  cursor:pointer;outline:none;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:background .2s,border-color .2s,color .2s;
+}
+.btn-google:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18);color:#fff}
+
+/* Google colors logo */
+.g-logo{width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+.g-logo svg{width:100%;height:100%}
+
+.login-footer{
+  margin-top:20px;font-size:13px;color:var(--t3);text-align:center;
+}
+.login-footer a{color:var(--accent-1);text-decoration:none;transition:opacity .15s}
+.login-footer a:hover{opacity:.8}
+
+/* ── CHAT SCREEN ── */
+#chatScreen{
+  flex-direction:column;justify-content:flex-start;
+  padding-top:env(safe-area-inset-top,0);
+}
+
+/* Header */
+.chat-header{
+  width:100%;max-width:900px;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.header-model-btn{
+  display:flex;align-items:center;gap:6px;padding:8px 14px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:100px;font-size:14px;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .2s;
+}
+.header-model-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+.model-dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-4));animation:mdot 2s ease-in-out infinite}
+@keyframes mdot{0%,100%{opacity:.6}50%{opacity:1}}
+.chevron{font-size:10px;opacity:.5}
+
+.header-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;cursor:pointer;
+  border:1.5px dashed rgba(255,255,255,.3);
+  transition:border-color .2s;
+}
+.header-avatar:hover{border-color:rgba(255,255,255,.6)}
+
+/* Main chat area */
+.chat-body{
+  flex:1;width:100%;max-width:900px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:0 24px;
+  overflow:hidden;
+}
+
+.chat-welcome{
+  text-align:center;
+  animation:fadeUp .8s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.chat-star{
+  width:40px;height:40px;margin:0 auto 28px;
+  animation:starSpin 6s ease-in-out infinite;
+}
+.chat-star svg{width:100%;height:100%;filter:drop-shadow(0 0 10px rgba(66,133,244,.4))}
+
+.chat-title{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4vw,42px);
+  font-weight:400;letter-spacing:-.3px;
+  line-height:1.2;color:var(--text);
+  margin-bottom:48px;
+}
+.chat-title .name{
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3),var(--accent-4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:500;
+}
+
+/* Suggestion chips */
+.chat-chips{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  margin-bottom:32px;max-width:680px;
+}
+.chip{
+  padding:10px 18px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+  border-radius:100px;font-size:14px;color:var(--t2);
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+
+/* Chat messages area (hidden initially) */
+.messages-area{
+  flex:1;width:100%;max-width:760px;
+  overflow-y:auto;padding:24px 0;
+  display:flex;flex-direction:column;gap:24px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+}
+.messages-area::-webkit-scrollbar{width:4px}
+.messages-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+.messages-area.visible{display:flex}
+.messages-area:not(.visible){display:none}
+
+.msg-user{
+  align-self:flex-end;max-width:75%;
+  padding:14px 18px;
+  background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.2);
+  border-radius:20px 20px 4px 20px;
+  font-size:15px;line-height:1.6;color:var(--text);
+}
+.msg-ai{
+  align-self:flex-start;max-width:85%;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.msg-ai-star{
+  width:28px;height:28px;flex-shrink:0;margin-top:2px;
+}
+.msg-ai-star svg{width:100%;height:100%;filter:drop-shadow(0 0 6px rgba(66,133,244,.3))}
+.msg-ai-text{
+  font-size:15px;line-height:1.7;color:var(--text);
+}
+
+/* Input bar */
+.chat-input-wrap{
+  width:100%;max-width:760px;padding:0 24px 24px;flex-shrink:0;
+}
+@media(max-width:768px){
+  .chat-input-wrap{padding:0 16px 20px}
+  .chat-header{padding:12px 16px}
+}
+
+.pill-input{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:28px;
+  padding:6px 6px 6px 20px;
+  display:flex;align-items:flex-end;gap:8px;
+  transition:border-color .2s,background .2s;
+}
+.pill-input:focus-within{
+  border-color:rgba(66,133,244,.4);
+  background:rgba(66,133,244,.05);
+}
+.pill-textarea{
+  flex:1;background:transparent;border:none;outline:none;
+  font-family:var(--font);font-size:15px;color:var(--text);
+  resize:none;max-height:160px;min-height:24px;line-height:1.6;
+  padding:10px 0;
+  scrollbar-width:none;
+  caret-color:var(--accent-1);
+}
+.pill-textarea::-webkit-scrollbar{display:none}
+.pill-textarea::placeholder{color:var(--t3)}
+
+.pill-actions{
+  display:flex;align-items:center;gap:4px;padding-bottom:6px;
+}
+.pill-btn{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:none;cursor:pointer;transition:all .15s;
+  background:transparent;color:var(--t2);font-size:17px;
+}
+.pill-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.pill-btn.send{
+  background:linear-gradient(135deg,var(--accent-1),#5b9cf6);
+  color:#fff;box-shadow:0 2px 12px rgba(66,133,244,.4);
+}
+.pill-btn.send:hover{box-shadow:0 4px 20px rgba(66,133,244,.6)}
+.pill-btn.send:disabled{opacity:.3;cursor:default;box-shadow:none}
+
+/* Input toolbar */
+.input-toolbar{
+  display:flex;align-items:center;gap:6px;padding:10px 0 4px;
+}
+.toolbar-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 12px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:100px;
+  font-size:13px;color:var(--t3);cursor:pointer;transition:all .2s;
+}
+.toolbar-btn:hover{background:rgba(255,255,255,.08);color:var(--t2)}
+
+/* ── PARTICLE CANVAS STYLE ── */
+/* handled by JS */
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(255,255,255,.1);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.12);border-radius:100px;
+  padding:10px 20px;font-size:14px;color:#fff;
+  opacity:0;transition:all .35s;pointer-events:none;white-space:nowrap;z-index:99;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── LOADING INDICATOR ── */
+.ai-loading{display:flex;gap:5px;align-items:center;padding:6px 0}
+.ai-loading span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent-1);animation:aiBounce 1.2s ease-in-out infinite;
+}
+.ai-loading span:nth-child(1){animation-delay:0s;background:var(--accent-1)}
+.ai-loading span:nth-child(2){animation-delay:.15s;background:var(--accent-3)}
+.ai-loading span:nth-child(3){animation-delay:.3s;background:var(--accent-4)}
+@keyframes aiBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.3}
+  30%{transform:translateY(-6px);opacity:1}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- LOGIN SCREEN -->
+<div class="screen" id="loginScreen">
+  <div class="gemini-star">
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4285f4"/>
+          <stop offset="33%" stop-color="#ea4335"/>
+          <stop offset="66%" stop-color="#fbbc04"/>
+          <stop offset="100%" stop-color="#34a853"/>
+        </linearGradient>
+      </defs>
+      <path d="M24 2 C24 14 34 24 46 24 C34 24 24 34 24 46 C24 34 14 24 2 24 C14 24 24 14 24 2Z" fill="url(#g1)"/>
+    </svg>
+  </div>
+
+  <h1 class="login-greeting">Привет, <span>Fernadez!</span></h1>
+  <p class="login-sub">Войдите в FernieID, чтобы продолжить</p>
+
+  <div class="login-form">
+    <div class="input-field">
+      <input type="email" placeholder="Email или имя пользователя" id="loginEmail" autocomplete="off"/>
+    </div>
+    <div class="input-field">
+      <input type="password" placeholder="Пароль" id="loginPass" autocomplete="off"/>
+    </div>
+
+    <button class="btn-primary" onclick="doLogin()">Войти</button>
+
+    <div class="login-divider">или</div>
+
+    <button class="btn-google" onclick="doLogin()">
+      <div class="g-logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+      </div>
+      Продолжить через Google
+    </button>
+
+    <p class="login-footer">Нет аккаунта? <a href="#">Создать FernieID</a></p>
+  </div>
+</div>
+
+<!-- CHAT SCREEN -->
+<div class="screen hidden" id="chatScreen">
+  <div class="chat-header" style="width:100%">
+    <button class="header-model-btn" id="modelBtn">
+      <div class="model-dot"></div>
+      FernieX Flash
+      <span class="chevron">▾</span>
+    </button>
+    <div class="header-avatar" id="userAvatar">F</div>
+  </div>
+
+  <div class="chat-body" id="chatBody">
+    <!-- Welcome state -->
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="chat-star">
+        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4285f4"/>
+              <stop offset="33%" stop-color="#ea4335"/>
+              <stop offset="66%" stop-color="#fbbc04"/>
+              <stop offset="100%" stop-color="#34a853"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 2 C24 14 34 24 46 24 C34 24 24 34 24 46 C24 34 14 24 2 24 C14 24 24 14 24 2Z" fill="url(#g2)"/>
+        </svg>
+      </div>
+      <div class="chat-title" id="chatGreeting">
+        Что вас интересует?
+      </div>
+      <div class="chat-chips" id="chips">
+        <div class="chip" onclick="useChip(this)">💡 Помоги с идеей</div>
+        <div class="chip" onclick="useChip(this)">✍️ Напиши текст</div>
+        <div class="chip" onclick="useChip(this)">🔍 Объясни тему</div>
+        <div class="chip" onclick="useChip(this)">💬 Поговорим</div>
+        <div class="chip" onclick="useChip(this)">📊 Анализ данных</div>
+        <div class="chip" onclick="useChip(this)">🖼️ Создай образ</div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea"></div>
+  </div>
+
+  <div class="chat-input-wrap">
+    <div class="input-toolbar">
+      <button class="toolbar-btn">＋ Прикрепить</button>
+      <button class="toolbar-btn">🌐 Поиск</button>
+      <button class="toolbar-btn">🎙️ Голос</button>
+    </div>
+    <div class="pill-input">
+      <textarea class="pill-textarea" id="msgInput" placeholder="Спросите FernieX..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <div class="pill-actions">
+        <button class="pill-btn" title="Файл">📎</button>
+        <button class="pill-btn send" id="sendBtn" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── PARTICLE / DOT ANIMATION ──
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+
+const COLORS = ['#4285f4','#ea4335','#fbbc04','#34a853','#9c27b0','#0097a7'];
+let W, H, particles = [], animId;
+
+function resize(){
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Current screen state: 'login' | 'chat'
+let currentBg = 'login';
+
+class Particle {
+  constructor(bg){
+    this.reset(bg);
+  }
+  reset(bg){
+    this.bg = bg || currentBg;
+    if(this.bg === 'login'){
+      // Dots pulsing from edges toward center, fading as they go down
+      this.x = Math.random() * W;
+      this.y = H * 0.55 + Math.random() * H * 0.45; // start from bottom half
+      this.targetX = W/2 + (Math.random()-0.5)*200;
+      this.targetY = H/2 + (Math.random()-0.5)*100;
+      this.life = 0;
+      this.maxLife = 60 + Math.random()*80;
+      this.size = 2 + Math.random()*3;
+      this.color = COLORS[Math.floor(Math.random()*COLORS.length)];
+      this.alpha = 0;
+    } else {
+      // chat: calm ambient
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.vx = (Math.random()-0.5)*0.4;
+      this.vy = -0.2 - Math.random()*0.3;
+      this.life = 0;
+      this.maxLife = 150 + Math.random()*100;
+      this.size = 1.5 + Math.random()*2;
+      this.color = COLORS[Math.floor(Math.random()*COLORS.length)];
+      this.alpha = 0;
+    }
+  }
+  update(){
+    this.life++;
+    const t = this.life / this.maxLife;
+    if(this.bg === 'login'){
+      // Move from bottom toward center
+      this.x += (this.targetX - this.x) * 0.025;
+      this.y += (this.targetY - this.y) * 0.025;
+      // Fade in then out
+      if(t < 0.3) this.alpha = t/0.3 * 0.85;
+      else if(t < 0.7) this.alpha = 0.85;
+      else this.alpha = (1-t)/0.3 * 0.85;
+    } else {
+      this.x += this.vx;
+      this.y += this.vy;
+      if(t < 0.2) this.alpha = t/0.2 * 0.5;
+      else if(t < 0.8) this.alpha = 0.5;
+      else this.alpha = (1-t)/0.2 * 0.5;
+    }
+    if(this.life >= this.maxLife) this.reset(this.bg);
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    ctx.fillStyle = hexToRgba(this.color, this.alpha);
+    ctx.fill();
+  }
+}
+
+function hexToRgba(hex, alpha){
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function initParticles(bg){
+  currentBg = bg;
+  particles = [];
+  const count = bg === 'login' ? 180 : 100;
+  // stagger spawn
+  for(let i=0;i<count;i++){
+    const p = new Particle(bg);
+    p.life = Math.floor(Math.random()*p.maxLife);
+    particles.push(p);
+  }
+}
+
+function drawGlow(bg){
+  // Bottom glow / nebula
+  if(bg === 'login'){
+    const grd = ctx.createRadialGradient(W/2, H*0.85, 0, W/2, H*0.85, W*0.7);
+    grd.addColorStop(0,'rgba(66,133,244,0.18)');
+    grd.addColorStop(0.4,'rgba(168,0,255,0.08)');
+    grd.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+
+    // secondary pink/purple bottom left
+    const grd2 = ctx.createRadialGradient(W*0.2, H*0.9, 0, W*0.2, H*0.9, W*0.5);
+    grd2.addColorStop(0,'rgba(234,67,53,0.12)');
+    grd2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = grd2;
+    ctx.fillRect(0,0,W,H);
+  } else {
+    const grd = ctx.createRadialGradient(W/2, H, 0, W/2, H, W*0.8);
+    grd.addColorStop(0,'rgba(66,133,244,0.12)');
+    grd.addColorStop(0.5,'rgba(52,168,83,0.06)');
+    grd.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#080810';
+  ctx.fillRect(0,0,W,H);
+
+  drawGlow(currentBg);
+  particles.forEach(p=>{ p.update(); p.draw(); });
+
+  animId = requestAnimationFrame(loop);
+}
+
+initParticles('login');
+loop();
+
+// ── AUTH LOGIC ──
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  if(!email){ showToast('Введите email'); return; }
+
+  // Animate out
+  const ls = document.getElementById('loginScreen');
+  ls.classList.add('slide-up');
+
+  setTimeout(()=>{
+    ls.classList.add('hidden');
+    ls.classList.remove('slide-up');
+    const cs = document.getElementById('chatScreen');
+    cs.classList.remove('hidden');
+    cs.style.opacity = '0';
+    cs.style.transform = 'scale(1.03)';
+    requestAnimationFrame(()=>{
+      cs.style.transition = 'opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1)';
+      cs.style.opacity = '1';
+      cs.style.transform = 'scale(1)';
+    });
+
+    // Switch particle mode
+    currentBg = 'chat';
+    particles.forEach(p=>{ p.bg='chat'; p.reset('chat'); p.life=Math.floor(Math.random()*p.maxLife); });
+
+    // Update greeting
+    updateChatGreeting();
+  }, 600);
+}
+
+function updateChatGreeting(){
+  const h = new Date().getHours();
+  let greeting;
+  if(h < 12) greeting = 'Доброе утро, <span class="name">Fernadez!</span><br>Что вас интересует?';
+  else if(h < 17) greeting = '<span class="name">Fernadez,</span><br>что вас интересует?';
+  else greeting = 'Добрый вечер, <span class="name">Fernadez!</span><br>Что дальше?';
+  document.getElementById('chatGreeting').innerHTML = greeting;
+}
+
+// Enter on login fields
+document.getElementById('loginEmail').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+// ── CHAT LOGIC ──
+let chatStarted = false;
+
+function showToast(msg, dur=2500){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+function useChip(el){
+  document.getElementById('msgInput').value = el.textContent.slice(2).trim();
+  sendMsg();
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function handleKey(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); }
+}
+
+async function sendMsg(){
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if(!text) return;
+
+  // Hide welcome, show messages
+  if(!chatStarted){
+    chatStarted = true;
+    document.getElementById('chatWelcome').style.display = 'none';
+    const ma = document.getElementById('messagesArea');
+    ma.classList.add('visible');
+    document.getElementById('chatBody').style.justifyContent = 'flex-start';
+  }
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const ma = document.getElementById('messagesArea');
+
+  // User bubble
+  const userBubble = document.createElement('div');
+  userBubble.className = 'msg-user';
+  userBubble.textContent = text;
+  userBubble.style.animation = 'fadeUp .4s ease both';
+  ma.appendChild(userBubble);
+
+  // AI loading
+  const aiRow = document.createElement('div');
+  aiRow.className = 'msg-ai';
+  aiRow.innerHTML = `
+    <div class="msg-ai-star">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="gai" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/>
+          <stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/>
+        </linearGradient></defs>
+        <path d="M24 2 C24 14 34 24 46 24 C34 24 24 34 24 46 C24 34 14 24 2 24 C14 24 24 14 24 2Z" fill="url(#gai)"/>
+      </svg>
+    </div>
+    <div class="msg-ai-text" id="aiText_${Date.now()}">
+      <div class="ai-loading"><span></span><span></span><span></span></div>
+    </div>`;
+  aiRow.style.animation = 'fadeUp .4s .1s ease both';
+  ma.appendChild(aiRow);
+  ma.scrollTop = ma.scrollHeight;
+
+  // Call Anthropic API
+  const aiTextEl = aiRow.querySelector('.msg-ai-text');
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:'Ты умный, дружелюбный AI-ассистент FernieX. Отвечай кратко и по делу на том же языке, на котором пишет пользователь.',
+        messages:[{role:'user',content:text}]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.find(b=>b.type==='text')?.text || 'Что-то пошло не так.';
+    aiTextEl.innerHTML = '';
+    typeText(aiTextEl, reply);
+  } catch(err){
+    aiTextEl.innerHTML = 'Ошибка соединения. Попробуйте ещё раз.';
+  }
+  ma.scrollTop = ma.scrollHeight;
+}
+
+function typeText(el, text, i=0){
+  if(i===0) el.textContent='';
+  if(i<text.length){
+    el.textContent += text[i];
+    el.closest('.messages-area').scrollTop = el.closest('.messages-area').scrollHeight;
+    setTimeout(()=>typeText(el,text,i+1), 12);
+  }
+}
+</script>
+</body>
+</html>
