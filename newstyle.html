@@ -942,7 +942,8 @@ async function sendMsg(){
           ...chatHistory
         ],
         stream:true,
-        max_tokens:2048
+        max_tokens:2048,
+        user_id:(()=>{try{const s=JSON.parse(localStorage.getItem('fid_user')||'{}');return s.userId||s.id||null;}catch{return null;}})()
       }),
       signal:abortCtrl.signal
     });
