@@ -12,8 +12,8 @@
   --t2:rgba(255,255,255,.55);--t3:rgba(255,255,255,.3);
   --c1:#4285f4;--c2:#ea4335;--c3:#fbbc04;--c4:#34a853;--c5:#a855f7;
   --font:'Outfit',sans-serif;
-*{transition:background-color .5s ease, border-color .5s ease, box-shadow .5s ease, color .3s ease;}
 }
+*{transition:background-color .5s ease, border-color .5s ease, box-shadow .5s ease, color .3s ease;}
 html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text)}
 #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 
@@ -29,7 +29,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .login-form{width:100%;max-width:400px;padding:0 20px;display:flex;flex-direction:column;gap:12px}
 .field input{width:100%;padding:15px 18px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);border-radius:13px;font-family:var(--font);font-size:15px;color:#fff;outline:none;transition:border-color .2s,background .2s;caret-color:var(--c1);}
 .field input::placeholder{color:rgba(255,255,255,.25)}
-.field input:focus{border-color:rgba(var(--c1-45),.45);background:rgba(66,133,244,.06)}
+.field input:focus{border-color:rgba(66,133,244,.45);background:rgba(66,133,244,.06)}
 .btn-main{width:100%;padding:15px;margin-top:2px;background:linear-gradient(135deg,var(--c1) 0%,#5a9cf5 100%);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 4px 22px rgba(66,133,244,.38);transition:transform .15s,box-shadow .2s;}
 .btn-main:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(66,133,244,.55)}
 .btn-main:active{transform:none}
@@ -55,13 +55,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .user-chip:hover{background:rgba(255,255,255,.09);color:#fff}
 .user-chip .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c5));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
 
-.chat-body{flex:1;width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;overflow:hidden}
-.chat-welcome{text-align:center;animation:fadeUp .7s ease both}
+.chat-body{flex:1;width:100%;max-width:760px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;overflow:hidden;position:relative;}
+.chat-welcome{text-align:center;animation:fadeUp .7s ease both;display:flex;flex-direction:column;align-items:center;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.chat-title{font-size:clamp(26px,3.5vw,40px);font-weight:400;letter-spacing:-.3px;line-height:1.25;margin-bottom:44px}
-.chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:640px}
-.chip{padding:10px 17px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;font-size:13.5px;color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap}
-.chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
+.chat-title{font-size:clamp(26px,3.5vw,40px);font-weight:400;letter-spacing:-.3px;line-height:1.35}
 
 .msgs{flex:1;width:100%;max-width:760px;overflow-y:auto;padding:20px 0;display:none;flex-direction:column;gap:20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.09) transparent}
 .msgs.on{display:flex}
@@ -91,198 +88,52 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .ibtn.send{background:linear-gradient(135deg,var(--c1),#5a9cf5);color:#fff;box-shadow:0 2px 12px rgba(66,133,244,.4)}
 .ibtn.send:hover{box-shadow:0 4px 20px rgba(66,133,244,.6)}
 
-/* ── SETTINGS OVERLAY ── */
-#settingsOverlay{
-  position:fixed;inset:0;z-index:200;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
+#settingsOverlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;pointer-events:none;}
 #settingsOverlay.open{pointer-events:all;}
-#settingsBg{
-  position:absolute;inset:0;
-  background:rgba(0,0,0,0);
-  backdrop-filter:blur(0px);
-  -webkit-backdrop-filter:blur(0px);
-  transition:background .45s ease,backdrop-filter .45s ease,-webkit-backdrop-filter .45s ease;
-}
-#settingsOverlay.open #settingsBg{
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-}
-
-/* Анимация как открытие приложения на iOS — из точки origin (правый верхний угол где кнопка) */
-#settingsCard{
-  position:relative;
-  width:min(540px,94vw);
-  background:rgba(15,13,28,0.97);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:28px;
-  overflow:hidden;
-  box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(255,255,255,.05);
-  transform-origin:top right;
-  transform:scale(0.08) translate(45vw,-45vh);
-  opacity:0;
-  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .3s ease;
-  will-change:transform,opacity;
-}
-#settingsOverlay.open #settingsCard{
-  transform:scale(1) translate(0,0);
-  opacity:1;
-}
-#settingsOverlay.closing #settingsCard{
-  transform:scale(0.08) translate(45vw,-45vh);
-  opacity:0;
-  transition:transform .4s cubic-bezier(.4,0,1,1), opacity .25s ease;
-}
-#settingsOverlay.closing #settingsBg{
-  background:rgba(0,0,0,0);
-  backdrop-filter:blur(0px);
-  transition:background .35s ease,backdrop-filter .35s ease;
-}
-
-/* Два "экрана" внутри карточки */
-#sMain, #sCustom{
-  padding:28px 26px 24px;
-  transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;
-  width:100%;
-}
+#settingsBg{position:absolute;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);transition:background .45s ease,backdrop-filter .45s ease,-webkit-backdrop-filter .45s ease;}
+#settingsOverlay.open #settingsBg{background:rgba(0,0,0,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+#settingsCard{position:relative;width:min(540px,94vw);background:rgba(15,13,28,0.97);border:1px solid rgba(255,255,255,.08);border-radius:28px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(255,255,255,.05);transform-origin:top right;transform:scale(0.08) translate(45vw,-45vh);opacity:0;transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .3s ease;will-change:transform,opacity;}
+#settingsOverlay.open #settingsCard{transform:scale(1) translate(0,0);opacity:1;}
+#settingsOverlay.closing #settingsCard{transform:scale(0.08) translate(45vw,-45vh);opacity:0;transition:transform .4s cubic-bezier(.4,0,1,1), opacity .25s ease;}
+#settingsOverlay.closing #settingsBg{background:rgba(0,0,0,0);backdrop-filter:blur(0px);transition:background .35s ease,backdrop-filter .35s ease;}
+#sMain,#sCustom{padding:28px 26px 24px;transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;width:100%;}
 #sMain{transform:translateX(0);opacity:1;}
 #sCustom{position:absolute;top:0;left:0;right:0;transform:translateX(100%);opacity:0;}
 #settingsCard.show-custom #sMain{transform:translateX(-100%);opacity:0;}
 #settingsCard.show-custom #sCustom{transform:translateX(0);opacity:1;}
-
-/* Profile block */
-.s-profile{
-  display:flex;align-items:center;gap:16px;
-  padding:18px;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:18px;
-  margin-bottom:20px;
-}
-.s-av{
-  width:56px;height:56px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--c1),var(--c5));
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:700;color:#fff;
-  box-shadow:0 0 0 3px rgba(255,255,255,.08);
-}
+.s-profile{display:flex;align-items:center;gap:16px;padding:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:18px;margin-bottom:20px;}
+.s-av{width:56px;height:56px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--c1),var(--c5));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.08);}
 .s-info{flex:1;min-width:0;}
 .s-name{font-size:17px;font-weight:600;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .s-tag{font-size:12px;color:var(--t3);}
-
-/* Menu rows */
 .s-menu{display:flex;flex-direction:column;gap:4px;margin-bottom:20px;}
-.s-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.05);
-  border-radius:14px;
-  cursor:pointer;
-  transition:background .18s,border-color .18s;
-  color:var(--text);
-  font-size:15px;font-weight:500;
-  user-select:none;
-}
+.s-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;cursor:pointer;transition:background .18s,border-color .18s;color:var(--text);font-size:15px;font-weight:500;user-select:none;}
 .s-row:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1);}
-.s-row:active{background:rgba(255,255,255,.04);}
 .s-row-left{display:flex;align-items:center;gap:12px;}
-.s-row-ico{
-  width:34px;height:34px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:17px;flex-shrink:0;
-}
+.s-row-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .s-row-arrow{color:rgba(255,255,255,.25);font-size:12px;}
-.s-btn-logout{
-  width:100%;padding:14px;
-  background:rgba(248,113,113,.07);
-  border:1px solid rgba(248,113,113,.15);
-  border-radius:14px;
-  font-family:var(--font);font-size:15px;font-weight:600;
-  color:#f87171;cursor:pointer;
-  transition:background .2s,border-color .2s;
-}
+.s-btn-logout{width:100%;padding:14px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.15);border-radius:14px;font-family:var(--font);font-size:15px;font-weight:600;color:#f87171;cursor:pointer;transition:background .2s,border-color .2s;}
 .s-btn-logout:hover{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.3);}
-
-/* Кастомизация — подраздел */
-.s-back{
-  display:flex;align-items:center;gap:8px;
-  cursor:pointer;color:var(--c1);font-size:14px;font-weight:500;
-  margin-bottom:22px;width:fit-content;
-  transition:opacity .15s;
-}
+.s-back{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--c1);font-size:14px;font-weight:500;margin-bottom:22px;width:fit-content;transition:opacity .15s;}
 .s-back:hover{opacity:.75;}
 .s-custom-title{font-size:20px;font-weight:600;margin-bottom:6px;}
 .s-custom-sub{font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.5;}
-
 .s-hue-block{margin-bottom:24px;}
 .s-hue-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .s-hue-name{font-size:14px;font-weight:500;color:var(--text);}
 .s-hue-val{font-size:13px;color:var(--t3);font-family:monospace;}
-.s-hue-track{
-  position:relative;height:36px;border-radius:18px;
-  background:linear-gradient(to right,
-    hsl(0,80%,55%),hsl(30,80%,55%),hsl(60,80%,55%),
-    hsl(120,80%,45%),hsl(180,80%,45%),hsl(210,80%,55%),
-    hsl(240,80%,60%),hsl(270,80%,60%),hsl(300,80%,55%),hsl(360,80%,55%));
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);
-  touch-action:none;
-}
-.s-hue-thumb{
-  position:absolute;top:50%;
-  width:28px;height:28px;border-radius:50%;
-  background:#fff;
-  border:3px solid #fff;
-  box-shadow:0 2px 12px rgba(0,0,0,.5);
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-  transition:box-shadow .15s;
-}
-.s-hue-track:active .s-hue-thumb{box-shadow:0 2px 20px rgba(0,0,0,.7),0 0 0 4px rgba(255,255,255,.2);}
-
+.s-hue-track{position:relative;height:36px;border-radius:18px;background:linear-gradient(to right,hsl(0,80%,55%),hsl(30,80%,55%),hsl(60,80%,55%),hsl(120,80%,45%),hsl(180,80%,45%),hsl(210,80%,55%),hsl(240,80%,60%),hsl(270,80%,60%),hsl(300,80%,55%),hsl(360,80%,55%));cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;}
+.s-hue-thumb{position:absolute;top:50%;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.5);transform:translate(-50%,-50%);pointer-events:none;transition:box-shadow .15s;}
 .s-sat-block{margin-bottom:28px;}
-.s-sat-track{
-  position:relative;height:36px;border-radius:18px;
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);
-  touch-action:none;
-}
+.s-sat-track{position:relative;height:36px;border-radius:18px;cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;}
 .s-presets{display:flex;gap:10px;flex-wrap:wrap;}
-.s-preset{
-  flex:1;min-width:80px;
-  padding:12px 8px;
-  border-radius:14px;
-  border:2px solid transparent;
-  cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:rgba(255,255,255,.04);
-  transition:all .2s;font-size:12px;color:var(--t2);font-weight:500;
-}
+.s-preset{flex:1;min-width:80px;padding:12px 8px;border-radius:14px;border:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(255,255,255,.04);transition:all .2s;font-size:12px;color:var(--t2);font-weight:500;}
 .s-preset:hover{background:rgba(255,255,255,.08);}
 .s-preset.active{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06);color:#fff;}
 .s-preset-dot{width:28px;height:28px;border-radius:50%;}
-
-/* CONFIRM */
-#confirmDialog{
-  position:fixed;inset:0;z-index:300;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(10px);
-  opacity:0;pointer-events:none;
-  transition:opacity .25s;
-}
+#confirmDialog{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .25s;}
 #confirmDialog.open{opacity:1;pointer-events:all;}
-.confirm-card{
-  width:min(320px,88vw);
-  background:rgba(22,20,36,0.98);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:22px;padding:30px 24px 22px;
-  text-align:center;
-  transform:scale(.88);
-  transition:transform .32s cubic-bezier(.16,1,.3,1);
-}
+.confirm-card{width:min(320px,88vw);background:rgba(22,20,36,0.98);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:30px 24px 22px;text-align:center;transform:scale(.88);transition:transform .32s cubic-bezier(.16,1,.3,1);}
 #confirmDialog.open .confirm-card{transform:scale(1);}
 .confirm-title{font-size:18px;font-weight:600;margin-bottom:8px;}
 .confirm-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5;}
@@ -292,39 +143,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .cbtn-cancel:hover{background:rgba(255,255,255,.14);color:#fff;}
 .cbtn-confirm{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;}
 .cbtn-confirm:hover{box-shadow:0 4px 16px rgba(239,68,68,.4);}
-
-/* Динамические цвета темы */
-.field input:focus{border-color:var(--c1-45)!important;background:var(--c1-12)!important}
-.btn-main{background:linear-gradient(135deg,var(--c1),var(--c5))!important;box-shadow:0 4px 22px var(--c1-38)!important}
-.btn-main:hover{box-shadow:0 8px 30px var(--c1-55)!important}
-.user-chip .av{background:linear-gradient(135deg,var(--c1),var(--c5))!important}
-.s-av{background:linear-gradient(135deg,var(--c1),var(--c5))!important}
-.ibtn.send{background:linear-gradient(135deg,var(--c1),var(--c5))!important;box-shadow:0 2px 12px var(--c1-40)!important}
-.ibtn.send:hover{box-shadow:0 4px 20px var(--c1-60)!important}
-.input-pill:focus-within{border-color:var(--c1-30)!important;box-shadow:0 4px 32px var(--c1-12)!important}
-.msg-u{background:var(--c1-13)!important;border-color:var(--c1-18)!important}
-.switch-link a{color:var(--c1)!important}
-.inp-ta{caret-color:var(--c1)!important}
-.mdot{background:linear-gradient(135deg,var(--c1),var(--c4))!important}
-.s-back{color:var(--c1)!important}
 </style>
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
 
-<!-- LOGIN -->
 <div class="screen" id="loginScreen">
   <div class="star-wrap" id="loginStar">
-    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-      <defs><linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/>
-        <stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/>
-      </linearGradient></defs>
-      <path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#sg)"/>
+    <svg viewBox="0 0 48 48"><defs><linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/>
+      <stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/>
+    </linearGradient></defs>
+    <path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#sg)"/>
     </svg>
   </div>
   <div id="step1">
-    <h1 class="login-title"><span class="hi">Добро пожаловать</span></h1>
+    <h1 class="login-title">Добро пожаловать</h1>
     <p class="login-sub">Войдите через FernieID, чтобы продолжить</p>
     <div class="login-form">
       <div id="regFields" style="display:none;flex-direction:column;gap:12px">
@@ -344,12 +178,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
   <div id="step2" style="display:none">
     <div class="star-wrap" style="margin:0 auto 20px">
-      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <defs><linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/>
-          <stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/>
-        </linearGradient></defs>
-        <path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#sg2)"/>
+      <svg viewBox="0 0 48 48"><defs><linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/>
+        <stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/>
+      </linearGradient></defs>
+      <path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#sg2)"/>
       </svg>
     </div>
     <p class="step-hint">Код отправлен в Telegram.<br>Введи его ниже.</p>
@@ -361,7 +194,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
 </div>
 
-<!-- CHAT -->
 <div class="screen hidden" id="chatScreen">
   <div class="chat-header" style="width:100%">
     <div class="model-pill"><div class="mdot"></div>FernieX Flash<span class="chevron">▾</span></div>
@@ -372,14 +204,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   <div class="chat-body" id="chatBody">
     <div class="chat-welcome" id="chatWelcome">
       <div class="chat-title" id="chatTitle">Что вас интересует?</div>
-      <div class="chips">
-        <div class="chip" onclick="useChip(this)">💡 Помоги с идеей</div>
-        <div class="chip" onclick="useChip(this)">✍️ Напиши текст</div>
-        <div class="chip" onclick="useChip(this)">🔍 Объясни тему</div>
-        <div class="chip" onclick="useChip(this)">💬 Поговорим</div>
-        <div class="chip" onclick="useChip(this)">📊 Анализ данных</div>
-        <div class="chip" onclick="useChip(this)">🖼️ Создай образ</div>
-      </div>
     </div>
     <div class="msgs" id="msgs"></div>
   </div>
@@ -395,11 +219,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
 </div>
 
-<!-- SETTINGS -->
 <div id="settingsOverlay">
   <div id="settingsBg" onclick="closeSettings()"></div>
   <div id="settingsCard">
-    <!-- Главный экран -->
     <div id="sMain">
       <div class="s-profile">
         <div class="s-av" id="sAv">F</div>
@@ -410,84 +232,45 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
       </div>
       <div class="s-menu">
         <div class="s-row" onclick="openCustom()">
-          <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(168,85,247,.15)">🎨</div>
-            <span>Кастомизация</span>
-          </div>
+          <div class="s-row-left"><div class="s-row-ico" style="background:rgba(168,85,247,.15)">🎨</div><span>Кастомизация</span></div>
           <span class="s-row-arrow">›</span>
         </div>
         <div class="s-row">
-          <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(66,133,244,.15)">🔔</div>
-            <span>Уведомления</span>
-          </div>
+          <div class="s-row-left"><div class="s-row-ico" style="background:rgba(66,133,244,.15)">🔔</div><span>Уведомления</span></div>
           <span class="s-row-arrow">›</span>
         </div>
         <div class="s-row">
-          <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(52,168,83,.15)">🔒</div>
-            <span>Конфиденциальность</span>
-          </div>
+          <div class="s-row-left"><div class="s-row-ico" style="background:rgba(52,168,83,.15)">🔒</div><span>Конфиденциальность</span></div>
           <span class="s-row-arrow">›</span>
         </div>
       </div>
       <button class="s-btn-logout" onclick="askLogout()">Выйти из аккаунта</button>
     </div>
-
-    <!-- Экран кастомизации -->
     <div id="sCustom">
       <div class="s-back" onclick="closeCustom()">‹ Назад</div>
       <div class="s-custom-title">Кастомизация</div>
       <div class="s-custom-sub">Выбери основной цвет интерфейса</div>
-
       <div class="s-hue-block">
-        <div class="s-hue-label">
-          <span class="s-hue-name">Оттенок</span>
-          <span class="s-hue-val" id="hueVal">213°</span>
-        </div>
-        <div class="s-hue-track" id="hueTrack">
-          <div class="s-hue-thumb" id="hueThumb" style="left:59%"></div>
-        </div>
+        <div class="s-hue-label"><span class="s-hue-name">Оттенок</span><span class="s-hue-val" id="hueVal">213°</span></div>
+        <div class="s-hue-track" id="hueTrack"><div class="s-hue-thumb" id="hueThumb" style="left:59%"></div></div>
       </div>
-
       <div class="s-sat-block">
-        <div class="s-hue-label">
-          <span class="s-hue-name">Насыщенность</span>
-          <span class="s-hue-val" id="satVal">80%</span>
-        </div>
-        <div class="s-sat-track" id="satTrack">
-          <div class="s-hue-thumb" id="satThumb" style="left:80%"></div>
-        </div>
+        <div class="s-hue-label"><span class="s-hue-name">Насыщенность</span><span class="s-hue-val" id="satVal">85%</span></div>
+        <div class="s-sat-track" id="satTrack"><div class="s-hue-thumb" id="satThumb" style="left:85%"></div></div>
       </div>
-
-      <div class="s-hue-label" style="margin-bottom:12px">
-        <span class="s-hue-name">Пресеты</span>
-      </div>
+      <div class="s-hue-label" style="margin-bottom:12px"><span class="s-hue-name">Пресеты</span></div>
       <div class="s-presets" id="presets">
-        <div class="s-preset active" data-h="213" data-s="85" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#4285f4,#5a9cf5)"></div>Синий
-        </div>
-        <div class="s-preset" data-h="270" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#a855f7,#c084fc)"></div>Фиолет
-        </div>
-        <div class="s-preset" data-h="187" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#06b6d4,#22d3ee)"></div>Циан
-        </div>
-        <div class="s-preset" data-h="160" data-s="75" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#10b981,#34d399)"></div>Зелёный
-        </div>
-        <div class="s-preset" data-h="38" data-s="90" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"></div>Янтарь
-        </div>
-        <div class="s-preset" data-h="330" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#ec4899,#f472b6)"></div>Розовый
-        </div>
+        <div class="s-preset active" data-h="213" data-s="85" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#4285f4,#5a9cf5)"></div>Синий</div>
+        <div class="s-preset" data-h="270" data-s="80" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#a855f7,#c084fc)"></div>Фиолет</div>
+        <div class="s-preset" data-h="187" data-s="80" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#06b6d4,#22d3ee)"></div>Циан</div>
+        <div class="s-preset" data-h="160" data-s="75" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#10b981,#34d399)"></div>Зелёный</div>
+        <div class="s-preset" data-h="38" data-s="90" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"></div>Янтарь</div>
+        <div class="s-preset" data-h="330" data-s="80" onclick="applyPreset(this)"><div class="s-preset-dot" style="background:linear-gradient(135deg,#ec4899,#f472b6)"></div>Розовый</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CONFIRM -->
 <div id="confirmDialog">
   <div class="confirm-card">
     <div class="confirm-title">Выйти из аккаунта?</div>
@@ -521,7 +304,6 @@ FernieID.init('fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f');
 </script>
 
 <script>
-// ── BACKGROUND ──
 const canvas=document.getElementById('bgCanvas');
 const ctx=canvas.getContext('2d');
 let W,H;
@@ -534,37 +316,45 @@ const COLS_GRID=['#4285f4','#ea4335','#fbbc04','#34a853','#a855f7','#06b6d4'];
 let gridCells=[];
 function buildGrid(){
   gridCells=[];
-  const cols=Math.ceil(W/GRID)+2, rows=Math.ceil(H/GRID)+2;
+  const cols=Math.ceil(W/GRID)+2,rows=Math.ceil(H/GRID)+2;
   for(let gy=0;gy<rows;gy++)
     for(let gx=0;gx<cols;gx++)
       gridCells.push({x:gx*GRID,y:gy*GRID,phase:Math.random()*Math.PI*2,speed:.3+Math.random()*.7,color:COLS_GRID[Math.floor(Math.random()*COLS_GRID.length)],size:2.5+Math.random()*1.2});
 }
 buildGrid();
 
-function drawGlow(){
-  const g=ctx.createRadialGradient(W/2,H*1.05,0,W/2,H*1.05,W*.85);
-  g.addColorStop(0,'rgba(60,30,180,.32)');g.addColorStop(.35,'rgba(100,40,220,.18)');
-  g.addColorStop(.65,'rgba(40,10,100,.08)');g.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  const g2=ctx.createRadialGradient(W*.1,H*.85,0,W*.1,H*.85,W*.45);
-  g2.addColorStop(0,'rgba(80,40,200,.12)');g2.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
-}
-
 let chatProgress=0,chatTransitioning=false,chatTransitionStart=0;
 const CHAT_DUR=1800;
+
+function drawGlow(p){
+  const g=ctx.createRadialGradient(W/2,H,0,W/2,H,W*.9);
+  g.addColorStop(0,`rgba(50,15,170,${.75*p})`);
+  g.addColorStop(.25,`rgba(45,12,155,${.55*p})`);
+  g.addColorStop(.55,`rgba(30,8,120,${.28*p})`);
+  g.addColorStop(.8,`rgba(15,4,80,${.1*p})`);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const g2=ctx.createRadialGradient(W*.1,H*.9,0,W*.1,H*.9,W*.5);
+  g2.addColorStop(0,`rgba(80,40,200,${.18*p})`);
+  g2.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+  const g3=ctx.createRadialGradient(W/2,0,0,W/2,0,W*.6);
+  g3.addColorStop(0,`rgba(40,20,140,${.12*p})`);
+  g3.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g3;ctx.fillRect(0,0,W,H);
+}
 
 (function loop(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#07070f';ctx.fillRect(0,0,W,H);
-  drawGlow();
-  const now=Date.now()/1000;
   if(chatTransitioning){
     const raw=Math.min(1,(Date.now()-chatTransitionStart)/CHAT_DUR);
     chatProgress=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;
     if(raw>=1){chatTransitioning=false;chatProgress=1;}
   }
+  if(chatProgress>0) drawGlow(chatProgress);
   if(chatProgress<1){
+    const now=Date.now()/1000;
     gridCells.forEach(c=>{
       const yFrac=c.y/H;
       const vertA=(0.08+yFrac*0.55)*(1-chatProgress);
@@ -579,50 +369,47 @@ const CHAT_DUR=1800;
       ctx.stroke();ctx.restore();
     });
   }
-  if(chatProgress>0){
-    const p=chatProgress;
-    ctx.save();ctx.translate(W/2,H);ctx.scale(1,.45);
-    const g=ctx.createRadialGradient(0,0,0,0,0,W*.7);
-    g.addColorStop(0,`rgba(50,15,170,${.7*p})`);
-    g.addColorStop(.2,`rgba(45,12,155,${.5*p})`);
-    g.addColorStop(.5,`rgba(30,8,120,${.25*p})`);
-    g.addColorStop(.8,`rgba(15,4,80,${.1*p})`);
-    g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,W*.7,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
   requestAnimationFrame(loop);
 })();
 
-// ── SETTINGS ──
 function openSettings(){
   const u=FernieID.getUser();
   if(u){document.getElementById('sName').textContent=u.username||'Пользователь';document.getElementById('sAv').textContent=(u.username||'F')[0].toUpperCase();}
   const ov=document.getElementById('settingsOverlay');
-  ov.classList.remove('closing');
-  ov.classList.add('open');
+  ov.classList.remove('closing');ov.classList.add('open');
 }
 function closeSettings(){
   const ov=document.getElementById('settingsOverlay');
   ov.classList.add('closing');
-  // Если был открыт подраздел — закрыть его тоже
   document.getElementById('settingsCard').classList.remove('show-custom');
   setTimeout(()=>{ov.classList.remove('open','closing');},420);
 }
 function openCustom(){document.getElementById('settingsCard').classList.add('show-custom');}
 function closeCustom(){document.getElementById('settingsCard').classList.remove('show-custom');}
-
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSettings();});
-
 function askLogout(){document.getElementById('confirmDialog').classList.add('open');}
 function closeConfirm(){document.getElementById('confirmDialog').classList.remove('open');}
 function confirmLogout(){
   FernieID.logout();closeConfirm();closeSettings();
-  chatProgress=0;chatTransitioning=false;started=false;
+  const startP=chatProgress;
+  const origStart=Date.now();
+  const origDur=CHAT_DUR;
+  let reverseActive=true;
+  chatTransitioning=false;
+  function reverseLoop(){
+    if(!reverseActive)return;
+    const raw=Math.min(1,(Date.now()-origStart)/origDur);
+    const eased=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;
+    chatProgress=startP*(1-eased);
+    if(raw>=1){reverseActive=false;chatProgress=0;}
+    else requestAnimationFrame(reverseLoop);
+  }
+  requestAnimationFrame(reverseLoop);
+  started=false;
   document.getElementById('msgs').innerHTML='';
   document.getElementById('msgs').classList.remove('on');
   document.getElementById('chatWelcome').style.display='';
-  document.getElementById('chatBody').style.justifyContent='';
+  document.getElementById('chatBody').style.justifyContent='center';
   const cs=document.getElementById('chatScreen');
   cs.style.opacity='0';cs.style.transition='opacity .4s';
   setTimeout(()=>{
@@ -630,80 +417,39 @@ function confirmLogout(){
     const ls=document.getElementById('loginScreen');
     ls.classList.remove('hidden');ls.style.opacity='0';ls.style.transition='opacity .4s';
     requestAnimationFrame(()=>{ls.style.opacity='1';});
-    document.getElementById('step1').style.display='';
-    document.getElementById('step2').style.display='none';
+    document.getElementById('step1').style.display='';document.getElementById('step2').style.display='none';
     document.getElementById('loginStar').style.display='';
     document.getElementById('authErr').textContent='';
-    document.getElementById('loginU').value='';
-    document.getElementById('loginP').value='';
+    document.getElementById('loginU').value='';document.getElementById('loginP').value='';
   },400);
 }
 
-// ── THEME / HUE SLIDER ──
-let themeH=213, themeS=85;
-
+let themeH=213,themeS=85;
 function hslToHex(h,s,l){
   s/=100;l/=100;
   const a=s*Math.min(l,1-l);
   const f=n=>{const k=(n+h/30)%12;const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);return Math.round(255*c).toString(16).padStart(2,'0');};
   return `#${f(0)}${f(8)}${f(4)}`;
 }
+function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16);const g=parseInt(hex.slice(3,5),16);const b=parseInt(hex.slice(5,7),16);return `${r},${g},${b}`;}
 function applyTheme(h,s){
   themeH=h;themeS=s;
-  const c1=hslToHex(h,s,58);
-  const c5=hslToHex((h+30)%360,s,68);
+  const c1=hslToHex(h,s,58);const c5=hslToHex((h+30)%360,s,68);
   const c1rgb=hexToRgb(c1);
-  const c5rgb=hexToRgb(c5);
-
   const root=document.documentElement;
-  root.style.setProperty('--c1',c1);
-  root.style.setProperty('--c5',c5);
-  document.getElementById('satTrack').style.transition='background .5s ease';
-
-  // Обновить все захардкоженные rgba через CSS переменные
-  root.style.setProperty('--c1-10',`rgba(${c1rgb},.10)`);
-  root.style.setProperty('--c1-12',`rgba(${c1rgb},.12)`);
-  root.style.setProperty('--c1-13',`rgba(${c1rgb},.13)`);
-  root.style.setProperty('--c1-15',`rgba(${c1rgb},.15)`);
-  root.style.setProperty('--c1-18',`rgba(${c1rgb},.18)`);
-  root.style.setProperty('--c1-30',`rgba(${c1rgb},.30)`);
-  root.style.setProperty('--c1-38',`rgba(${c1rgb},.38)`);
-  root.style.setProperty('--c1-40',`rgba(${c1rgb},.40)`);
-  root.style.setProperty('--c1-45',`rgba(${c1rgb},.45)`);
-  root.style.setProperty('--c1-55',`rgba(${c1rgb},.55)`);
-  root.style.setProperty('--c1-60',`rgba(${c1rgb},.60)`);
-
-  document.getElementById('satTrack').style.background=
-    `linear-gradient(to right, hsl(${h},0%,55%), hsl(${h},100%,55%))`;
+  root.style.setProperty('--c1',c1);root.style.setProperty('--c5',c5);
+  ['10','12','13','15','18','30','38','40','45','55','60'].forEach(op=>{
+    root.style.setProperty(`--c1-${op}`,`rgba(${c1rgb},.${op})`);
+  });
+  document.getElementById('satTrack').style.background=`linear-gradient(to right,hsl(${h},0%,55%),hsl(${h},100%,55%))`;
   try{localStorage.setItem('fx_theme',JSON.stringify({h,s}));}catch{}
 }
-
-function hexToRgb(hex){
-  const r=parseInt(hex.slice(1,3),16);
-  const g=parseInt(hex.slice(3,5),16);
-  const b=parseInt(hex.slice(5,7),16);
-  return `${r},${g},${b}`;
-}
-
-function updateHueUI(h){
-  const pct=(h/360)*100;
-  document.getElementById('hueThumb').style.left=pct+'%';
-  document.getElementById('hueVal').textContent=Math.round(h)+'°';
-}
-function updateSatUI(s){
-  document.getElementById('satThumb').style.left=s+'%';
-  document.getElementById('satVal').textContent=Math.round(s)+'%';
-}
-
+function updateHueUI(h){document.getElementById('hueThumb').style.left=(h/360*100)+'%';document.getElementById('hueVal').textContent=Math.round(h)+'°';}
+function updateSatUI(s){document.getElementById('satThumb').style.left=s+'%';document.getElementById('satVal').textContent=Math.round(s)+'%';}
 function makeDraggable(trackId,thumbId,onValue){
-  const track=document.getElementById(trackId);
-  const thumb=document.getElementById(thumbId);
+  const track=document.getElementById(trackId),thumb=document.getElementById(thumbId);
   let dragging=false;
-  function getVal(e){
-    const rect=track.getBoundingClientRect();
-    const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-    return Math.max(0,Math.min(1,x/rect.width));
-  }
+  function getVal(e){const rect=track.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;return Math.max(0,Math.min(1,x/rect.width));}
   track.addEventListener('mousedown',e=>{dragging=true;const v=getVal(e);thumb.style.left=(v*100)+'%';onValue(v);});
   track.addEventListener('touchstart',e=>{dragging=true;const v=getVal(e);thumb.style.left=(v*100)+'%';onValue(v);},{passive:true});
   window.addEventListener('mousemove',e=>{if(!dragging)return;const v=getVal(e);thumb.style.left=(v*100)+'%';onValue(v);});
@@ -711,48 +457,20 @@ function makeDraggable(trackId,thumbId,onValue){
   window.addEventListener('mouseup',()=>{dragging=false;});
   window.addEventListener('touchend',()=>{dragging=false;});
 }
-
-makeDraggable('hueTrack','hueThumb',v=>{
-  const h=v*360;
-  document.getElementById('hueVal').textContent=Math.round(h)+'°';
-  document.querySelectorAll('.s-preset').forEach(p=>p.classList.remove('active'));
-  applyTheme(h,themeS);
-});
-makeDraggable('satTrack','satThumb',v=>{
-  const s=v*100;
-  document.getElementById('satVal').textContent=Math.round(s)+'%';
-  applyTheme(themeH,s);
-});
-
+makeDraggable('hueTrack','hueThumb',v=>{const h=v*360;document.getElementById('hueVal').textContent=Math.round(h)+'°';document.querySelectorAll('.s-preset').forEach(p=>p.classList.remove('active'));applyTheme(h,themeS);});
+makeDraggable('satTrack','satThumb',v=>{const s=v*100;document.getElementById('satVal').textContent=Math.round(s)+'%';applyTheme(themeH,s);});
 function applyPreset(el){
-  document.querySelectorAll('.s-preset').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  const h=+el.dataset.h, s=+el.dataset.s;
-  updateHueUI(h);updateSatUI(s);
-  applyTheme(h,s);
+  document.querySelectorAll('.s-preset').forEach(p=>p.classList.remove('active'));el.classList.add('active');
+  const h=+el.dataset.h,s=+el.dataset.s;updateHueUI(h);updateSatUI(s);applyTheme(h,s);
 }
-
-// Восстановить тему
 try{
   const t=JSON.parse(localStorage.getItem('fx_theme'));
-  if(t&&t.h!=null){
-    updateHueUI(t.h);updateSatUI(t.s||80);
-    applyTheme(t.h,t.s||80);
-    document.querySelectorAll('.s-preset').forEach(p=>{
-      p.classList.toggle('active',+p.dataset.h===t.h&&+p.dataset.s===(t.s||80));
-    });
-  } else if(t&&t.c1){
-    // старый формат
-    document.documentElement.style.setProperty('--c1',t.c1);
-  }
+  if(t&&t.h!=null){updateHueUI(t.h);updateSatUI(t.s||85);applyTheme(t.h,t.s||85);
+    document.querySelectorAll('.s-preset').forEach(p=>{p.classList.toggle('active',+p.dataset.h===t.h&&+p.dataset.s===(t.s||85));});}
 }catch{}
+document.getElementById('satTrack').style.background=`linear-gradient(to right,hsl(${themeH},0%,55%),hsl(${themeH},100%,55%))`;
 
-// Инициализация трека насыщенности
-document.getElementById('satTrack').style.background=
-  `linear-gradient(to right, hsl(${themeH},0%,55%), hsl(${themeH},100%,55%))`;
-
-// ── AUTH ──
-let isReg=false, fidUserId=null;
+let isReg=false,fidUserId=null;
 function setErr(id,msg){const e=document.getElementById(id);e.style.color='#f87171';e.textContent=msg;}
 function setInfo(id,msg){const e=document.getElementById(id);e.style.color='rgba(255,255,255,.35)';e.textContent=msg;}
 function toggleMode(){
@@ -763,7 +481,7 @@ function toggleMode(){
   document.getElementById('authErr').textContent='';
 }
 async function doLogin(){
-  const u=document.getElementById('loginU').value.trim(), p=document.getElementById('loginP').value;
+  const u=document.getElementById('loginU').value.trim(),p=document.getElementById('loginP').value;
   if(!u||!p)return setErr('authErr','Заполни все поля');
   setInfo('authErr','Загрузка...');
   try{
@@ -801,6 +519,9 @@ async function doRegister(){
 }
 
 function enterChat(userData){
+  chatProgress=0;
+  chatTransitioning=true;
+  chatTransitionStart=Date.now();
   const ls=document.getElementById('loginScreen');
   ls.style.opacity='0';ls.style.transform='translateY(-30px) scale(.98)';ls.style.transition='opacity .55s ease,transform .55s ease';
   setTimeout(()=>{
@@ -814,20 +535,28 @@ function enterChat(userData){
     const h=new Date().getHours();
     const tw=h<12?'Доброе утро':h<17?'Привет':'Добрый вечер';
     document.getElementById('chatTitle').innerHTML=`${tw}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
-    chatTransitioning=true;chatTransitionStart=Date.now();chatProgress=0;
+    document.getElementById('chatBody').style.justifyContent='center';
   },500);
 }
 
 const saved=FernieID.getUser();
-if(saved){chatProgress=1;enterChat(saved);}
+if(saved){
+  chatProgress=0;
+  chatTransitioning=true;
+  chatTransitionStart=Date.now();
+  enterChat(saved);
+}
 
-// ── CHAT ──
 let started=false;
-function useChip(el){document.getElementById('msgIn').value=el.textContent.slice(2).trim();sendMsg();}
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
   if(!txt)return;
-  if(!started){started=true;document.getElementById('chatWelcome').style.display='none';document.getElementById('msgs').classList.add('on');document.getElementById('chatBody').style.justifyContent='flex-start';}
+  if(!started){
+    started=true;
+    document.getElementById('chatWelcome').style.display='none';
+    document.getElementById('msgs').classList.add('on');
+    document.getElementById('chatBody').style.justifyContent='flex-start';
+  }
   ta.value='';ta.style.height='auto';
   const msgs=document.getElementById('msgs');
   const ub=document.createElement('div');ub.className='msg-u';ub.textContent=txt;msgs.appendChild(ub);
