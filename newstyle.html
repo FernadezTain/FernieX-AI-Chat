@@ -311,6 +311,32 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .mdot{background:linear-gradient(135deg,var(--c1),var(--c4))!important}
 .s-back{color:var(--c1)!important}
 
+/* ── SIDE BUTTONS ── */
+.side-btns{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:10px;}
+.side-btn{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:rgba(255,255,255,.6);transition:all .2s;backdrop-filter:blur(10px);}
+.side-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18);color:#fff;transform:scale(1.07);}
+.side-btn:active{transform:scale(.96);}
+/* ── CHAT HISTORY SIDEBAR ── */
+#histSidebar{position:fixed;left:0;top:0;bottom:0;width:min(300px,82vw);z-index:100;background:rgba(10,9,20,0.97);border-right:1px solid rgba(255,255,255,.08);transform:translateX(-100%);transition:transform .38s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;backdrop-filter:blur(20px);}
+#histSidebar.open{transform:translateX(0);}
+#histOverlay{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,0);pointer-events:none;transition:background .35s;}
+#histOverlay.show{background:rgba(0,0,0,.5);pointer-events:all;}
+.hist-head{padding:20px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.hist-title{font-size:16px;font-weight:700;color:#fff;}
+.hist-close{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.hist-close:hover{background:rgba(255,255,255,.12);color:#fff;}
+.hist-list{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px;scrollbar-width:none;}
+.hist-list::-webkit-scrollbar{display:none}
+.hist-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.hist-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.07);}
+.hist-item.active{background:rgba(66,133,244,.1);border-color:rgba(66,133,244,.2);}
+.hist-item-ico{font-size:14px;flex-shrink:0;}
+.hist-item-name{flex:1;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hist-item.active .hist-item-name{color:#fff;}
+.hist-item-del{width:22px;height:22px;border-radius:6px;background:transparent;border:none;color:rgba(255,255,255,.25);font-size:12px;cursor:pointer;opacity:0;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hist-item:hover .hist-item-del{opacity:1;}
+.hist-item-del:hover{background:rgba(239,68,68,.15);color:#f87171;}
+.hist-empty{text-align:center;padding:40px 20px;font-size:13px;color:rgba(255,255,255,.25);}
 /* ── MODEL MODAL ── */
 #modelOverlay{position:fixed;inset:0;z-index:250;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
 #modelOverlay.open{pointer-events:all;}
@@ -384,6 +410,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
       <div class="err-msg" id="authErr2"></div>
     </div>
   </div>
+</div>
+
+<!-- SIDE BUTTONS (только в чате) -->
+<div class="side-btns" id="sideBtns" style="display:none">
+  <div class="side-btn" onclick="openHistSidebar()" title="История чатов">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+  </div>
+  <div class="side-btn" onclick="newChat()" title="Новый чат">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </div>
+</div>
+
+<!-- HISTORY SIDEBAR -->
+<div id="histOverlay" onclick="closeHistSidebar()"></div>
+<div id="histSidebar">
+  <div class="hist-head">
+    <div class="hist-title">💬 История чатов</div>
+    <button class="hist-close" onclick="closeHistSidebar()">✕</button>
+  </div>
+  <div class="hist-list" id="histList"></div>
 </div>
 
 <!-- CHAT -->
@@ -851,11 +897,126 @@ function enterChat(userData){
     const tw=h<12?'Доброе утро':h<17?'Привет':'Добрый вечер';
     document.getElementById('chatTitle').innerHTML=`${tw}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
     chatTransitioning=true;chatTransitionStart=Date.now();chatProgress=0;
+    setTimeout(()=>{
+      document.getElementById('sideBtns').style.display='flex';
+      if(typeof allChats!=='undefined'){
+        if(!allChats.length){const id='c'+Date.now();allChats.unshift({id,title:'Новый чат',history:[],createdAt:Date.now()});activeChatId=id;saveChats();}
+        else if(!activeChatId){activeChatId=allChats[0].id;chatHistory=allChats[0].history.slice();}
+        renderHistList();
+      }
+    },600);
   },500);
 }
 
 const saved=FernieID.getUser();
 if(saved){chatProgress=1;enterChat(saved);}
+
+// ── CHAT HISTORY STORAGE ──
+let allChats=JSON.parse(localStorage.getItem('fx2_chats')||'[]');
+// [{id, title, history:[], createdAt}]
+let activeChatId=null;
+
+function saveChats(){localStorage.setItem('fx2_chats',JSON.stringify(allChats));}
+
+function newChat(){
+  closeHistSidebar();
+  // Если текущий чат пустой — не создаём новый
+  if(activeChatId){
+    const cur=allChats.find(c=>c.id===activeChatId);
+    if(cur&&cur.history.length===0)return;
+  }
+  const id='c'+Date.now();
+  allChats.unshift({id,title:'Новый чат',history:[],createdAt:Date.now()});
+  activeChatId=id;
+  saveChats();
+  // Сброс UI
+  chatHistory=[];
+  started=false;
+  const msgs=document.getElementById('msgs');
+  msgs.innerHTML='';msgs.classList.remove('on');
+  document.getElementById('chatWelcome').style.display='';
+  document.getElementById('chatTitle').classList.remove('hide');
+  document.getElementById('chatBody').style.justifyContent='center';
+  const iw=document.getElementById('inputWrap');
+  iw.className='input-wrap centered';iw.style.cssText='';
+  renderHistList();
+}
+
+function loadChat(id){
+  closeHistSidebar();
+  const chat=allChats.find(c=>c.id===id);
+  if(!chat)return;
+  activeChatId=id;
+  chatHistory=chat.history.slice();
+  // Сброс и отрисовка
+  const msgs=document.getElementById('msgs');
+  msgs.innerHTML='';
+  if(chat.history.length===0){
+    msgs.classList.remove('on');
+    document.getElementById('chatWelcome').style.display='';
+    document.getElementById('chatTitle').classList.remove('hide');
+    document.getElementById('chatBody').style.justifyContent='center';
+    const iw=document.getElementById('inputWrap');
+    iw.className='input-wrap centered';iw.style.cssText='';
+    started=false;
+  } else {
+    msgs.classList.add('on');
+    document.getElementById('chatWelcome').style.display='none';
+    document.getElementById('chatBody').style.justifyContent='flex-start';
+    const iw=document.getElementById('inputWrap');
+    iw.className='input-wrap';iw.style.cssText='';
+    started=true;
+    chat.history.forEach(m=>{
+      if(m.role==='user'){
+        const ub=document.createElement('div');ub.className='msg-u';ub.textContent=m.content;msgs.appendChild(ub);
+      } else if(m.role==='assistant'){
+        const ai=document.createElement('div');ai.className='msg-ai';
+        const ts=Date.now();
+        ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${ts}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${ts})"/></svg></div><div class="msg-ai-txt"></div>`;
+        ai.querySelector('.msg-ai-txt').textContent=m.content;
+        msgs.appendChild(ai);
+      }
+    });
+    setTimeout(()=>msgs.scrollTop=msgs.scrollHeight,50);
+  }
+  renderHistList();
+}
+
+function deleteChat(id,e){
+  e.stopPropagation();
+  allChats=allChats.filter(c=>c.id!==id);
+  saveChats();
+  if(activeChatId===id){
+    if(allChats.length>0)loadChat(allChats[0].id);
+    else newChat();
+  } else renderHistList();
+}
+
+function renderHistList(){
+  const list=document.getElementById('histList');
+  list.innerHTML='';
+  if(!allChats.length){
+    list.innerHTML='<div class="hist-empty">Чатов пока нет</div>';return;
+  }
+  allChats.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='hist-item'+(c.id===activeChatId?' active':'');
+    el.innerHTML=`<span class="hist-item-ico">💬</span><span class="hist-item-name">${c.title}</span><button class="hist-item-del" title="Удалить">✕</button>`;
+    el.querySelector('.hist-item-del').onclick=(e)=>deleteChat(c.id,e);
+    el.onclick=()=>loadChat(c.id);
+    list.appendChild(el);
+  });
+}
+
+function openHistSidebar(){
+  renderHistList();
+  document.getElementById('histSidebar').classList.add('open');
+  document.getElementById('histOverlay').classList.add('show');
+}
+function closeHistSidebar(){
+  document.getElementById('histSidebar').classList.remove('open');
+  document.getElementById('histOverlay').classList.remove('show');
+}
 
 // ── MODELS ──
 const MODELS=[
@@ -942,9 +1103,7 @@ async function sendMsg(){
           ...chatHistory
         ],
         stream:true,
-        max_tokens:2048,
-        apiKey:'fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f',
-        user_id:(()=>{try{const s=JSON.parse(localStorage.getItem('fid_user')||'{}');return s.userId||s.id||null;}catch{return null;}})()
+        max_tokens:2048
       }),
       signal:abortCtrl.signal
     });
@@ -970,6 +1129,19 @@ async function sendMsg(){
       }
     }
     chatHistory.push({role:'assistant',content:full});
+    // Сохранить в активный чат
+    if(activeChatId){
+      const chat=allChats.find(c=>c.id===activeChatId);
+      if(chat){
+        chat.history=chatHistory.slice();
+        // Генерируем заголовок по первому сообщению
+        if(chat.title==='Новый чат'&&chatHistory.length>=2){
+          const firstMsg=chatHistory.find(m=>m.role==='user')?.content||'';
+          chat.title=firstMsg.length>40?firstMsg.slice(0,40)+'…':firstMsg;
+        }
+        saveChats();renderHistList();
+      }
+    }
   }catch(e){
     if(e.name!=='AbortError')aiTxt.textContent='⚠ Ошибка соединения. Попробуйте ещё раз.';
   }finally{
