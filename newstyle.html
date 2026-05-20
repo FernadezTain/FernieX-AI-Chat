@@ -943,6 +943,7 @@ async function sendMsg(){
         ],
         stream:true,
         max_tokens:2048,
+        apiKey:'fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f',
         user_id:(()=>{try{const s=JSON.parse(localStorage.getItem('fid_user')||'{}');return s.userId||s.id||null;}catch{return null;}})()
       }),
       signal:abortCtrl.signal
