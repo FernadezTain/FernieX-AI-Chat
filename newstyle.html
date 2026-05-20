@@ -310,6 +310,28 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .inp-ta{caret-color:var(--c1)!important}
 .mdot{background:linear-gradient(135deg,var(--c1),var(--c4))!important}
 .s-back{color:var(--c1)!important}
+
+/* ── MODEL MODAL ── */
+#modelOverlay{position:fixed;inset:0;z-index:250;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
+#modelOverlay.open{pointer-events:all;}
+#modelBg{position:absolute;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0px);transition:background .35s,backdrop-filter .35s;}
+#modelOverlay.open #modelBg{background:rgba(0,0,0,.55);backdrop-filter:blur(18px);}
+#modelSheet{position:relative;width:min(560px,100vw);background:rgba(12,10,24,0.98);border:1px solid rgba(255,255,255,.08);border-radius:28px 28px 0 0;padding:0 0 env(safe-area-inset-bottom);transform:translateY(100%);transition:transform .45s cubic-bezier(.16,1,.3,1);will-change:transform;overflow:hidden;}
+#modelOverlay.open #modelSheet{transform:translateY(0);}
+.mm-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:14px auto 0;}
+.mm-title{font-size:17px;font-weight:700;text-align:center;padding:14px 24px 18px;color:#fff;}
+.mm-list{display:flex;flex-direction:column;gap:6px;padding:0 16px 20px;max-height:60vh;overflow-y:auto;scrollbar-width:none;}
+.mm-list::-webkit-scrollbar{display:none}
+.mm-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;cursor:pointer;transition:all .18s;}
+.mm-item:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);}
+.mm-item.active{background:rgba(66,133,244,.12);border-color:rgba(66,133,244,.3);}
+.mm-badge{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.mm-info{flex:1;min-width:0;}
+.mm-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:2px;}
+.mm-desc{font-size:12px;color:rgba(255,255,255,.45);}
+.mm-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin-top:4px;display:inline-block;}
+.mm-check{font-size:16px;color:var(--c1);flex-shrink:0;opacity:0;transition:opacity .2s;}
+.mm-item.active .mm-check{opacity:1;}
 </style>
 </head>
 <body>
@@ -367,7 +389,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 <!-- CHAT -->
 <div class="screen hidden" id="chatScreen">
   <div class="chat-header" style="width:100%">
-    <div class="model-pill"><div class="mdot"></div>FernieX Flash<span class="chevron">▾</span></div>
+    <div class="model-pill" id="modelPill" onclick="openModelModal()"><div class="mdot"></div><span id="modelPillName">Mistral Small</span><span class="chevron">▾</span></div>
     <div class="user-chip" id="userChip" onclick="openSettings()">
       <div class="av" id="userAv">F</div><span id="userName">Fernadez</span>
     </div>
@@ -479,6 +501,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODEL MODAL -->
+<div id="modelOverlay">
+  <div id="modelBg" onclick="closeModelModal()"></div>
+  <div id="modelSheet">
+    <div class="mm-handle"></div>
+    <div class="mm-title">Выбор модели</div>
+    <div class="mm-list" id="mmList"></div>
   </div>
 </div>
 
@@ -825,22 +857,51 @@ function enterChat(userData){
 const saved=FernieID.getUser();
 if(saved){chatProgress=1;enterChat(saved);}
 
+// ── MODELS ──
+const MODELS=[
+  {id:'mistral-small',name:'Mistral Small',api:'mistral-small-latest',badge:'⚡',desc:'Быстрый · Универсальный',color:'rgba(66,133,244,.15)'},
+  {id:'mistral-medium',name:'Mistral Medium',api:'mistral-medium-latest',badge:'🧠',desc:'Умный · Сбалансированный',color:'rgba(168,85,247,.15)'},
+  {id:'mistral-large',name:'Mistral Large',api:'mistral-large-latest',badge:'🔮',desc:'Мощный · Точный',color:'rgba(52,168,83,.15)'},
+];
+let currentModelId=localStorage.getItem('fx_model')||'mistral-small';
+function getModel(){return MODELS.find(m=>m.id===currentModelId)||MODELS[0];}
+function updatePill(){document.getElementById('modelPillName').textContent=getModel().badge+' '+getModel().name;}
+updatePill();
+
+function openModelModal(){
+  renderModelList();
+  document.getElementById('modelOverlay').classList.add('open');
+}
+function closeModelModal(){document.getElementById('modelOverlay').classList.remove('open');}
+document.getElementById('modelBg').addEventListener('click',closeModelModal);
+
+function renderModelList(){
+  const list=document.getElementById('mmList');list.innerHTML='';
+  MODELS.forEach(m=>{
+    const el=document.createElement('div');
+    el.className='mm-item'+(m.id===currentModelId?' active':'');
+    el.innerHTML=`<div class="mm-badge" style="background:${m.color}">${m.badge}</div><div class="mm-info"><div class="mm-name">${m.name}</div><div class="mm-desc">${m.desc}</div></div><div class="mm-check">✓</div>`;
+    el.onclick=()=>{currentModelId=m.id;localStorage.setItem('fx_model',m.id);updatePill();closeModelModal();renderModelList();};
+    list.appendChild(el);
+  });
+}
+
 // ── CHAT ──
 let started=false;
+let chatHistory=[];
+let abortCtrl=null;
+
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
-  if(!txt)return;
+  if(!txt||ta.disabled)return;
   if(!started){
     started=true;
-    // прячем заголовок
     document.getElementById('chatTitle').classList.add('hide');
-    // инпут едет вниз
     const iw=document.getElementById('inputWrap');
     iw.classList.add('to-bottom');
     iw.style.top='100vh';
-iw.style.marginTop='-80px';
+    iw.style.marginTop='-80px';
     setTimeout(()=>{
-      // переключаем в нормальный flow
       iw.classList.remove('centered','to-bottom');
       iw.style.cssText='';
       document.getElementById('chatWelcome').style.display='none';
@@ -850,18 +911,71 @@ iw.style.marginTop='-80px';
   }
   ta.value='';ta.style.height='auto';
   const msgs=document.getElementById('msgs');
+
+  // Сообщение пользователя
   const ub=document.createElement('div');ub.className='msg-u';ub.textContent=txt;msgs.appendChild(ub);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  // Добавляем в историю
+  chatHistory.push({role:'user',content:txt});
+
+  // Блок ответа ИИ с typing dots
   const ai=document.createElement('div');ai.className='msg-ai';
-  ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig)"/></svg></div><div class="msg-ai-txt"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${Date.now()}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${Date.now()})"/></svg></div><div class="msg-ai-txt"><div class="typing"><span></span><span></span><span></span></div></div>`;
   msgs.appendChild(ai);msgs.scrollTop=msgs.scrollHeight;
   const aiTxt=ai.querySelector('.msg-ai-txt');
+
+  // Блокируем инпут
+  ta.disabled=true;
+  document.getElementById('sendBtn').style.opacity='.4';
+
+  abortCtrl=new AbortController();
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.',messages:[{role:'user',content:txt}]})});
-    const data=await res.json();
-    const reply=data.content?.find(b=>b.type==='text')?.text||'Ошибка.';
-    aiTxt.textContent='';let i=0;
-    (function type(){if(i<reply.length){aiTxt.textContent+=reply[i++];msgs.scrollTop=msgs.scrollHeight;setTimeout(type,10);}})();
-  }catch{aiTxt.textContent='Ошибка соединения.';}
+    const model=getModel();
+    const res=await fetch('https://ferniex-id.vercel.app/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:model.api,
+        messages:[
+          {role:'system',content:'Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.'},
+          ...chatHistory
+        ],
+        stream:true,
+        max_tokens:2048
+      }),
+      signal:abortCtrl.signal
+    });
+
+    if(!res.ok){const e=await res.text();throw new Error('Ошибка сервера: '+res.status);}
+
+    // Потоковый ответ
+    aiTxt.textContent='';
+    let full='';
+    const reader=res.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');buf=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6).trim();
+        if(data==='[DONE]')break;
+        try{
+          const delta=JSON.parse(data)?.choices?.[0]?.delta?.content||'';
+          if(delta){full+=delta;aiTxt.textContent=full;msgs.scrollTop=msgs.scrollHeight;}
+        }catch{}
+      }
+    }
+    chatHistory.push({role:'assistant',content:full});
+  }catch(e){
+    if(e.name!=='AbortError')aiTxt.textContent='⚠ Ошибка соединения. Попробуйте ещё раз.';
+  }finally{
+    ta.disabled=false;
+    document.getElementById('sendBtn').style.opacity='';
+    abortCtrl=null;
+    msgs.scrollTop=msgs.scrollHeight;
+  }
 }
 </script>
 </body>
