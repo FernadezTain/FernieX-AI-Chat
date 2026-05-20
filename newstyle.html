@@ -382,30 +382,19 @@ const CHAT_TRANSITION_DUR=1800;
 
   if(chatProgress>0){
     const p=chatProgress;
-    const cy=H*0.895;
-
-    // Широкое рассеянное свечение на весь экран снизу
-    const g1=ctx.createRadialGradient(W/2,cy,0,W/2,cy,W*0.75);
-    g1.addColorStop(0,`rgba(60,20,160,${0.38*p})`);
-    g1.addColorStop(0.25,`rgba(80,30,200,${0.22*p})`);
-    g1.addColorStop(0.55,`rgba(40,10,120,${0.10*p})`);
-    g1.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
-
-    // Более яркое ядро прямо вокруг инпута
-    const g2=ctx.createRadialGradient(W/2,cy,0,W/2,cy,inputW*0.55);
-    g2.addColorStop(0,`rgba(100,50,255,${0.30*p})`);
-    g2.addColorStop(0.35,`rgba(70,40,200,${0.15*p})`);
-    g2.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
-
-    // Горизонтальная полоса-свет вдоль инпута
-    const barH=120;
-    const g3=ctx.createLinearGradient(0,cy-barH,0,cy+barH);
-    g3.addColorStop(0,'rgba(0,0,0,0)');
-    g3.addColorStop(0.5,`rgba(80,40,220,${0.18*p})`);
-    g3.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g3;ctx.fillRect(inputX0-80,cy-barH,inputW+160,barH*2);
+    const cy=H;
+    ctx.save();
+    ctx.translate(W/2,cy);
+    ctx.scale(1,0.45);
+    const g=ctx.createRadialGradient(0,0,0,0,0,W*0.7);
+    g.addColorStop(0,  `rgba(50,15,170,${0.7*p})`);
+    g.addColorStop(0.2,`rgba(45,12,155,${0.5*p})`);
+    g.addColorStop(0.5,`rgba(30,8,120,${0.25*p})`);
+    g.addColorStop(0.8,`rgba(15,4,80,${0.1*p})`);
+    g.addColorStop(1,  'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(0,0,W*0.7,0,Math.PI*2);ctx.fill();
+    ctx.restore();
   }
 
   requestAnimationFrame(loop);
