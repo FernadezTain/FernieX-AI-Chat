@@ -525,6 +525,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
 </div>
 
+<script src="fernieid-sdk.js"></script>
 <script>
 (function(){
   const API='https://ferniex-id.vercel.app';
@@ -1045,44 +1046,17 @@ async function sendMsg(){
   abortCtrl=new AbortController();
   try{
     const model=getModel();
-    const res=await fetch('https://ferniex-id.vercel.app/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:model.api,
-       messages:[
-          {role:'system',content:buildSystemPrompt()},
-          ...chatHistory
-        ],
-        stream:true,
-        max_tokens:2048,
-        apiKey:'fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f',
-        user_id:(()=>{try{const s=JSON.parse(localStorage.getItem('fid_user')||'{}');return s.userId||s.id||null;}catch{return null;}})()
-      }),
-      signal:abortCtrl.signal
-    });
-
-    if(!res.ok){const e=await res.text();throw new Error('Ошибка сервера: '+res.status);}
-
-    // Потоковый ответ
     aiTxt.textContent='';
     let full='';
-    const reader=res.body.getReader();const dec=new TextDecoder();let buf='';
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      buf+=dec.decode(value,{stream:true});
-      const lines=buf.split('\n');buf=lines.pop()||'';
-      for(const line of lines){
-        if(!line.startsWith('data: '))continue;
-        const data=line.slice(6).trim();
-        if(data==='[DONE]')break;
-        try{
-          const delta=JSON.parse(data)?.choices?.[0]?.delta?.content||'';
-          if(delta){full+=delta;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;}
-        }catch{}
-      }
-    }
-    chatHistory.push({role:'assistant',content:full});
+    await FernieID.streamChat(
+      [{role:'system',content:buildSystemPrompt()},...chatHistory],
+      {
+        onToken:(chunk)=>{full+=chunk;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;},
+        onDone: ()=>{ chatHistory.push({role:'assistant',content:full}); },
+        onError:(msg)=>{ throw new Error(msg); }
+      },
+      {model:model.api, max_tokens:2048}
+    );
     addMsgActions(ai,()=>full,async()=>{
       if(chatHistory[chatHistory.length-1]?.role==='assistant')chatHistory.pop();
       ai.querySelector('.msg-ai-txt').innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
@@ -1090,12 +1064,17 @@ async function sendMsg(){
       abortCtrl=new AbortController();
       try{
         const model=getModel();
-        const res2=await fetch('https://ferniex-id.vercel.app/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:model.api,messages:[{role:'system',content:buildSystemPrompt()},...chatHistory],stream:true,max_tokens:2048,apiKey:'fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f',user_id:(()=>{try{const s=JSON.parse(localStorage.getItem('fid_user')||'{}');return s.userId||s.id||null;}catch{return null;}})()}),signal:abortCtrl.signal});
-        if(!res2.ok)throw new Error('err');
         const aiTxt2=ai.querySelector('.msg-ai-txt');aiTxt2.innerHTML='';
-        let full2='';const reader2=res2.body.getReader();const dec2=new TextDecoder();let buf2='';
-        while(true){const{done,value}=await reader2.read();if(done)break;buf2+=dec2.decode(value,{stream:true});const lines2=buf2.split('\n');buf2=lines2.pop()||'';for(const line of lines2){if(!line.startsWith('data: '))continue;const d2=line.slice(6).trim();if(d2==='[DONE]')break;try{const delta2=JSON.parse(d2)?.choices?.[0]?.delta?.content||'';if(delta2){full2+=delta2;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;}}catch{}}}
-        chatHistory.push({role:'assistant',content:full2});
+        let full2='';
+        await FernieID.streamChat(
+          [{role:'system',content:buildSystemPrompt()},...chatHistory],
+          {
+            onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
+            onDone: ()=>{ chatHistory.push({role:'assistant',content:full2}); },
+            onError:()=>{}
+          },
+          {model:getModel().api, max_tokens:2048}
+        );
       }catch{}finally{ta2.disabled=false;document.getElementById('sendBtn').style.opacity='';abortCtrl=null;}
     });
   }catch(e){
