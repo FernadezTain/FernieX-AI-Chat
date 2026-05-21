@@ -1133,8 +1133,10 @@ function renderStatus(text){
 }
 async function webSearch(query){
   try{
-    const res=await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1&t=ferniex`);
-    const data=await res.json();
+    const ddgUrl=`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(ddgUrl)}`);
+    const wrapper=await res.json();
+    const data=JSON.parse(wrapper.contents);
     let results=[];
     if(data.AbstractText)results.push(`**${data.AbstractTitle||''}**: ${data.AbstractText}`);
     if(data.Answer)results.push(`**Ответ**: ${data.Answer}`);
