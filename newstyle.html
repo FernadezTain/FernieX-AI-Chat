@@ -674,12 +674,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
       const {onToken,onDone,onError}=callbacks;
       const user=this.getUser();
       try{
+        // Системный промпт вставляем как первое сообщение
+        const fullMessages=options.system
+          ?[{role:'system',content:options.system},...messages]
+          :messages;
         const res=await fetch(API+'/api/chat',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             model:options.model||'mistral-small-latest',
-            messages,
+            messages:fullMessages,
             max_tokens:options.max_tokens||2048,
             stream:true,
             userId:user?user.userId:null,
