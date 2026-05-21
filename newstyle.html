@@ -1099,11 +1099,59 @@ function buildSystemPrompt(){
 }
 // ── MARKDOWN ──
 function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function parseTable(block){
+  const lines=block.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const isSep=l=>/^\|?[\s\-|:]+\|?$/.test(l);
+  if(!isSep(lines[1]))return null;
+  const parseRow=l=>l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+  const headers=parseRow(lines[0]);
+  const rows=lines.slice(2).map(parseRow);
+  let html=`<div style="overflow-x:auto;margin:12px 0"><table style="width:100%;border-collapse:collapse;font-size:13.5px">`;
+  html+=`<thead><tr>`;
+  headers.forEach(h=>{html+=`<th style="padding:10px 14px;text-align:left;font-weight:600;color:#fff;background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap">${escH(h)}</th>`;});
+  html+=`</tr></thead><tbody>`;
+  rows.forEach((row,i)=>{
+    html+=`<tr style="background:${i%2===0?'transparent':'rgba(255,255,255,.025)'}">`;
+    row.forEach(cell=>{html+=`<td style="padding:9px 14px;color:rgba(255,255,255,.75);border-bottom:1px solid rgba(255,255,255,.05)">${escH(cell)}</td>`;});
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  return html;
+}
+function parseTable(block){
+  const lines=block.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const isSep=l=>/^\|?[\s\-|:]+\|?$/.test(l);
+  if(!isSep(lines[1]))return null;
+  const parseRow=l=>l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+  const headers=parseRow(lines[0]);
+  const rows=lines.slice(2).map(parseRow);
+  let html=`<div style="overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid rgba(255,255,255,.08);overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:13.5px">`;
+  html+=`<thead><tr>`;
+  headers.forEach(h=>{html+=`<th style="padding:10px 14px;text-align:left;font-weight:600;color:#fff;background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap">${escH(h)}</th>`;});
+  html+=`</tr></thead><tbody>`;
+  rows.forEach((row,i)=>{
+    html+=`<tr style="background:${i%2===0?'transparent':'rgba(255,255,255,.02)'}">`;
+    row.forEach(cell=>{html+=`<td style="padding:9px 14px;color:rgba(255,255,255,.75);border-bottom:1px solid rgba(255,255,255,.05)">${escH(cell)}</td>`;});
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  return html;
+}
 function renderMd(raw){
   // Убираем <thinking>...</thinking>
   raw=raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim();
   // Code blocks
   const cb=[];
+  // Таблицы — до всего остального
+  const tables=[];
+  raw=raw.replace(/((?:\|[^\n]+\n?){2,})/g,(match)=>{
+    const t=parseTable(match);
+    if(!t)return match;
+    const i=tables.length;tables.push(t);
+    return`%%TBL${i}%%`;
+  });
   raw=raw.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
     const i=cb.length;
     cb.push(`<pre style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin:8px 0;overflow-x:auto"><code style="font-family:monospace;font-size:13px;color:#e2e8f0;white-space:pre">${escH(code.trim())}</code></pre>`);
@@ -1129,7 +1177,9 @@ function renderMd(raw){
     return`<p style="margin:0 0 8px;line-height:1.7">${p.replace(/\n/g,'<br>')}</p>`;
   }).join('');
   // Восстановить code blocks
+  // Таблицы — вставляем до code blocks были вырезаны, восстанавливаем после
   cb.forEach((b,i)=>raw=raw.replace(`%%CB${i}%%`,b));
+  tables.forEach((t,i)=>raw=raw.replace(`%%TBL${i}%%`,t));
   return raw;
 }
 
