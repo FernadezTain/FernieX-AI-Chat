@@ -1103,15 +1103,21 @@ async function loadSkill(name){
   }catch{return'';}
 }
 
+const SKILL_NETSEARCH=`# NetSearch Skill
+Когда пользователь просит найти что-то в интернете, узнать новости или актуальную информацию — напиши ТОЛЬКО этот тег, без лишнего текста:
+<netsearch>поисковый запрос на английском</netsearch>
+Примеры:
+- "найди новости про Apple" → <netsearch>Apple news 2025</netsearch>
+- "курс доллара" → <netsearch>USD RUB rate today</netsearch>
+- "что заблокировал РКН" → <netsearch>Roskomnadzor blocked sites 2025</netsearch>
+После получения результатов — отвечай на языке пользователя на основе этих данных.`;
+
 async function buildSystemPromptFull(){
-  const netSearch=await loadSkill('NetSearch');
-  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
-  if(netSearch)p+=`\n\n## Доступные скиллы:\n\n${netSearch}`;
+  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\n\n## Доступные скиллы:\n\n${SKILL_NETSEARCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
   return p;
 }
-
 function buildSystemPrompt(){
   let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
   const rp=REASONING_PROMPTS[currentReasoning];
