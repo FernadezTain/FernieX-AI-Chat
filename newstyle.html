@@ -1316,7 +1316,7 @@ async function sendMsg(){
       {
         onToken:(chunk)=>{full+=chunk;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;},
         onDone: ()=>{ chatHistory.push({role:'assistant',content:full});saveCurrentChat(); },
-        onError:(msg)=>{ throw new Error(msg); }
+        onError:(msg)=>{ aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`; }
       },
       {model:model.api, max_tokens:2048, system:buildSystemPrompt()}
     );
@@ -1334,14 +1334,15 @@ async function sendMsg(){
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
             onDone: ()=>{ chatHistory.push({role:'assistant',content:full2}); },
-            onError:()=>{}
+            onError:(msg)=>{ aiTxt2.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`; }
           },
           {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
         );
       }catch{}finally{ta2.disabled=false;document.getElementById('sendBtn').style.opacity='';abortCtrl=null;}
     });
   }catch(e){
-    if(e.name!=='AbortError')aiTxt.innerHTML='<span style="color:#f87171">⚠ Ошибка соединения.</span>';
+    if(e.name!=='AbortError'&&!aiTxt.innerHTML.includes('⚠'))
+      aiTxt.innerHTML='<span style="color:#f87171">⚠ Ошибка соединения.</span>';
   }finally{
     ta.disabled=false;
     document.getElementById('sendBtn').style.opacity='';
