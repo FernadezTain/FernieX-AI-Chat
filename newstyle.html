@@ -1121,13 +1121,15 @@ async function loadSkill(name){
 }
 
 const SKILL_NETSEARCH=`# NetSearch Skill
-Когда пользователь просит найти что-то в интернете, узнать новости или актуальную информацию — напиши ТОЛЬКО этот тег, без лишнего текста:
-<netsearch>поисковый запрос на английском</netsearch>
-Примеры:
-- "найди новости про Apple" → <netsearch>Apple news 2025</netsearch>
-- "курс доллара" → <netsearch>USD RUB rate today</netsearch>
-- "что заблокировал РКН" → <netsearch>Roskomnadzor blocked sites 2025</netsearch>
-После получения результатов — отвечай на языке пользователя на основе этих данных.`;
+Используй поиск ТОЛЬКО если:
+- Пользователь явно просит найти/погуглить/проверить что-то
+- Вопрос про текущие события, новости, цены, курсы, погоду, расписания
+- Ты точно не знаешь ответ на конкретный актуальный факт
+
+НЕ ищи если: можешь ответить сам, вопрос теоретический, просят написать текст или код.
+
+Когда поиск нужен — напиши ТОЛЬКО тег:
+<netsearch>поисковый запрос на английском</netsearch>`;
 
 async function buildSystemPromptFull(){
   let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\n\n## Доступные скиллы:\n\n${SKILL_NETSEARCH}`;
@@ -1533,8 +1535,24 @@ async function sendMsg(){
             );
             full=full2;
           } else {
-            chatHistory.push({role:'assistant',content:full});
-            saveCurrentChat();
+            const uncertainty=/(не знаю|не могу найти|нет (точной |актуальной )?информации|не уверен|couldn't find|i don't know|my knowledge)/i;
+if(uncertainty.test(full)){
+  aiTxt.innerHTML=renderStatus('уточняю в интернете...');
+  const searchResult=await webSearch(txt);
+  let full2='';aiTxt.innerHTML='';
+  await FernieID.streamChat(
+    [...chatHistory,{role:'assistant',content:full},{role:'user',content:`Актуальные данные из поиска:\n${searchResult}\n\nДополни или исправь ответ на их основе.`}],
+    {
+      onToken:(chunk)=>{full2+=chunk;aiTxt.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
+      onDone:()=>{chatHistory.push({role:'assistant',content:full2});saveCurrentChat();},
+      onError:(msg)=>{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;}
+    },
+    {model:getModel().api,max_tokens:2048,system:fullSystemPrompt}
+  );
+} else {
+  chatHistory.push({role:'assistant',content:full});
+  saveCurrentChat();
+}
           }
         },
         onError:(msg)=>{ aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`; }
