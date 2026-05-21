@@ -1151,7 +1151,8 @@ function renderStatus(text){
 async function webSearch(query){
   const d=await FernieID.search(query);
   if(!d.success||!d.results.length)return`По запросу "${query}" ничего не найдено.`;
-  return`Результаты поиска по запросу "${query}":\n\n${d.results.join('\n\n')}`;
+  const formatted=d.results.map(r=>`**${r.title}**\n${r.snippet}\n${r.url}`).join('\n\n');
+  return`Результаты поиска по запросу "${query}":\n\n${formatted}`;
 }
 // ── MARKDOWN ──
 function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
