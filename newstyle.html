@@ -44,7 +44,89 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .rainbow-name{background:linear-gradient(90deg,#4285f4,#ea4335,#fbbc04,#34a853,#a855f7,#34a853,#fbbc04,#ea4335,#4285f4);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:600;animation:rainbowFlow 6s linear infinite;}
 @keyframes rainbowFlow{0%{background-position:0% center}100%{background-position:300% center}}
 
-#chatScreen{justify-content:flex-start;padding-top:0}
+#chatScreen{justify-content:flex-start;padding-top:0;flex-direction:row;align-items:stretch;}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:260px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  border-right:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.018);
+  padding:14px 10px;
+  gap:4px;
+  overflow:hidden;
+  transition:width .35s cubic-bezier(.4,0,.2,1),opacity .3s ease,padding .35s;
+  z-index:5;
+}
+#sidebar.collapsed{width:0;padding:0;opacity:0;pointer-events:none;}
+.sb-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 8px 10px;
+  flex-shrink:0;
+}
+.sb-logo{font-size:13px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.5px;white-space:nowrap;}
+.sb-new{
+  width:28px;height:28px;border-radius:8px;border:none;
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:background .15s,color .15s;flex-shrink:0;
+}
+.sb-new:hover{background:rgba(255,255,255,.12);color:#fff;}
+.sb-section{
+  font-size:10px;font-weight:600;letter-spacing:1.2px;
+  color:rgba(255,255,255,.2);text-transform:uppercase;
+  padding:10px 8px 4px;white-space:nowrap;flex-shrink:0;
+}
+.sb-chat{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 10px;border-radius:11px;cursor:pointer;
+  transition:background .15s;position:relative;
+  border:1px solid transparent;
+  min-width:0;
+}
+.sb-chat:hover{background:rgba(255,255,255,.06);}
+.sb-chat.active{
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.08);
+}
+.sb-chat-ico{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;
+}
+.sb-chat.active .sb-chat-ico{background:rgba(var(--c1-rgb),.18);}
+.sb-chat-info{flex:1;min-width:0;}
+.sb-chat-title{
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.75);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.3;
+}
+.sb-chat.active .sb-chat-title{color:#fff;}
+.sb-chat-preview{
+  font-size:11.5px;color:rgba(255,255,255,.3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.4;margin-top:1px;
+}
+.sb-chat-del{
+  width:22px;height:22px;border-radius:6px;border:none;
+  background:transparent;color:rgba(255,255,255,.2);
+  cursor:pointer;display:none;align-items:center;justify-content:center;
+  font-size:13px;transition:background .15s,color .15s;flex-shrink:0;
+  padding:0;
+}
+.sb-chat:hover .sb-chat-del{display:flex;}
+.sb-chat-del:hover{background:rgba(248,113,113,.15);color:#f87171;}
+.sb-toggle{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:20px;height:36px;border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-left:none;cursor:pointer;color:rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  transition:background .15s,color .15s;z-index:20;
+}
+.sb-toggle:hover{background:rgba(255,255,255,.09);color:#fff;}
+#chatMain{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;}
 .chat-header{width:100%;max-width:860px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .model-pill{display:flex;align-items:center;gap:7px;padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .2s}
 .model-pill:hover{background:rgba(255,255,255,.09);color:#fff}
@@ -387,6 +469,17 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 
 <!-- CHAT -->
 <div class="screen hidden" id="chatScreen">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-header">
+      <span class="sb-logo">FernieX</span>
+      <button class="sb-new" onclick="newChat()" title="Новый чат">＋</button>
+    </div>
+    <div id="sbList" style="flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent;display:flex;flex-direction:column;gap:2px;"></div>
+  </div>
+  <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()">‹</button>
+  <!-- MAIN -->
+  <div id="chatMain">
   <div class="chat-header" style="width:100%">
     <div class="model-pill" id="modelPill" onclick="openModelModal()"><div class="mdot"></div><span id="modelPillName">Mistral Small</span><span class="chevron">▾</span></div>
     <div class="user-chip" id="userChip" onclick="openSettings()">
@@ -408,7 +501,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
         <button class="ibtn send" id="sendBtn" onclick="sendMsg()">➤</button>
       </div>
     </div>
-  </div>
+  </div><!-- /chatMain -->
 </div>
 
 <!-- SETTINGS -->
@@ -724,6 +817,8 @@ function applyTheme(h,s){
   const root=document.documentElement;
   root.style.setProperty('--c1',c1);
   root.style.setProperty('--c5',c5);
+  root.style.setProperty('--c1-rgb',c1rgb);
+  root.style.setProperty('--c5-rgb',c5rgb);
   document.getElementById('satTrack').style.transition='background .5s ease';
 
   // Обновить все захардкоженные rgba через CSS переменные
@@ -881,11 +976,18 @@ function enterChat(userData){
     const tw=h<12?'Доброе утро':h<17?'Привет':'Добрый вечер';
     document.getElementById('chatTitle').innerHTML=`${tw}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
     chatTransitioning=true;chatTransitionStart=Date.now();chatProgress=0;
+    initSidebarForUser();
   },500);
 }
 
 const saved=FernieID.getUser();
 if(saved){chatProgress=1;enterChat(saved);}
+
+function initSidebarForUser(){
+  sbLoad();
+  activeChatId=genId();
+  sbRender();
+}
 
 // ── MODELS ──
 const MODELS=[
@@ -1030,6 +1132,130 @@ function addMsgActions(aiEl, getText, onRegen){
   setTimeout(()=>bar.style.opacity='0',3000);
 }
 
+// ── SIDEBAR / CHATS ──
+let allChats=[];
+let activeChatId=null;
+
+function sbLoad(){
+  try{allChats=JSON.parse(localStorage.getItem('fx_chats')||'[]');}catch{allChats=[];}
+}
+function sbSave(){
+  try{localStorage.setItem('fx_chats',JSON.stringify(allChats));}catch{}
+}
+function sbRender(){
+  const list=document.getElementById('sbList');
+  list.innerHTML='';
+  if(!allChats.length){
+    list.innerHTML='<div style="padding:20px 10px;text-align:center;font-size:12px;color:rgba(255,255,255,.2);">Нет чатов</div>';
+    return;
+  }
+  const groups={'Сегодня':[],'Вчера':[],'Ранее':[]};
+  const now=Date.now();
+  allChats.forEach(c=>{
+    const age=now-c.ts;
+    if(age<86400000)groups['Сегодня'].push(c);
+    else if(age<172800000)groups['Вчера'].push(c);
+    else groups['Ранее'].push(c);
+  });
+  Object.entries(groups).forEach(([label,chats])=>{
+    if(!chats.length)return;
+    const sec=document.createElement('div');sec.className='sb-section';sec.textContent=label;
+    list.appendChild(sec);
+    chats.forEach(c=>{
+      const el=document.createElement('div');
+      el.className='sb-chat'+(c.id===activeChatId?' active':'');
+      el.dataset.id=c.id;
+      const ico=c.history[0]?.content?.[0]==='/'?'⚙':'💬';
+      el.innerHTML=`<div class="sb-chat-ico">${ico}</div><div class="sb-chat-info"><div class="sb-chat-title">${escStr(c.title)}</div><div class="sb-chat-preview">${escStr(c.preview)}</div></div><button class="sb-chat-del" title="Удалить" onclick="deleteChat(event,'${c.id}')">✕</button>`;
+      el.onclick=(e)=>{if(e.target.classList.contains('sb-chat-del'))return;switchChat(c.id);};
+      list.appendChild(el);
+    });
+  });
+}
+function escStr(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+function saveCurrentChat(){
+  if(!activeChatId||!chatHistory.length)return;
+  const idx=allChats.findIndex(c=>c.id===activeChatId);
+  const firstUser=chatHistory.find(m=>m.role==='user')?.content||'Новый чат';
+  const lastAi=chatHistory.slice().reverse().find(m=>m.role==='assistant')?.content||'';
+  const title=firstUser.slice(0,40)+(firstUser.length>40?'…':'');
+  const preview=lastAi.replace(/<[^>]+>/g,'').slice(0,55)+(lastAi.length>55?'…':'');
+  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory]};
+  if(idx>=0)allChats[idx]=chat;
+  else allChats.unshift(chat);
+  sbSave();sbRender();
+}
+
+function switchChat(id){
+  saveCurrentChat();
+  const c=allChats.find(x=>x.id===id);
+  if(!c)return;
+  activeChatId=id;
+  chatHistory=[...c.history];
+  // Сброс UI
+  started=true;
+  document.getElementById('chatTitle').classList.add('hide');
+  document.getElementById('chatWelcome').style.display='none';
+  const msgs=document.getElementById('msgs');
+  msgs.innerHTML='';msgs.classList.add('on');
+  document.getElementById('chatBody').style.justifyContent='flex-start';
+  const iw=document.getElementById('inputWrap');
+  iw.className='input-wrap';iw.style.cssText='';
+  // Отрисовка истории
+  chatHistory.forEach(m=>{
+    if(m.role==='user'){
+      const ub=document.createElement('div');ub.className='msg-u';ub.textContent=m.content;msgs.appendChild(ub);
+    } else if(m.role==='assistant'){
+      const ai=document.createElement('div');ai.className='msg-ai';
+      const ts=Date.now();
+      ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${ts}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${ts})"/></svg></div><div class="msg-ai-txt"></div>`;
+      ai.querySelector('.msg-ai-txt').innerHTML=renderMd(m.content);
+      const content=m.content;
+      addMsgActions(ai,()=>content,()=>{});
+      msgs.appendChild(ai);
+    }
+  });
+  msgs.scrollTop=msgs.scrollHeight;
+  sbRender();
+}
+
+function newChat(){
+  saveCurrentChat();
+  activeChatId=genId();
+  chatHistory=[];
+  started=false;
+  document.getElementById('msgs').innerHTML='';
+  document.getElementById('msgs').classList.remove('on');
+  document.getElementById('chatWelcome').style.display='';
+  document.getElementById('chatTitle').classList.remove('hide');
+  document.getElementById('chatBody').style.justifyContent='center';
+  const iw=document.getElementById('inputWrap');
+  iw.className='input-wrap centered';iw.style.cssText='';
+  sbRender();
+  document.getElementById('msgIn').focus();
+}
+
+function deleteChat(e,id){
+  e.stopPropagation();
+  allChats=allChats.filter(c=>c.id!==id);
+  sbSave();
+  if(activeChatId===id)newChat();
+  else sbRender();
+}
+
+let sidebarOpen=true;
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed',!sidebarOpen);
+  const btn=document.getElementById('sbToggle');
+  btn.textContent=sidebarOpen?'‹':'›';
+  btn.style.left=sidebarOpen?'0':'0';
+}
+
+sbLoad();
+
 // ── CHAT ──
 let started=false;
 let chatHistory=[];
@@ -1061,6 +1287,7 @@ async function sendMsg(){
   msgs.scrollTop=msgs.scrollHeight;
 
   // Добавляем в историю
+  if(!activeChatId)activeChatId=genId();
   chatHistory.push({role:'user',content:txt});
 
   // Блок ответа ИИ с typing dots
@@ -1082,7 +1309,7 @@ async function sendMsg(){
       [{role:'system',content:buildSystemPrompt()},...chatHistory],
       {
         onToken:(chunk)=>{full+=chunk;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;},
-        onDone: ()=>{ chatHistory.push({role:'assistant',content:full}); },
+        onDone: ()=>{ chatHistory.push({role:'assistant',content:full});saveCurrentChat(); },
         onError:(msg)=>{ throw new Error(msg); }
       },
       {model:model.api, max_tokens:2048}
