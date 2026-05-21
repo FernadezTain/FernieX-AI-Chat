@@ -1312,13 +1312,13 @@ async function sendMsg(){
     aiTxt.textContent='';
     let full='';
     await FernieID.streamChat(
-      [{role:'system',content:buildSystemPrompt()},...chatHistory],
+      [...chatHistory],
       {
         onToken:(chunk)=>{full+=chunk;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;},
         onDone: ()=>{ chatHistory.push({role:'assistant',content:full});saveCurrentChat(); },
         onError:(msg)=>{ throw new Error(msg); }
       },
-      {model:model.api, max_tokens:2048}
+      {model:model.api, max_tokens:2048, system:buildSystemPrompt()}
     );
     addMsgActions(ai,()=>full,async()=>{
       if(chatHistory[chatHistory.length-1]?.role==='assistant')chatHistory.pop();
@@ -1330,13 +1330,13 @@ async function sendMsg(){
         const aiTxt2=ai.querySelector('.msg-ai-txt');aiTxt2.innerHTML='';
         let full2='';
         await FernieID.streamChat(
-          [{role:'system',content:buildSystemPrompt()},...chatHistory],
+          [...chatHistory],
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
             onDone: ()=>{ chatHistory.push({role:'assistant',content:full2}); },
             onError:()=>{}
           },
-          {model:getModel().api, max_tokens:2048}
+          {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
         );
       }catch{}finally{ta2.disabled=false;document.getElementById('sendBtn').style.opacity='';abortCtrl=null;}
     });
