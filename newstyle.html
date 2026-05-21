@@ -1279,16 +1279,11 @@ async function sendMsg(){
     started=true;
     document.getElementById('chatTitle').classList.add('hide');
     const iw=document.getElementById('inputWrap');
-    iw.classList.add('to-bottom');
-    iw.style.top='100vh';
-    iw.style.marginTop='-80px';
-    setTimeout(()=>{
-      iw.classList.remove('centered','to-bottom');
-      iw.style.cssText='';
-      document.getElementById('chatWelcome').style.display='none';
-      document.getElementById('msgs').classList.add('on');
-      document.getElementById('chatBody').style.justifyContent='flex-start';
-    },660);
+    iw.classList.remove('centered');
+    iw.style.cssText='';
+    document.getElementById('chatWelcome').style.display='none';
+    document.getElementById('msgs').classList.add('on');
+    document.getElementById('chatBody').style.justifyContent='flex-start';
   }
   ta.value='';ta.style.height='auto';
   const msgs=document.getElementById('msgs');
