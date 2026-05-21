@@ -1485,7 +1485,7 @@ async function sendMsg(){
         onToken:(chunk)=>{
           full+=chunk;
           if(full.includes('<netsearch>')&&!full.includes('</netsearch>')){
-            aiTxt.innerHTML=renderStatus('ищу в интернете..');
+            aiTxt.innerHTML=renderStatus('ищу в интернете');
             return;
           }
           if(!full.includes('<netsearch>'))
@@ -1496,11 +1496,11 @@ async function sendMsg(){
           const nsMatch=text.match(/<netsearch>([\s\S]*?)<\/netsearch>/i);
           if(nsMatch){
             const query=nsMatch[1].trim();
-            aiTxt.innerHTML=renderStatus('просматриваю skills..');
+            aiTxt.innerHTML=renderStatus('просматриваю skills');
             await sleep(500);
-            aiTxt.innerHTML=renderStatus('ищу в интернете..');
+            aiTxt.innerHTML=renderStatus('ищу в интернете');
             const searchResult=await webSearch(query);
-            aiTxt.innerHTML=renderStatus('собираю ответ из найденных данных..');
+            aiTxt.innerHTML=renderStatus('собираю ответ из найденных данных');
             await sleep(400);
             const followUp=[...chatHistory,
               {role:'assistant',content:text},
