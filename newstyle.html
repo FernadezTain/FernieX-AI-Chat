@@ -1136,18 +1136,9 @@ function renderStatus(text){
   </div>`;
 }
 async function webSearch(query){
-  try{
-    const ddgUrl=`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-    const res=await fetch(`https://corsproxy.io/?${encodeURIComponent(ddgUrl)}`);
-    const data=await res.json();
-    let results=[];
-    if(data.AbstractText)results.push(`**${data.AbstractTitle||''}**: ${data.AbstractText}`);
-    if(data.Answer)results.push(`**Ответ**: ${data.Answer}`);
-    if(data.RelatedTopics)data.RelatedTopics.slice(0,6).forEach(t=>{if(t.Text)results.push(t.Text);});
-    if(data.Results)data.Results.slice(0,3).forEach(r=>{if(r.Text)results.push(`${r.Text} (${r.FirstURL})`);});
-    if(!results.length)return`По запросу "${query}" ничего не найдено.`;
-    return`Результаты поиска по запросу "${query}":\n\n${results.join('\n\n')}`;
-  }catch(e){return`Ошибка поиска: ${e.message}`;}
+  const d=await FernieID.search(query);
+  if(!d.success||!d.results.length)return`По запросу "${query}" ничего не найдено.`;
+  return`Результаты поиска по запросу "${query}":\n\n${d.results.join('\n\n')}`;
 }
 // ── MARKDOWN ──
 function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
