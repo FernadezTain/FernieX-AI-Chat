@@ -1091,11 +1091,52 @@ function setReasoning(val){
   const stdChk=document.getElementById('rsStdChk');if(stdChk)stdChk.textContent=val==='Стандартный'?'✓':'';
   const advChk=document.getElementById('rsAdvChk');if(advChk)advChk.textContent=val==='Расширенный'?'✓':'';
 }
-function buildSystemPrompt(){
-  let p='Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.';
+let SKILLS_CACHE={};
+async function loadSkill(name){
+  if(SKILLS_CACHE[name])return SKILLS_CACHE[name];
+  try{
+    const r=await fetch(`https://ferniex-id.vercel.app/sdk/ai_skills/${name}.txt`);
+    if(!r.ok)return'';
+    const text=await r.text();
+    SKILLS_CACHE[name]=text;
+    return text;
+  }catch{return'';}
+}
+
+async function buildSystemPromptFull(){
+  const netSearch=await loadSkill('NetSearch');
+  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
+  if(netSearch)p+=`\n\n## Доступные скиллы:\n\n${netSearch}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
   return p;
+}
+
+function buildSystemPrompt(){
+  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
+  const rp=REASONING_PROMPTS[currentReasoning];
+  if(rp)p+='\n\n'+rp;
+  return p;
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function renderStatus(text){
+  return`<div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.45);font-size:13px;padding:4px 0">
+    <div style="display:flex;gap:3px;align-items:center">${[0,1,2].map(i=>`<span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;animation:tp 1.2s ease-in-out ${i*0.15}s infinite"></span>`).join('')}</div>
+    <span>${text}</span>
+  </div>`;
+}
+async function webSearch(query){
+  try{
+    const res=await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1&t=ferniex`);
+    const data=await res.json();
+    let results=[];
+    if(data.AbstractText)results.push(`**${data.AbstractTitle||''}**: ${data.AbstractText}`);
+    if(data.Answer)results.push(`**Ответ**: ${data.Answer}`);
+    if(data.RelatedTopics)data.RelatedTopics.slice(0,6).forEach(t=>{if(t.Text)results.push(t.Text);});
+    if(data.Results)data.Results.slice(0,3).forEach(r=>{if(r.Text)results.push(`${r.Text} (${r.FirstURL})`);});
+    if(!results.length)return`По запросу "${query}" ничего не найдено.`;
+    return`Результаты поиска по запросу "${query}":\n\n${results.join('\n\n')}`;
+  }catch(e){return`Ошибка поиска: ${e.message}`;}
 }
 // ── MARKDOWN ──
 function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1104,7 +1145,8 @@ function parseTable(block){
   if(lines.length<2)return null;
   const isSep=l=>/^\|?[\s\-|:]+\|?$/.test(l);
   if(!isSep(lines[1]))return null;
-  const parseRow=l=>l.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+  const cleanCell=s=>s.trim().replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1');
+const parseRow=l=>l.replace(/^\||\|$/g,'').split('|').map(cleanCell);
   const headers=parseRow(lines[0]);
   const rows=lines.slice(2).map(parseRow);
   let html=`<div style="overflow-x:auto;margin:12px 0"><table style="width:100%;border-collapse:collapse;font-size:13.5px">`;
@@ -1397,6 +1439,8 @@ let abortCtrl=null;
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
   if(!txt||ta.disabled)return;
+  // Загружаем скиллы заранее
+  const fullSystemPrompt=await buildSystemPromptFull();
   if(!started){
     started=true;
     document.getElementById('chatTitle').classList.add('hide');
@@ -1436,11 +1480,50 @@ async function sendMsg(){
     await FernieID.streamChat(
       [...chatHistory],
       {
-        onToken:(chunk)=>{full+=chunk;aiTxt.innerHTML=renderMd(full);msgs.scrollTop=msgs.scrollHeight;},
-        onDone: ()=>{ chatHistory.push({role:'assistant',content:full});saveCurrentChat(); },
+        onToken:(chunk)=>{
+          full+=chunk;
+          if(full.includes('<netsearch>')&&!full.includes('</netsearch>')){
+            aiTxt.innerHTML=renderStatus('ищу в интернете..');
+            return;
+          }
+          if(!full.includes('<netsearch>'))
+            aiTxt.innerHTML=renderMd(full);
+          msgs.scrollTop=msgs.scrollHeight;
+        },
+        onDone: async(text)=>{
+          const nsMatch=text.match(/<netsearch>([\s\S]*?)<\/netsearch>/i);
+          if(nsMatch){
+            const query=nsMatch[1].trim();
+            aiTxt.innerHTML=renderStatus('просматриваю skills..');
+            await sleep(500);
+            aiTxt.innerHTML=renderStatus('ищу в интернете..');
+            const searchResult=await webSearch(query);
+            aiTxt.innerHTML=renderStatus('собираю ответ из найденных данных..');
+            await sleep(400);
+            const followUp=[...chatHistory,
+              {role:'assistant',content:text},
+              {role:'user',content:`Вот результаты поиска:\n${searchResult}\n\nОтветь пользователю на основе этих данных на его языке.`}
+            ];
+            let full2='';
+            aiTxt.innerHTML='';
+            await FernieID.streamChat(
+              followUp,
+              {
+                onToken:(chunk)=>{full2+=chunk;aiTxt.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
+                onDone:()=>{chatHistory.push({role:'assistant',content:full2});saveCurrentChat();},
+                onError:(msg)=>{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;}
+              },
+              {model:model.api,max_tokens:2048,system:fullSystemPrompt}
+            );
+            full=full2;
+          } else {
+            chatHistory.push({role:'assistant',content:full});
+            saveCurrentChat();
+          }
+        },
         onError:(msg)=>{ aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`; }
       },
-      {model:model.api, max_tokens:2048, system:buildSystemPrompt()}
+      {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
     addMsgActions(ai,()=>full,async()=>{
       if(chatHistory[chatHistory.length-1]?.role==='assistant')chatHistory.pop();
