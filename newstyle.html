@@ -1148,7 +1148,10 @@ let allChats=[];
 let activeChatId=null;
 
 function sbLoad(){
-  try{allChats=JSON.parse(localStorage.getItem('fx_chats')||'[]');}catch{allChats=[];}
+  try{
+    const raw=JSON.parse(localStorage.getItem('fx_chats')||'[]');
+    allChats=Array.isArray(raw)?raw:[];
+  }catch{allChats=[];}
 }
 function sbSave(){
   try{localStorage.setItem('fx_chats',JSON.stringify(allChats));}catch{}
@@ -1188,6 +1191,7 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).slice
 
 function saveCurrentChat(){
   if(!activeChatId||!chatHistory.length)return;
+  if(!Array.isArray(allChats))allChats=[];
   const idx=allChats.findIndex(c=>c.id===activeChatId);
   const firstUser=chatHistory.find(m=>m.role==='user')?.content||'Новый чат';
   const lastAi=chatHistory.slice().reverse().find(m=>m.role==='assistant')?.content||'';
