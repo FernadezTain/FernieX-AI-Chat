@@ -461,6 +461,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .mm-check{font-size:16px;color:var(--c1);flex-shrink:0;opacity:0;transition:opacity .2s;}
 .mm-item.active .mm-check{opacity:1;}
 @keyframes regenSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ── AI FILE CARDS ── */
+.ai-file-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);}
+.ai-file-card{display:flex;align-items:center;gap:12px;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:380px;width:100%;transition:all .2s;cursor:default;}
+.ai-file-card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.13);transform:translateY(-1px);}
+.ai-file-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--c1),var(--c5));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 4px 14px var(--c1-30);}
+.ai-file-info{flex:1;min-width:0;}
+.ai-file-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ai-file-size{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;}
+.ai-file-dl{padding:7px 14px;background:linear-gradient(135deg,var(--c1),var(--c5));border:none;border-radius:9px;font-family:var(--font);font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:all .18s;box-shadow:0 3px 10px var(--c1-30);flex-shrink:0;}
+.ai-file-dl:hover{opacity:.85;transform:translateY(-1px);}
+.ai-file-dl:active{transform:scale(.96);}
 </style>
 </head>
 <body>
@@ -1149,6 +1161,7 @@ async function buildSystemPromptFull(){
   let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_NETSEARCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
+  p+=FX_FILE_INSTRUCTION;
   return p;
 }
 function buildSystemPrompt(){
@@ -1240,6 +1253,7 @@ function renderMd(raw){
     .replace(/\*\*(.+?)\*\*/g,'<strong style="font-weight:700;color:#fff">$1</strong>')
     .replace(/\*(.+?)\*/g,'<em style="font-style:italic">$1</em>')
     .replace(/`([^`\n]+)`/g,'<code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:5px;font-family:monospace;font-size:13px;color:#a5f3fc">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--c1);text-decoration:none;border-bottom:1px solid rgba(66,133,244,.35);transition:opacity .15s" onmouseover="this.style.opacity=\'.7\'" onmouseout="this.style.opacity=\'1\'">$1</a>')
     .replace(/^> (.+)$/gm,'<blockquote style="border-left:3px solid var(--c1);padding-left:10px;margin:6px 0;color:rgba(255,255,255,.6);font-style:italic">$1</blockquote>')
     .replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid rgba(255,255,255,.1);margin:10px 0">')
     .replace(/^\d+\.\s(.+)$/gm,'<li style="margin:3px 0;padding-left:4px">$1</li>')
@@ -1532,6 +1546,149 @@ document.addEventListener('paste',e=>{
   }
 });
 
+// ── AI FILE SYSTEM ──
+const _FILE_COLORS_FX={
+  js:'#f7df1e,#c9a800',ts:'#3178c6,#1a5fa8',py:'#3572a5,#f5dc50',
+  html:'#e34c26,#f06529',css:'#264de4,#2965f1',json:'#4ade80,#16a34a',
+  md:'#9ca3af,#6b7280',txt:'#d1d5db,#9ca3af',csv:'#34d399,#059669',
+  sql:'#60a5fa,#2563eb',xml:'#fb923c,#ea580c',sh:'#a78bfa,#7c3aed',
+  java:'#f89820,#c7541a',cpp:'#659ad2,#004482',c:'#555599,#3f3f77',
+  php:'#777bb3,#4f4f7e',rb:'#cc342d,#a01f1a',rs:'#ce422b,#8a1f0e',
+  go:'#00add8,#0077a0',swift:'#f05138,#c0392b',kt:'#7f52ff,#5730cc',
+  vue:'#42b883,#2d8a63',jsx:'#61dafb,#0ea5e9',tsx:'#3178c6,#61dafb',
+  pdf:'#ef4444,#b91c1c',doc:'#2b579a,#1e3f7a',docx:'#2b579a,#1e3f7a',
+  zip:'#fbbf24,#d97706',
+};
+const _FILE_LABELS_FX={
+  js:'JS',ts:'TS',py:'PY',html:'HTML',css:'CSS',json:'JSON',
+  md:'MD',txt:'TXT',csv:'CSV',sql:'SQL',xml:'XML',sh:'SH',
+  java:'JAVA',cpp:'C++',c:'C',php:'PHP',rb:'RB',rs:'RS',
+  go:'GO',swift:'SW',kt:'KT',vue:'VUE',jsx:'JSX',tsx:'TSX',
+  pdf:'PDF',doc:'DOC',docx:'DOCX',zip:'ZIP',
+};
+
+function getFxFileIcon(ext){
+  const e=ext.toLowerCase();
+  const colors=_FILE_COLORS_FX[e]||'#94a3b8,#64748b';
+  const [c1,c2]=colors.split(',');
+  const label=_FILE_LABELS_FX[e]||(e.slice(0,4).toUpperCase());
+  const fontSize=label.length<=3?'9px':label.length===4?'7.5px':'6.5px';
+  return`<svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fg_${e}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+      <clipPath id="fc_${e}"><rect width="38" height="38" rx="11"/></clipPath>
+    </defs>
+    <rect width="38" height="38" rx="11" fill="url(#fg_${e})" opacity=".18"/>
+    <rect width="38" height="38" rx="11" fill="none" stroke="url(#fg_${e})" stroke-width="1.2" opacity=".4"/>
+    <path d="M10 8h12l7 7v15a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="${c1}" opacity=".9"/>
+    <path d="M22 8l7 7h-5a2 2 0 0 1-2-2z" fill="${c2}"/>
+    <text x="19" y="27" text-anchor="middle" font-family="'JetBrains Mono','Fira Mono',monospace" font-size="${fontSize}" font-weight="800" fill="#fff" letter-spacing="0.5">${label}</text>
+  </svg>`;
+}
+window._aiFiles=window._aiFiles||{};
+
+function saveFxFileToStorage(id,obj){
+  try{const all=JSON.parse(localStorage.getItem('fx_ai_files')||'{}');all[id]=obj;const keys=Object.keys(all);if(keys.length>50)delete all[keys[0]];localStorage.setItem('fx_ai_files',JSON.stringify(all));}catch{}
+}
+function getFxFileFromStorage(id){
+  try{return JSON.parse(localStorage.getItem('fx_ai_files')||'{}')[id]||null;}catch{return null;}
+}
+(function(){try{Object.assign(window._aiFiles,JSON.parse(localStorage.getItem('fx_ai_files')||'{}'));}catch{}})();
+
+function fxFormatBytes(n){if(n<1024)return n+' Б';if(n<1048576)return(n/1024).toFixed(1)+' КБ';return(n/1048576).toFixed(2)+' МБ';}
+
+function parseFxAIFiles(text){
+  const re=/\/f-x_ai_createfile\s*\n([\s\S]*?)\/f-x_ai_createfile_finish/gi;
+  if(!re.test(text))return null;
+  re.lastIndex=0;
+  const parts=[];let lastIdx=0;let m;
+  while((m=re.exec(text))!==null){
+    const before=text.slice(lastIdx,m.index).trim();
+    if(before)parts.push({type:'text',content:before});
+    const block=m[1];
+    const extM=block.match(/^Расширение:\s*\.?(\w+)/im);
+    const ext=extM?extM[1].toLowerCase():'txt';
+    const nameM=block.match(/^Имя:\s*(.+)/im);
+    const fileName=nameM?nameM[1].trim():`file_${Date.now()}.${ext}`;
+    let content=block.replace(/^Расширение:.*\n?/im,'').replace(/^Имя:.*\n?/im,'').replace(/^Содержимое:\s*\n?/im,'').trim();
+    parts.push({type:'file',ext,fileName,content});
+    lastIdx=m.index+m[0].length;
+  }
+  const after=text.slice(lastIdx).trim();
+  if(after)parts.push({type:'text',content:after});
+  return parts;
+}
+
+function buildFxFileCardHtml(id,fileName,ext,size){
+  return`<div class="ai-file-card" data-fileid="${id}"><div class="ai-file-icon" style="background:none;box-shadow:none;padding:0;overflow:hidden">${getFxFileIcon(ext)}</div><div class="ai-file-info"><div class="ai-file-name">${fileName}</div><div class="ai-file-size">${size} · .${ext}</div></div><button class="ai-file-dl" data-fileid="${id}">Скачать</button></div>`;
+}
+function renderBubbleContentFx(bub,raw){
+  const parts=parseFxAIFiles(raw);
+  if(!parts){bub.innerHTML=renderMd(raw);return;}
+  let textParts='';let fileCards='';
+  parts.forEach(p=>{
+    if(p.type==='text'){textParts+=p.content+'\n\n';}
+    else{
+      const bytes=new TextEncoder().encode(p.content).length;
+      const size=fxFormatBytes(bytes);
+      const id='fc_'+btoa(unescape(encodeURIComponent(p.fileName))).slice(0,12).replace(/[^a-z0-9]/gi,'x');
+      window._aiFiles[id]={fileName:p.fileName,content:p.content,ext:p.ext};
+      saveFxFileToStorage(id,{fileName:p.fileName,content:p.content,ext:p.ext});
+      fileCards+=buildFxFileCardHtml(id,p.fileName,p.ext,size);
+    }
+  });
+  let html='';
+  if(textParts.trim())html+=renderMd(textParts.trim());
+  if(fileCards)html+=`<div class="ai-file-list">${fileCards}</div>`;
+  bub.innerHTML=html;
+}
+
+// Делегированный обработчик скачивания
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.ai-file-dl');
+  if(!btn)return;
+  const id=btn.dataset.fileid;
+  const f=(window._aiFiles&&window._aiFiles[id])||getFxFileFromStorage(id);
+  if(!f)return;
+  try{
+    const MIME_FX={txt:'text/plain',html:'text/html',css:'text/css',js:'text/javascript',ts:'text/typescript',json:'application/json',xml:'application/xml',csv:'text/csv',py:'text/x-python',sh:'text/x-shellscript',sql:'application/sql',java:'text/x-java',cpp:'text/x-c++src',c:'text/x-csrc',php:'text/x-php',rb:'text/x-ruby',rs:'text/x-rustsrc',go:'text/x-go',swift:'text/x-swift',kt:'text/x-kotlin',vue:'text/x-vue',jsx:'text/jsx',tsx:'text/tsx',md:'text/plain'};
+    const ext=(f.ext||'txt').toLowerCase();
+    const mime=MIME_FX[ext]||'text/plain';
+    const blob=new Blob([f.content],{type:mime+';charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=f.fileName;a.style.display='none';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    btn.textContent='✓';
+    btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
+    setTimeout(()=>{btn.textContent='Скачать';btn.style.background='';},2500);
+  }catch(err){console.error('Download error:',err);}
+});
+
+// Системный промпт — инструкция по созданию файлов
+const FX_FILE_INSTRUCTION=`
+
+## Создание файлов
+Когда пользователь просит создать файл (код, скрипт, документ) — используй формат:
+
+/f-x_ai_createfile
+Расширение: .py
+Имя: my_script.py
+Содержимое:
+# здесь содержимое файла
+print("Hello")
+/f-x_ai_createfile_finish
+
+Поддерживаемые расширения: .py .js .ts .html .css .json .md .txt .csv .xml .sql .sh .java .cpp .c .php .rb .rs .go .swift .kt .vue .jsx .tsx
+Правила:
+- Всегда используй этот формат для файлов с кодом или текстом
+- Придумывай осмысленное имя файла
+- Можно несколько файлов подряд
+- После блока файла — продолжай объяснение как обычно`;
+
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
   if((!txt&&!pendingImages.length)||ta.disabled)return;
@@ -1630,10 +1787,12 @@ async function sendMsg(){
             return;
           }
           if(!full.includes('<netsearch>'))
-            aiTxt.innerHTML=renderMd(full);
+            renderBubbleContentFx(aiTxt,full);
           msgs.scrollTop=msgs.scrollHeight;
         },
         onDone: async(text)=>{
+          // Финальный рендер с поддержкой AI файлов
+          renderBubbleContentFx(aiTxt,text.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim());
           const nsMatch=text.match(/<netsearch>([\s\S]*?)<\/netsearch>/i);
           if(nsMatch){
             const query=nsMatch[1].trim();
