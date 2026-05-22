@@ -1153,6 +1153,7 @@ function renderStatus(text){
 }
 async function webSearch(query){
   const d=await FernieID.search(query);
+  console.log('webSearch result:',JSON.stringify(d).slice(0,300));
   if(!d.success||!d.results.length)return`По запросу "${query}" ничего не найдено.`;
   const formatted=d.results.map(r=>`**${r.title}**\n${r.snippet}${r.url?'\n'+r.url:''}`).join('\n\n');
   return`Результаты поиска по запросу "${query}":\n\n${formatted}`;
