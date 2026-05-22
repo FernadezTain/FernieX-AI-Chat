@@ -1175,8 +1175,7 @@ async function loadSkill(name){
 
 const SKILL_NETSEARCH=`# NetSearch Skill
 ОБЯЗАТЕЛЬНО используй поиск если:
-- Пользователь спрашивает курс валют — найди текущий курс И историю за 7 дней (по дням), верни данные в формате:
-  Пн: 85.23, Вт: 85.67, Ср: 84.90, Чт: 86.12, Пт: 85.80, Сб: 86.40, Вс: 86.15
+- Пользователь спрашивает курс валют — найди текущий курс И историю за 7 дней. Выведи ТОЛЬКО текущий курс одной строкой (например: "1 USD = 85.50 RUB"), историю курса включи ТОЛЬКО в конце в формате без пояснений: Пн: 85.23, Вт: 85.67, Ср: 84.90, Чт: 86.12, Пт: 85.80, Сб: 86.40, Вс: 86.15. Никакого лишнего текста про историю не добавляй.
 - Пользователь просит найти/погуглить/поискать что-то
 - Вопрос про текущие события, новости, погоду, цены, курсы валют
 - Любые актуальные факты которые могли измениться
@@ -1205,9 +1204,11 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function tryRenderCurrencyChart(bub,text){
   const pairMatch=text.match(/(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)[^\w]*(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)/i);
   const valueMatches=[...text.matchAll(/[\d]+[.,][\d]+/g)].map(m=>parseFloat(m[0].replace(',','.')));
-  if(!valueMatches.length)return false;
+  // Фильтруем даты (типо 22.05) — берём только числа > 1 и не похожие на дату
+  const rateValues=valueMatches.filter(v=>v>1&&!(v>1&&v<32&&String(v).includes('.')));
+  if(!rateValues.length)return false;
   const pair=pairMatch?`${pairMatch[1].toUpperCase()}/${pairMatch[2].toUpperCase()}`:'Курс';
-  const mainVal=valueMatches[0];
+  const mainVal=rateValues[0];
   // Пробуем найти дневные данные Пн:85.23 Вт:85.67 и т.д.
   const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[:\s]*([\d]+[.,][\d]+)/gi;
   const dayMatches=[...text.matchAll(dayRe)];
@@ -1952,9 +1953,11 @@ async function sendMsg(){
             await FernieID.streamChat(
               followUp,
               {
-                onToken:(chunk)=>{full2+=chunk;aiTxt.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
+                onToken:(chunk)=>{full2+=chunk;const cleanStream=full2.replace(/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[\s:]+[\d.,]+[,\s]*/gi,'').replace(/История курса[^\n]*/gi,'').trim();aiTxt.innerHTML=renderMd(cleanStream);msgs.scrollTop=msgs.scrollHeight;},
                 onDone:()=>{
-                chatHistory.push({role:'assistant',content:full2});
+                const cleanFull2=full2.replace(/\n?(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[\s:]+[\d.,]+[,\s]*/gi,'').replace(/\nИстория курса[^\n]*/gi,'').trim();
+                aiTxt.innerHTML=renderMd(cleanFull2);
+                chatHistory.push({role:'assistant',content:cleanFull2});
                 saveCurrentChat();
                 const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(full2);
                 if(isCurrency)tryRenderCurrencyChart(aiTxt,full2);
