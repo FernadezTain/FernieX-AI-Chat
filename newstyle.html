@@ -1205,25 +1205,33 @@ function tryRenderCurrencyChart(bub,text){
   const pairMatch=text.match(/(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)[^\w]*(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)/i);
   const valueMatches=[...text.matchAll(/[\d]+[.,][\d]+/g)].map(m=>parseFloat(m[0].replace(',','.')));
   // Фильтруем даты (типо 22.05) — берём только числа > 1 и не похожие на дату
-  const rateValues=valueMatches.filter(v=>v>1&&!(v>1&&v<32&&String(v).includes('.')));
-  if(!rateValues.length)return false;
-  const pair=pairMatch?`${pairMatch[1].toUpperCase()}/${pairMatch[2].toUpperCase()}`:'Курс';
-  const mainVal=rateValues[0];
-  // Пробуем найти дневные данные Пн:85.23 Вт:85.67 и т.д.
-  const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[:\s]*([\d]+[.,][\d]+)/gi;
-  const dayMatches=[...text.matchAll(dayRe)];
-  let labels=[],data=[];
-  if(dayMatches.length>=3){
-    dayMatches.forEach(m=>{labels.push(m[1]);data.push(parseFloat(m[2].replace(',','.')));});
+  c// Ищем число после "=" или ":" рядом с валютой
+  const explicitMatch=text.match(/(?:=|:)\s*([\d\s]+[.,]?[\d]*)\s*(?:USD|EUR|RUB|руб)/i);
+  let mainVal=0;
+  if(explicitMatch){
+    mainVal=parseFloat(explicitMatch[1].replace(/\s/g,'').replace(',','.'));
   } else {
-    const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-    const today=new Date().getDay();
-    for(let i=6;i>=0;i--){
-      labels.push(days[(today-i+7)%7]);
-      const variance=(Math.random()-0.5)*mainVal*0.025;
-      data.push(parseFloat((mainVal+variance*i).toFixed(2)));
-    }
-    data[6]=mainVal;
+    const rateValues=valueMatches.filter(v=>v>1&&!(v>1&&v<32&&String(v).split('.')[1]?.length<=2&&String(v).length<=5));
+    if(!rateValues.length)return false;
+    // Берём максимальное значение как наиболее вероятный курс (для BTC/крипты)
+    mainVal=rateValues.reduce((a,b)=>b>a?b:a,0)||rateValues[0];
+  }
+  if(!mainVal)return false;
+  const pair=pairMatch?`${pairMatch[1].toUpperCase()}/${pairMatch[2].toUpperCase()}`:'Курс';
+  // Пробуем найти дневные данные Пн:85.23 Вт:85.67 и т.д.
+  c// Матчим все форматы: "Пн: 85.23" / "Пн (15.05): 85.23" / "Пн 85.23"
+  const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[^0-9]*([\d]{2,}[.,][\d]+)/gi;
+  const dayMatches=[...text.matchAll(dayRe)];
+  console.log('dayMatches:',dayMatches.map(m=>`${m[1]}:${m[2]}`));
+  let labels=[],data=[];
+if(dayMatches.length>=3){
+    dayMatches.forEach(m=>{
+      labels.push(m[1]);
+      data.push(parseFloat(m[2].replace(',','.')));
+    });
+  } else {
+    // Нет реальных данных — не рисуем график
+    return false;
   }
   const isUp=data[data.length-1]>=data[0];
   const color=isUp?'#34a853':'#ea4335';
@@ -1235,7 +1243,7 @@ function tryRenderCurrencyChart(bub,text){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
       <div>
         <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:3px;letter-spacing:.5px">${pair}</div>
-        <div style="font-size:26px;font-weight:700;color:#fff;line-height:1;">${mainVal.toLocaleString('ru-RU')}</div>
+        <div style="font-size:26px;font-weight:700;color:#fff;line-height:1;">${mainVal>=1000?mainVal.toLocaleString('ru-RU'):mainVal}</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:13px;font-weight:600;color:${color};background:${colorFade}.12);padding:4px 10px;border-radius:20px;">${changeSign}${change}%</div>
