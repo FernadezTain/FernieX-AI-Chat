@@ -210,12 +210,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .ibtn:hover{background:rgba(255,255,255,.07);color:#fff}
 .ibtn.send{background:linear-gradient(135deg,var(--c1),#5a9cf5);color:#fff;box-shadow:0 2px 12px rgba(66,133,244,.4)}
 .ibtn.send:hover{box-shadow:0 4px 20px rgba(66,133,244,.6)}
-.image-preview-wrap{display:none;margin-bottom:8px;position:relative;width:64px;height:64px;}
-.image-preview-wrap.show{display:block;}
-.image-preview-wrap img{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.15);}
+.image-preview-area{display:none;margin-bottom:8px;flex-wrap:wrap;gap:8px;padding:0 4px;}
+.image-preview-area.show{display:flex;}
+.image-preview-thumb{position:relative;width:64px;height:64px;flex-shrink:0;}
+.image-preview-thumb img{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:transform .15s;}
+.image-preview-thumb img:hover{transform:scale(1.05);}
 .image-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;border:none;line-height:1;}
 .ibtn.attach{background:transparent;color:var(--t2);}
 .ibtn.attach:hover{background:rgba(255,255,255,.07);color:#fff;}
+.msg-photos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.msg-photo{width:120px;height:90px;border-radius:10px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:transform .15s;}
+.msg-photo:hover{transform:scale(1.03);}
+.photo-lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:fadeUp .2s ease;}
+.photo-lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.7);}
 
 /* ── SETTINGS OVERLAY ── */
 #settingsOverlay{
@@ -535,10 +542,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
     <div class="msgs" id="msgs"></div>
   </div>
   <div class="input-wrap centered" id="inputWrap">
-    <div class="image-preview-wrap" id="imagePreviewWrap">
-      <img id="imagePreview" src="" alt=""/>
-      <button class="image-preview-remove" onclick="removeImage()">✕</button>
-    </div>
+    <div class="image-preview-area" id="imagePreviewArea"></div>
     <div class="input-pill">
       <button class="ibtn attach" onclick="document.getElementById('imageInput').click()" title="Прикрепить фото">📎</button>
       <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
@@ -1464,26 +1468,69 @@ sbLoad();
 let started=false;
 let chatHistory=[];
 let abortCtrl=null;
-let pendingImageFile=null;
+let pendingImages=[];// [{file, dataUrl}]
 
 function handleImageUpload(input){
-  const file=input.files[0];
-  if(!file)return;
+  const files=Array.from(input.files||[]);
   input.value='';
-  pendingImageFile=file;
+  files.forEach(f=>addPendingImage(f));
+}
+
+function addPendingImage(file){
+  if(pendingImages.length>=5){showImgToast('Максимум 5 фото');return;}
+  if(!file.type.startsWith('image/')){showImgToast('Только изображения');return;}
   const reader=new FileReader();
   reader.onload=e=>{
-    document.getElementById('imagePreview').src=e.target.result;
-    document.getElementById('imagePreviewWrap').classList.add('show');
+    pendingImages.push({file,dataUrl:e.target.result});
+    renderImagePreviews();
   };
   reader.readAsDataURL(file);
 }
+
+function renderImagePreviews(){
+  const area=document.getElementById('imagePreviewArea');
+  area.innerHTML='';
+  if(!pendingImages.length){area.classList.remove('show');return;}
+  area.classList.add('show');
+  pendingImages.forEach((img,i)=>{
+    const wrap=document.createElement('div');wrap.className='image-preview-thumb';
+    const im=document.createElement('img');im.src=img.dataUrl;im.onclick=()=>openLightbox(img.dataUrl);
+    const btn=document.createElement('button');btn.className='image-preview-remove';btn.textContent='✕';
+    btn.onclick=()=>{pendingImages.splice(i,1);renderImagePreviews();};
+    wrap.appendChild(im);wrap.appendChild(btn);area.appendChild(wrap);
+  });
+}
+
 function removeImage(){
-  pendingImageFile=null;
-  document.getElementById('imagePreview').src='';
-  document.getElementById('imagePreviewWrap').classList.remove('show');
+  pendingImages=[];
+  renderImagePreviews();
   document.getElementById('imageInput').value='';
 }
+
+function openLightbox(src){
+  const lb=document.createElement('div');lb.className='photo-lightbox';
+  const img=document.createElement('img');img.src=src;
+  lb.appendChild(img);lb.onclick=()=>lb.remove();
+  document.body.appendChild(lb);
+}
+
+function showImgToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(30,28,50,.95);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px 17px;font-size:13px;color:#f87171;z-index:9999;pointer-events:none;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+
+// Вставка через Ctrl+V
+document.addEventListener('paste',e=>{
+  const items=e.clipboardData?.items||[];
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      const file=item.getAsFile();
+      if(file)addPendingImage(file);
+    }
+  }
+});
 
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
@@ -1513,24 +1560,45 @@ async function sendMsg(){
   if(!activeChatId)activeChatId=genId();
   let finalTxt=txt;
 
-  // OCR если есть фото
-  if(pendingImageFile){
-    const imageFile=pendingImageFile;
+  // Показываем фото в пузыре пользователя
+  if(pendingImages.length){
+    const photosDiv=document.createElement('div');photosDiv.className='msg-photos';
+    const snapshots=[...pendingImages];
+    snapshots.forEach(img=>{
+      const im=document.createElement('img');im.className='msg-photo';im.src=img.dataUrl;
+      im.onclick=()=>openLightbox(img.dataUrl);
+      photosDiv.appendChild(im);
+    });
+    ub.innerHTML='';
+    if(txt){const t=document.createElement('div');t.textContent=txt;ub.appendChild(t);}
+    ub.appendChild(photosDiv);
+
+    // OCR всех фото
+    const imagesToProcess=[...pendingImages];
     removeImage();
     const ai=document.createElement('div');ai.className='msg-ai';
-    ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig_ocr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig_ocr)"/></svg></div><div class="msg-ai-txt"><span style="color:rgba(255,255,255,.45);font-size:13px">🔍 Читаю текст с изображения... <span id="ocrPct">0%</span></span></div>`;
+    const ocrId='ocr_'+Date.now();
+    ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig_ocr${ocrId}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig_ocr${ocrId})"/></svg></div><div class="msg-ai-txt"><span style="color:rgba(255,255,255,.45);font-size:13px">🔍 Читаю текст с фото... <span id="ocrPct${ocrId}">0%</span></span></div>`;
     msgs.appendChild(ai);msgs.scrollTop=msgs.scrollHeight;
     try{
-      const {data:{text:ocrText}}=await Tesseract.recognize(imageFile,'rus+eng',{
-        logger:m=>{if(m.status==='recognizing text'){const p=document.getElementById('ocrPct');if(p)p.textContent=Math.round(m.progress*100)+'%';}}
-      });
-      const cleaned=ocrText.trim();
+      const ocrParts=[];
+      for(let i=0;i<imagesToProcess.length;i++){
+        const pEl=document.getElementById('ocrPct'+ocrId);
+        if(pEl)pEl.textContent=`фото ${i+1}/${imagesToProcess.length}`;
+        const {data:{text:ocrText}}=await Tesseract.recognize(imagesToProcess[i].file,'rus+eng',{
+          logger:m=>{if(m.status==='recognizing text'&&pEl){pEl.textContent=`фото ${i+1}/${imagesToProcess.length} — ${Math.round(m.progress*100)}%`;}}
+        });
+        const cleaned=ocrText.trim();
+        if(cleaned)ocrParts.push(cleaned);
+      }
       ai.remove();
-      if(cleaned){
-        finalTxt=txt?(txt+'\n\n[Текст с изображения]:\n'+cleaned):('[Текст с изображения]:\n'+cleaned);
-        ub.textContent=txt+' 🖼 [фото обработано]';
+      if(ocrParts.length){
+        const ocrBlock=ocrParts.join('\n---\n');
+        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock):('[Текст с изображений]:\n'+ocrBlock);
       }
     }catch(e){ai.remove();}
+  } else {
+    removeImage();
   }
 
   chatHistory.push({role:'user',content:finalTxt});
