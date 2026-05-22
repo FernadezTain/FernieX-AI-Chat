@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>FernieX</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -209,6 +210,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .ibtn:hover{background:rgba(255,255,255,.07);color:#fff}
 .ibtn.send{background:linear-gradient(135deg,var(--c1),#5a9cf5);color:#fff;box-shadow:0 2px 12px rgba(66,133,244,.4)}
 .ibtn.send:hover{box-shadow:0 4px 20px rgba(66,133,244,.6)}
+.image-preview-wrap{display:none;margin-bottom:8px;position:relative;width:64px;height:64px;}
+.image-preview-wrap.show{display:block;}
+.image-preview-wrap img{width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.15);}
+.image-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;border:none;line-height:1;}
+.ibtn.attach{background:transparent;color:var(--t2);}
+.ibtn.attach:hover{background:rgba(255,255,255,.07);color:#fff;}
 
 /* ── SETTINGS OVERLAY ── */
 #settingsOverlay{
@@ -528,7 +535,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
     <div class="msgs" id="msgs"></div>
   </div>
   <div class="input-wrap centered" id="inputWrap">
+    <div class="image-preview-wrap" id="imagePreviewWrap">
+      <img id="imagePreview" src="" alt=""/>
+      <button class="image-preview-remove" onclick="removeImage()">✕</button>
+    </div>
     <div class="input-pill">
+      <button class="ibtn attach" onclick="document.getElementById('imageInput').click()" title="Прикрепить фото">📎</button>
+      <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
       <textarea class="inp-ta" id="msgIn" placeholder="Спросите FernieX..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
@@ -536,8 +549,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
         <button class="ibtn send" id="sendBtn" onclick="sendMsg()">➤</button>
       </div>
     </div>
-  </div><!-- /chatMain -->
-  </div><!-- /screen-inner -->
+  </div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
@@ -1451,6 +1464,26 @@ sbLoad();
 let started=false;
 let chatHistory=[];
 let abortCtrl=null;
+let pendingImageFile=null;
+
+function handleImageUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  input.value='';
+  pendingImageFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('imagePreview').src=e.target.result;
+    document.getElementById('imagePreviewWrap').classList.add('show');
+  };
+  reader.readAsDataURL(file);
+}
+function removeImage(){
+  pendingImageFile=null;
+  document.getElementById('imagePreview').src='';
+  document.getElementById('imagePreviewWrap').classList.remove('show');
+  document.getElementById('imageInput').value='';
+}
 
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
@@ -1471,12 +1504,36 @@ async function sendMsg(){
   const msgs=document.getElementById('msgs');
 
   // Сообщение пользователя
-  const ub=document.createElement('div');ub.className='msg-u';ub.textContent=txt;msgs.appendChild(ub);
+  const ub=document.createElement('div');ub.className='msg-u';
+  ub.textContent=txt+(pendingImageFile?' 🖼':'');
+  msgs.appendChild(ub);
   msgs.scrollTop=msgs.scrollHeight;
 
   // Добавляем в историю
   if(!activeChatId)activeChatId=genId();
-  chatHistory.push({role:'user',content:txt});
+  let finalTxt=txt;
+
+  // OCR если есть фото
+  if(pendingImageFile){
+    const imageFile=pendingImageFile;
+    removeImage();
+    const ai=document.createElement('div');ai.className='msg-ai';
+    ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig_ocr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig_ocr)"/></svg></div><div class="msg-ai-txt"><span style="color:rgba(255,255,255,.45);font-size:13px">🔍 Читаю текст с изображения... <span id="ocrPct">0%</span></span></div>`;
+    msgs.appendChild(ai);msgs.scrollTop=msgs.scrollHeight;
+    try{
+      const {data:{text:ocrText}}=await Tesseract.recognize(imageFile,'rus+eng',{
+        logger:m=>{if(m.status==='recognizing text'){const p=document.getElementById('ocrPct');if(p)p.textContent=Math.round(m.progress*100)+'%';}}
+      });
+      const cleaned=ocrText.trim();
+      ai.remove();
+      if(cleaned){
+        finalTxt=txt?(txt+'\n\n[Текст с изображения]:\n'+cleaned):('[Текст с изображения]:\n'+cleaned);
+        ub.textContent=txt+' 🖼 [фото обработано]';
+      }
+    }catch(e){ai.remove();}
+  }
+
+  chatHistory.push({role:'user',content:finalTxt});
 
   // Блок ответа ИИ с typing dots
   const ai=document.createElement('div');ai.className='msg-ai';
