@@ -615,27 +615,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
       <div class="s-menu">
         <div class="s-row" onclick="openCustom()">
           <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(168,85,247,.15)">🎨</div>
+            <div class="s-row-ico" style="background:rgba(168,85,247,.15)">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="11.5" r="2.5"/><circle cx="13.5" cy="17.5" r="2.5"/><path d="M20 21a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2"/><path d="M13 11a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v1"/></svg>
+</div>
             <span>Кастомизация</span>
           </div>
           <span class="s-row-arrow">›</span>
         </div>
         <div class="s-row">
           <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(66,133,244,.15)">🔔</div>
+            <div class="s-row-ico" style="background:rgba(66,133,244,.15)">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+</div>
             <span>Уведомления</span>
           </div>
           <span class="s-row-arrow">›</span>
         </div>
         <div class="s-row">
           <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(52,168,83,.15)">🔒</div>
+            <div class="s-row-ico" style="background:rgba(52,168,83,.15)">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+</div>
             <span>Конфиденциальность</span>
           </div>
           <span class="s-row-arrow">›</span>
         </div>
       </div>
       <button class="s-btn-logout" onclick="askLogout()">Выйти из аккаунта</button>
+      <div style="text-align:center;margin-top:16px;font-size:11px;color:rgba(255,255,255,.18);letter-spacing:.4px;">version: 3 Development </div>
     </div>
 
     <!-- Экран кастомизации -->
@@ -1574,7 +1581,23 @@ function switchChat(id){
       const ts=Date.now();
       ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${ts}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${ts})"/></svg></div><div class="msg-ai-txt"></div>`;
       const aiTxtEl=ai.querySelector('.msg-ai-txt');
-      renderBubbleContentFx(aiTxtEl,m.content);
+      const imgResultMatch = m.content.match(/^\/imgresult\s+(https?:\/\/\S+)\s+(.*)/s);
+if (imgResultMatch) {
+  const [, savedUrl, savedPrompt] = imgResultMatch;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+  const label = document.createElement('div');
+  label.style.cssText = 'font-size:12px;color:rgba(255,255,255,.4);';
+  label.textContent = '🎨 ' + savedPrompt;
+  const imgEl = document.createElement('img');
+  imgEl.src = savedUrl;
+  imgEl.style.cssText = 'max-width:320px;width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.1);cursor:pointer;display:block;';
+  imgEl.onclick = () => openLightbox(savedUrl);
+  wrap.appendChild(label); wrap.appendChild(imgEl);
+  aiTxtEl.appendChild(wrap);
+} else {
+  renderBubbleContentFx(aiTxtEl, m.content);
+}
       const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(m.content);
       if(isCurrency)setTimeout(()=>tryRenderCurrencyChart(aiTxtEl,m.content),100);
       const content=m.content;
@@ -2069,9 +2092,25 @@ async function sendMsg(){
                     copyBtn2.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
                     setTimeout(()=>{copyBtn2.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';},2000);
                   });
-                  const lbDlBtn=mkLbBtn('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',()=>{
-                    const a=document.createElement('a');a.href=imgUrl;a.download='ferniex_image.jpg';a.target='_blank';a.click();
-                  });
+                  const lbDlBtn=mkLbBtn('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',async()=>{
+  try{
+    lbDlBtn.style.opacity='.5';
+    const resp=await fetch(imgUrl);
+    const blob=await resp.blob();
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download='ferniex_image.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),3000);
+    lbDlBtn.style.opacity='';
+  }catch{
+    // fallback если CORS всё равно блокирует
+    window.open(imgUrl,'_blank');
+  }
+});
                   lbBtns.appendChild(shareBtn);lbBtns.appendChild(copyBtn2);lbBtns.appendChild(lbDlBtn);
                   lb.appendChild(lbImg);lb.appendChild(lbBtns);
                   lb.onclick=e=>{if(e.target===lb)lb.remove();};
@@ -2099,7 +2138,7 @@ async function sendMsg(){
               };
               img.src=imgUrl;
             });
-            chatHistory.push({role:'assistant',content:`[Сгенерировано изображение: ${prompt}]`});
+            chatHistory.push({role:'assistant',content:`/imgresult ${imgUrl} ${prompt}`});
             saveCurrentChat();
             return;
           }
