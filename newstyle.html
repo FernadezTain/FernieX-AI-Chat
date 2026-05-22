@@ -1205,20 +1205,23 @@ function tryRenderCurrencyChart(bub,text){
   const pairMatch=text.match(/(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)[^\w]*(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)/i);
   const valueMatches=[...text.matchAll(/[\d]+[.,][\d]+/g)].map(m=>parseFloat(m[0].replace(',','.')));
   // Ищем число после "=" или ":" рядом с валютой
-  const explicitMatch=text.match(/(?:=|:)\s*([\d\s]+[.,]?[\d]*)\s*(?:USD|EUR|RUB|руб)/i);
+  // Ищем паттерн "1 XXX = NUMBER YYY"
+  const explicitMatch=text.match(/1\s*(?:USD|EUR|GBP|BTC|ETH|TON|USDT|RUB)[^\d]*([\d\s]+[.,]?[\d]*)\s*(?:USD|EUR|GBP|BTC|ETH|TON|USDT|RUB|руб)/i);
   let mainVal=0;
   if(explicitMatch){
     mainVal=parseFloat(explicitMatch[1].replace(/\s/g,'').replace(',','.'));
-  } else {
-    const rateValues=valueMatches.filter(v=>v>1&&!(v>1&&v<32&&String(v).split('.')[1]?.length<=2&&String(v).length<=5));
-    if(!rateValues.length)return false;
-    // Берём максимальное значение как наиболее вероятный курс (для BTC/крипты)
-    mainVal=rateValues.reduce((a,b)=>b>a?b:a,0)||rateValues[0];
   }
+  if(!mainVal){
+    // fallback — первое число в тексте которое не дата
+    const rateValues=valueMatches.filter(v=>v>0.01&&!(v>=1&&v<=31&&String(v).replace('.','').length<=4));
+    if(!rateValues.length)return false;
+    mainVal=rateValues[0];
+  }
+  if(!mainVal)return false;
   if(!mainVal)return false;
   const pair=pairMatch?`${pairMatch[1].toUpperCase()}/${pairMatch[2].toUpperCase()}`:'Курс';
   // Матчим все форматы: "Пн: 85.23" / "Пн (15.05): 85.23" / "Пн 85.23"
-  const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[^0-9]*([\d]{2,}[.,][\d]+)/gi;
+  const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[^\d\n]{0,10}([\d]{1,6}[.,][\d]{1,4})/gi;
   const dayMatches=[...text.matchAll(dayRe)];
   console.log('dayMatches:',dayMatches.map(m=>`${m[1]}:${m[2]}`));
   let labels=[],data=[];
@@ -1557,7 +1560,7 @@ function switchChat(id){
       const ts=Date.now();
       ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${ts}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${ts})"/></svg></div><div class="msg-ai-txt"></div>`;
       const aiTxtEl=ai.querySelector('.msg-ai-txt');
-      aiTxtEl.innerHTML=renderMd(m.content);
+      renderBubbleContentFx(aiTxtEl,m.content);
       const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(m.content);
       if(isCurrency)setTimeout(()=>tryRenderCurrencyChart(aiTxtEl,m.content),100);
       const content=m.content;
