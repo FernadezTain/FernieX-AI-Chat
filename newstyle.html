@@ -1534,7 +1534,7 @@ document.addEventListener('paste',e=>{
 
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
-  if(!txt||ta.disabled)return;
+  if((!txt&&!pendingImages.length)||ta.disabled)return;
   // Загружаем скиллы заранее
   const fullSystemPrompt=await buildSystemPromptFull();
   if(!started){
@@ -1595,6 +1595,8 @@ async function sendMsg(){
       if(ocrParts.length){
         const ocrBlock=ocrParts.join('\n---\n');
         finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock):('[Текст с изображений]:\n'+ocrBlock);
+      } else if(!txt){
+        finalTxt='[Пользователь прислал изображение без распознанного текста. Скажи что не видишь текста на фото и попроси уточнить вопрос.]';
       }
     }catch(e){ai.remove();}
   } else {
