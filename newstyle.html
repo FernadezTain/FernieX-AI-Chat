@@ -1268,8 +1268,8 @@ if(dayMatches.length>=3){
           pointHoverRadius:5,
           pointHoverBackgroundColor:color,
           fill:true,
-          backgroundColor:(ctx)=>{
-            const g=ctx.chart.ctx.createLinearGradient(0,0,0,90);
+          backgroundColor:(chartCtx)=>{
+            const g=chartCtx.chart.ctx.createLinearGradient(0,0,0,90);
             g.addColorStop(0,colorFade+'.22)');
             g.addColorStop(1,colorFade+'0)');
             return g;
