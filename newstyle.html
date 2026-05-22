@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>FernieX</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -57,6 +57,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   transition:width .4s cubic-bezier(.4,0,.2,1),opacity .3s ease,padding .4s;
   z-index:5;
   position:relative;
+}
+@media(max-width:600px){
+  #sidebar{
+    position:fixed;left:0;top:0;bottom:0;
+    width:80vw!important;max-width:320px;
+    background:rgba(12,10,24,0.98);
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border-right:1px solid rgba(255,255,255,.08);
+    z-index:200;padding:20px 12px;
+    transform:translateX(-100%);
+    transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease;
+    opacity:1;
+    box-shadow:8px 0 40px rgba(0,0,0,.6);
+  }
+  #sidebar.collapsed{transform:translateX(-100%)!important;width:80vw!important;padding:20px 12px!important;opacity:1!important;}
+  #sidebar.mobile-open{transform:translateX(0);}
+  #sidebar::after{display:none;}
+  #sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(4px);}
+  #sbOverlay.show{display:block;}
+  .sb-toggle{display:flex;left:0;}
 }
 #sidebar::after{
   content:'';position:absolute;top:10px;right:0;bottom:10px;width:1px;
@@ -182,6 +202,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
 
 .msgs{flex:1;width:100%;max-width:760px;overflow-y:auto;padding:20px 0;display:none;flex-direction:column;gap:20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.09) transparent}
+@media(max-width:600px){
+  .msgs{padding:12px 0;}
+  .msg-u{max-width:88%;}
+  .msg-ai{max-width:96%;}
+  .chat-body{padding:0 12px;}
+  .input-wrap{padding:0 10px 16px;}
+}
 .msgs.on{display:flex}
 .msgs::-webkit-scrollbar{width:3px}
 .msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
@@ -1246,7 +1273,6 @@ function renderMd(raw){
     return`%%CB${i}%%`;
   });
   raw=raw
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/^### (.+)$/gm,'<h3 style="font-size:14px;font-weight:700;margin:12px 0 4px;color:#fff">$1</h3>')
     .replace(/^## (.+)$/gm,'<h2 style="font-size:16px;font-weight:700;margin:14px 0 5px;color:#fff">$1</h2>')
     .replace(/^# (.+)$/gm,'<h1 style="font-size:18px;font-weight:700;margin:16px 0 6px;color:#fff">$1</h1>')
@@ -1301,10 +1327,7 @@ function addMsgActions(aiEl, getText, onRegen){
   });
   bar.appendChild(copyBtn);bar.appendChild(regenBtn);
   aiEl.appendChild(bar);
-  aiEl.onmouseenter=()=>bar.style.opacity='1';
-  aiEl.onmouseleave=()=>bar.style.opacity='0';
-  setTimeout(()=>bar.style.opacity='1',200);
-  setTimeout(()=>bar.style.opacity='0',3000);
+  bar.style.opacity='1';
 }
 
 // ── SIDEBAR / CHATS ──
@@ -1468,14 +1491,27 @@ function deleteChat(e,id){
 }
 
 let sidebarOpen=true;
+// Overlay для мобильного sidebar
+(function(){
+  const ov=document.createElement('div');ov.id='sbOverlay';
+  ov.onclick=()=>toggleSidebar();
+  document.body.appendChild(ov);
+})();
+function isMobile(){return window.innerWidth<=600;}
 function toggleSidebar(){
   sidebarOpen=!sidebarOpen;
-  document.getElementById('sidebar').classList.toggle('collapsed',!sidebarOpen);
+  const sb=document.getElementById('sidebar');
   const btn=document.getElementById('sbToggle');
+  const ov=document.getElementById('sbOverlay');
+  if(isMobile()){
+    sb.classList.toggle('mobile-open',sidebarOpen);
+    sb.classList.remove('collapsed');
+    if(ov)ov.classList.toggle('show',sidebarOpen);
+  } else {
+    sb.classList.toggle('collapsed',!sidebarOpen);
+  }
   btn.textContent=sidebarOpen?'‹':'›';
-  btn.style.left=sidebarOpen?'0':'0';
 }
-
 sbLoad();
 
 // ── CHAT ──
@@ -1710,7 +1746,19 @@ async function sendMsg(){
   // Сообщение пользователя
   const ub=document.createElement('div');ub.className='msg-u';
   ub.textContent=txt;
-  msgs.appendChild(ub);
+  const ubWrap=document.createElement('div');
+  ubWrap.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;';
+  ubWrap.appendChild(ub);
+  const ubCopyBar=document.createElement('div');
+  ubCopyBar.style.cssText='display:flex;justify-content:flex-end;';
+  const ubCopyBtn=document.createElement('button');
+  ubCopyBtn.title='Копировать';
+  ubCopyBtn.style.cssText='width:28px;height:28px;border-radius:7px;background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;transition:all .15s;';
+  ubCopyBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  ubCopyBtn.onclick=()=>{navigator.clipboard.writeText(txt).then(()=>{ubCopyBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';setTimeout(()=>{ubCopyBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';},2000);});};
+  ubCopyBar.appendChild(ubCopyBtn);
+  ubWrap.appendChild(ubCopyBar);
+  msgs.appendChild(ubWrap);
   msgs.scrollTop=msgs.scrollHeight;
 
   // Добавляем в историю
