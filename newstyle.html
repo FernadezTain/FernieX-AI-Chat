@@ -1558,7 +1558,10 @@ function switchChat(id){
       const ai=document.createElement('div');ai.className='msg-ai';
       const ts=Date.now();
       ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${ts}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${ts})"/></svg></div><div class="msg-ai-txt"></div>`;
-      ai.querySelector('.msg-ai-txt').innerHTML=renderMd(m.content);
+      const aiTxtEl=ai.querySelector('.msg-ai-txt');
+      aiTxtEl.innerHTML=renderMd(m.content);
+      const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(m.content);
+      if(isCurrency)setTimeout(()=>tryRenderCurrencyChart(aiTxtEl,m.content),100);
       const content=m.content;
       addMsgActions(ai,()=>content,()=>{});
       msgs.appendChild(ai);
@@ -1954,7 +1957,7 @@ async function sendMsg(){
             await sleep(400);
             const followUp=[...chatHistory,
               {role:'assistant',content:text},
-              {role:'user',content:`Вот результаты поиска:\n${searchResult}\n\nОтветь пользователю на основе этих данных на его языке.`}
+              {role:'user',content:`Вот результаты поиска:\n${searchResult}\n\nОтветь пользователю на его языке. Если это вопрос о курсе валют — обязательно укажи текущий курс и историю за 7 дней строго в формате: Пн: 85.23, Вт: 85.67, Ср: 84.90, Чт: 86.12, Пт: 85.80, Сб: 86.40, Вс: 86.15`}
             ];
             let full2='';
             aiTxt.innerHTML='';
