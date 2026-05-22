@@ -1204,8 +1204,7 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function tryRenderCurrencyChart(bub,text){
   const pairMatch=text.match(/(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)[^\w]*(USD|EUR|GBP|JPY|CNY|BTC|ETH|USDT|RUB|usd|eur|gbp|jpy|cny|btc|eth|usdt|rub)/i);
   const valueMatches=[...text.matchAll(/[\d]+[.,][\d]+/g)].map(m=>parseFloat(m[0].replace(',','.')));
-  // Фильтруем даты (типо 22.05) — берём только числа > 1 и не похожие на дату
-  c// Ищем число после "=" или ":" рядом с валютой
+  // Ищем число после "=" или ":" рядом с валютой
   const explicitMatch=text.match(/(?:=|:)\s*([\d\s]+[.,]?[\d]*)\s*(?:USD|EUR|RUB|руб)/i);
   let mainVal=0;
   if(explicitMatch){
@@ -1218,8 +1217,7 @@ function tryRenderCurrencyChart(bub,text){
   }
   if(!mainVal)return false;
   const pair=pairMatch?`${pairMatch[1].toUpperCase()}/${pairMatch[2].toUpperCase()}`:'Курс';
-  // Пробуем найти дневные данные Пн:85.23 Вт:85.67 и т.д.
-  c// Матчим все форматы: "Пн: 85.23" / "Пн (15.05): 85.23" / "Пн 85.23"
+  // Матчим все форматы: "Пн: 85.23" / "Пн (15.05): 85.23" / "Пн 85.23"
   const dayRe=/(Пн|Вт|Ср|Чт|Пт|Сб|Вс)[^0-9]*([\d]{2,}[.,][\d]+)/gi;
   const dayMatches=[...text.matchAll(dayRe)];
   console.log('dayMatches:',dayMatches.map(m=>`${m[1]}:${m[2]}`));
