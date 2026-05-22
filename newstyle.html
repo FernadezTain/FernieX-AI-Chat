@@ -183,6 +183,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 }
 .sb-toggle:hover{background:rgba(255,255,255,.1);color:#fff;}
 #chatMain{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;overflow:hidden;}
+.msgs::-webkit-scrollbar{display:none;}
 .chat-header{width:100%;max-width:860px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;align-self:center;}
 .model-pill{display:flex;align-items:center;gap:7px;padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .2s}
 .model-pill:hover{background:rgba(255,255,255,.09);color:#fff}
@@ -194,6 +195,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .user-chip .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c5));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
 
 .chat-body{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;overflow:hidden;position:relative;}
+.msgs{scroll-behavior:smooth;}
 .chat-welcome{text-align:center;animation:fadeUp .7s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .chat-title{font-size:clamp(26px,3.5vw,40px);font-weight:400;letter-spacing:-.3px;line-height:1.25;margin-bottom:20px;transition:opacity .45s ease,transform .45s ease;}
@@ -202,7 +204,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .chip{padding:10px 17px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:100px;font-size:13.5px;color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap}
 .chip:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
 
-.msgs{flex:1;width:100%;max-width:760px;overflow-y:auto;padding:20px 0;display:none;flex-direction:column;gap:20px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.09) transparent}
+.msgs{flex:1;width:100%;max-width:760px;overflow-y:auto;padding:20px 0;display:none;flex-direction:column;gap:20px;scrollbar-width:none;}
 @media(max-width:600px){
   .msgs{padding:12px 0;}
   .msg-u{max-width:88%;}
@@ -1173,6 +1175,11 @@ async function loadSkill(name){
   }catch{return'';}
 }
 
+const SKILL_IMAGEGEN=`# ImageGen Skill
+Если пользователь просит нарисовать, сгенерировать, создать изображение/картинку/фото/арт — ответь ТОЛЬКО этим тегом и ничем больше:
+/imggenerate [промпт пользователя на английском, детально]
+Промпт внутри тега всегда на английском. Ничего кроме этой строки не пиши.`;
+
 const SKILL_NETSEARCH=`# NetSearch Skill
 ОБЯЗАТЕЛЬНО используй поиск если:
 - Пользователь спрашивает курс валют — найди текущий курс И историю за 7 дней. Выведи ТОЛЬКО текущий курс одной строкой (например: "1 USD = 85.50 RUB"), историю курса включи ТОЛЬКО в конце в формате без пояснений: Пн: 85.23, Вт: 85.67, Ср: 84.90, Чт: 86.12, Пт: 85.80, Сб: 86.40, Вс: 86.15. Никакого лишнего текста про историю не добавляй.
@@ -1187,7 +1194,7 @@ const SKILL_NETSEARCH=`# NetSearch Skill
 
 async function buildSystemPromptFull(){
   const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_NETSEARCH}`;
+  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
   p+=FX_FILE_INSTRUCTION;
@@ -1940,11 +1947,71 @@ async function sendMsg(){
             aiTxt.innerHTML=renderStatus('ищу в интернете');
             return;
           }
+          if(full.trimStart().startsWith('/imggenerate')){
+            aiTxt.innerHTML=renderStatus('Подключение к Pollinations AI');
+            return;
+          }
           if(!full.includes('<netsearch>'))
             renderBubbleContentFx(aiTxt,full);
           msgs.scrollTop=msgs.scrollHeight;
         },
         onDone: async(text)=>{
+          // Проверяем imggenerate
+          const igMatch=text.trim().match(/^\/imggenerate\s+(.+)/s);
+          if(igMatch){
+            const prompt=igMatch[1].trim();
+            aiTxt.innerHTML=renderStatus('Подключение к Pollinations AI');
+            const imgUrl=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux&nologo=true&seed=${Math.floor(Math.random()*99999)}`;
+            await new Promise(resolve=>{
+              const img=document.createElement('img');
+              img.onload=()=>{
+                aiTxt.innerHTML='';
+                const wrap=document.createElement('div');
+                wrap.style.cssText='display:flex;flex-direction:column;gap:10px;';
+                const label=document.createElement('div');
+                label.style.cssText='font-size:12px;color:rgba(255,255,255,.4);';
+                label.textContent='🎨 '+prompt;
+                const imgEl=document.createElement('img');
+                imgEl.src=imgUrl;
+                imgEl.style.cssText='max-width:320px;width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.1);cursor:pointer;display:block;transition:transform .15s;';
+                imgEl.onmouseover=()=>imgEl.style.transform='scale(1.02)';
+                imgEl.onmouseout=()=>imgEl.style.transform='';
+                imgEl.onclick=()=>{
+                  const lb=document.createElement('div');
+                  lb.className='photo-lightbox';
+                  const lbImg=document.createElement('img');lbImg.src=imgUrl;
+                  const dlBtn=document.createElement('button');
+                  dlBtn.textContent='⬇ Скачать';
+                  dlBtn.style.cssText='position:absolute;bottom:28px;left:50%;transform:translateX(-50%);padding:10px 28px;background:linear-gradient(135deg,var(--c1),var(--c5));border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);z-index:10001;';
+                  dlBtn.onclick=e=>{
+                    e.stopPropagation();
+                    const a=document.createElement('a');a.href=imgUrl;a.download='ferniex_image.jpg';a.target='_blank';a.click();
+                  };
+                  lb.appendChild(lbImg);lb.appendChild(dlBtn);
+                  lb.onclick=e=>{if(e.target===lb)lb.remove();};
+                  document.body.appendChild(lb);
+                };
+                const dlBtn=document.createElement('button');
+                dlBtn.textContent='⬇ Скачать';
+                dlBtn.style.cssText='align-self:flex-start;padding:7px 16px;background:linear-gradient(135deg,var(--c1),var(--c5));border:none;border-radius:9px;font-family:var(--font);font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s;';
+                dlBtn.onmouseover=()=>dlBtn.style.opacity='.8';
+                dlBtn.onmouseout=()=>dlBtn.style.opacity='1';
+                dlBtn.onclick=()=>{const a=document.createElement('a');a.href=imgUrl;a.download='ferniex_image.jpg';a.target='_blank';a.click();};
+                wrap.appendChild(label);wrap.appendChild(imgEl);wrap.appendChild(dlBtn);
+                aiTxt.appendChild(wrap);
+                msgs.scrollTop=msgs.scrollHeight;
+                resolve();
+              };
+              img.onerror=()=>{
+                aiTxt.innerHTML='<span style="color:#f87171">⚠ Не удалось сгенерировать изображение</span>';
+                resolve();
+              };
+              img.src=imgUrl;
+            });
+            chatHistory.push({role:'assistant',content:`[Сгенерировано изображение: ${prompt}]`});
+            saveCurrentChat();
+            return;
+          }
           // Финальный рендер с поддержкой AI файлов
           renderBubbleContentFx(aiTxt,text.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim());
           const nsMatch=text.match(/<netsearch>([\s\S]*?)<\/netsearch>/i);
@@ -1978,7 +2045,8 @@ async function sendMsg(){
               },
               {model:model.api,max_tokens:2048,system:fullSystemPrompt}
             );
-            full=full2;
+            full=cleanFull2||full2;
+            lastFull=full;
           } else {
             const uncertainty=/(не знаю|не могу найти|нет (точной |актуальной )?информации|не уверен|couldn't find|i don't know|my knowledge)/i;
 if(uncertainty.test(full)){
@@ -2009,7 +2077,8 @@ if(uncertainty.test(full)){
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
-    addMsgActions(ai,()=>full,async()=>{
+    let lastFull=full;
+    addMsgActions(ai,()=>lastFull,async()=>{
       if(chatHistory[chatHistory.length-1]?.role==='assistant')chatHistory.pop();
       ai.querySelector('.msg-ai-txt').innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
       const ta2=document.getElementById('msgIn');ta2.disabled=true;document.getElementById('sendBtn').style.opacity='.4';
@@ -2022,7 +2091,7 @@ if(uncertainty.test(full)){
           [...chatHistory],
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
-            onDone: ()=>{ chatHistory.push({role:'assistant',content:full2}); },
+            onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); },
             onError:(msg)=>{ aiTxt2.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`; }
           },
           {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
