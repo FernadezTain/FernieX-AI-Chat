@@ -536,10 +536,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           Приватность
         </div>
-        <div class="snav-item" data-tab="models" onclick="switchSettingsTab('models')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Модели
-        </div>
         <div style="flex:1"></div>
         <div style="padding:6px 8px;margin-bottom:8px;">
           <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:10px;color:rgba(255,255,255,.3);cursor:default;">
@@ -1015,7 +1011,64 @@ function toggleSetting(key,el){
   const on=el.dataset.on!=='true';
   el.dataset.on=on;
   try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');s[key]=on;localStorage.setItem('fx_settings',JSON.stringify(s));}catch{}
+  if(key==='incognito')applyIncognitoEffect(on);
 }
+
+function applyIncognitoEffect(on){
+  const existing=document.getElementById('incognitoGlow');
+  if(!on){
+    if(existing){existing.style.opacity='0';setTimeout(()=>existing.remove(),1200);}
+    return;
+  }
+  if(existing)return;
+  const el=document.createElement('div');
+  el.id='incognitoGlow';
+  el.style.cssText=`
+    position:fixed;inset:0;z-index:9;pointer-events:none;
+    opacity:0;transition:opacity 1.2s ease;
+  `;
+  el.innerHTML=`
+    <div id="igLeft" style="position:absolute;left:0;top:0;bottom:0;width:180px;background:linear-gradient(to right,rgba(168,85,247,0),rgba(168,85,247,0));"></div>
+    <div id="igRight" style="position:absolute;right:0;top:0;bottom:0;width:180px;background:linear-gradient(to left,rgba(168,85,247,0),rgba(168,85,247,0));"></div>
+  `;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.opacity='1';}));
+
+  // Плавная анимация градиента
+  let t=0;
+  function animateGlow(){
+    if(!document.getElementById('incognitoGlow'))return;
+    t+=0.004;
+    const colors=[
+      [168,85,247],  // фиолет
+      [66,133,244],  // синий
+      [234,67,53],   // красный
+    ];
+    const phase1=(Math.sin(t)*0.5+0.5);
+    const phase2=(Math.sin(t+2.1)*0.5+0.5);
+    const phase3=(Math.sin(t+4.2)*0.5+0.5);
+    const total=phase1+phase2+phase3||1;
+    const r=Math.round((colors[0][0]*phase1+colors[1][0]*phase2+colors[2][0]*phase3)/total);
+    const g=Math.round((colors[0][1]*phase1+colors[1][1]*phase2+colors[2][1]*phase3)/total);
+    const b=Math.round((colors[0][2]*phase1+colors[1][2]*phase2+colors[2][2]*phase3)/total);
+    const alpha=0.18+0.08*Math.sin(t*0.7);
+    const left=document.getElementById('igLeft');
+    const right=document.getElementById('igRight');
+    if(left)left.style.background=`linear-gradient(to right,rgba(${r},${g},${b},${alpha.toFixed(3)}),rgba(${r},${g},${b},0))`;
+    if(right)right.style.background=`linear-gradient(to left,rgba(${r},${g},${b},${alpha.toFixed(3)}),rgba(${r},${g},${b},0))`;
+    requestAnimationFrame(animateGlow);
+  }
+  animateGlow();
+}
+
+// Восстановить состояние при загрузке
+try{
+  const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');
+  if(s.incognito){
+    const el=document.getElementById('toggleIncognito');
+    if(el){el.dataset.on='true';applyIncognitoEffect(true);}
+  }
+}catch{}
 
 // ── FONT ──
 function applyFont(el){
@@ -1766,6 +1819,32 @@ if(dayMatches.length>=3){
   },50);
   return true;
 }
+function renderErrorMsg(msg){
+  const isLimit=msg.includes('лимит')||msg.includes('токен')||msg.includes('limit');
+  const isNet=msg.includes('соединени')||msg.includes('connect')||msg.includes('network')||msg.includes('fetch');
+  let icon,color,title,sub;
+  if(isLimit){
+    icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    color='#fbbf24';title='Лимит токенов исчерпан';
+    sub=msg.replace(/⚠\s*/,'');
+  } else if(isNet){
+    icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>`;
+    color='#f87171';title='Ошибка соединения';
+    sub='Проверь подключение к интернету и попробуй снова.';
+  } else {
+    icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    color='#f87171';title='Произошла ошибка';
+    sub=msg.replace(/⚠\s*/,'');
+  }
+  return`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(${color==='#fbbf24'?'251,191,36':'239,68,68'},.07);border:1px solid rgba(${color==='#fbbf24'?'251,191,36':'239,68,68'},.2);border-radius:16px;max-width:420px;animation:fadeUp .3s ease">
+    <div style="width:36px;height:36px;border-radius:10px;background:rgba(${color==='#fbbf24'?'251,191,36':'239,68,68'},.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:${color};">${icon}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13.5px;font-weight:600;color:${color};margin-bottom:4px;">${title}</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.55;">${sub}</div>
+    </div>
+  </div>`;
+}
+
 function renderStatus(text){
   return`<div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.45);font-size:13px;padding:4px 0">
     <div style="display:flex;gap:3px;align-items:center">${[0,1,2].map(i=>`<span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;animation:tp 1.2s ease-in-out ${i*0.15}s infinite"></span>`).join('')}</div>
@@ -2739,7 +2818,7 @@ const lastUserMsgIndex = chatHistory.length - 1;
                 const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(full2);
                 if(isCurrency)tryRenderCurrencyChart(aiTxt,full2);
               },
-                onError:(msg)=>{ if(chatHistory[lastUserMsgIndex]?.role==='user') chatHistory.splice(lastUserMsgIndex,1); aiTxt.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
+                onError:(msg)=>{ aiTxt.innerHTML=renderErrorMsg(msg); }
               },
               {model:model.api,max_tokens:2048,system:fullSystemPrompt}
             );
@@ -2771,7 +2850,7 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();defenderWarn();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
+        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();defenderWarn();}else{aiTxt.innerHTML=renderErrorMsg(msg);} }
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
@@ -2790,7 +2869,7 @@ if(uncertainty.test(full)){
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
             onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); },
-            onError:(msg)=>{ aiTxt2.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
+            onError:(msg)=>{ aiTxt2.innerHTML=renderErrorMsg(msg); }
           },
           {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
         );
