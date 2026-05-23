@@ -2706,7 +2706,7 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
+        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){allChats=allChats.filter(c=>c.id!==activeChatId);sbSave();sbRender();lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
