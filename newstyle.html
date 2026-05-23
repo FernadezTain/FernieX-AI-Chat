@@ -1887,23 +1887,12 @@ function sbLoad(){
   try{
     const raw=JSON.parse(localStorage.getItem('fx_chats')||'[]');
     allChats=Array.isArray(raw)?raw:[];
-    if(allChats.length > 0) {
-      allChats = allChats.filter(c => !c.isBlocked);
-      sbSave();
-    }
   }catch{allChats=[];}
 }
 function sbSave(){
   try{localStorage.setItem('fx_chats',JSON.stringify(allChats));}catch{}
 }
 function sbRender(){
-  if(typeof allChats !== 'undefined') {
-    let hasBlocked = allChats.some(c => c.isBlocked);
-    if(hasBlocked) {
-      allChats = allChats.filter(c => !c.isBlocked);
-      sbSave();
-    }
-  }
   const list=document.getElementById('sbList');
   list.innerHTML='';
   if(!allChats.length){
@@ -1987,7 +1976,7 @@ function saveCurrentChat(){
   const lastAi=chatHistory.slice().reverse().find(m=>m.role==='assistant')?.content||'';
   const title=firstUser.slice(0,40)+(firstUser.length>40?'…':'');
   const preview=lastAi.replace(/<[^>]+>/g,'').slice(0,55)+(lastAi.length>55?'…':'');
-  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory],locked:chatLocked};
+  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory]};
   if(idx>=0)allChats[idx]=chat;
   else allChats.unshift(chat);
   sbSave();sbRender();
@@ -1999,7 +1988,6 @@ function switchChat(id){
   if(!c)return;
   activeChatId=id;
   chatHistory=[...c.history];
-  chatLocked=c.locked||false;
   // Сброс UI
   started=true;
   document.getElementById('chatTitle').classList.add('hide');
@@ -2008,9 +1996,7 @@ function switchChat(id){
   msgs.innerHTML='';msgs.classList.add('on');
   document.getElementById('chatBody').style.justifyContent='flex-start';
   const iw=document.getElementById('inputWrap');
-  iw.className='input-wrap';
-  iw.removeAttribute('style');
-  if(c.locked) iw.style.display='none';
+  iw.className='input-wrap';iw.style.cssText='';
   // Отрисовка истории
   chatHistory.forEach(m=>{
     if(m.role==='user'){
@@ -2046,26 +2032,9 @@ if (imgResultMatch) {
   });
   msgs.scrollTop=msgs.scrollHeight;
   sbRender();
-  if(chatLocked){
-    const iw=document.getElementById('inputWrap');
-    iw.style.display='none';
-    if(!document.getElementById('lockBanner')){
-      const banner=document.createElement('div');
-      banner.id='lockBanner';
-      banner.style.cssText=`position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;background:rgba(22,20,36,0.85);backdrop-filter:blur(48px);-webkit-backdrop-filter:blur(48px);border:1px solid rgba(255,255,255,.12);border-radius:100px;box-shadow:0 8px 40px rgba(0,0,0,.4);white-space:nowrap;opacity:1;width:max-content;max-width:calc(100vw - 32px);`;
-      banner.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:13.5px;color:rgba(255,255,255,.5);">Чат заблокирован за нарушение правил.</span><span onclick="newChat();document.getElementById('lockBanner').remove();" style="font-size:13.5px;color:rgba(255,255,255,.85);cursor:pointer;font-weight:600;">Новый чат</span>`;
-      document.body.appendChild(banner);
-    }
-  }
 }
 
 function newChat(){
-  chatLocked=false;
-  const b=document.getElementById('lockBanner');
-  if(b)b.remove();
-  const iwEl=document.getElementById('inputWrap');
-  iwEl.style.display='';
-  iwEl.style.opacity='1';
   saveCurrentChat();
   activeChatId=genId();
   chatHistory=[];
@@ -2116,7 +2085,6 @@ sbLoad();
 // ── CHAT ──
 let started=false;
 let chatHistory=[];
-let chatLocked=false;
 let abortCtrl=null;
 let pendingImages=[];// [{file, dataUrl}]
 
@@ -2326,64 +2294,56 @@ print("Hello")
 - После блока файла — продолжай объяснение как обычно`;
 
 function lockChat(){
-  chatLocked=true;
-  // Плавно скрываем inputWrap
   const iw=document.getElementById('inputWrap');
-  iw.style.transition='opacity .5s ease';
+  iw.style.transition='all .5s cubic-bezier(.4,0,.2,1)';
   iw.style.opacity='0';
+  iw.style.transform='translateY(10px)';
   setTimeout(()=>{
-    // Вставляем баннер прямо в body поверх всего
-    const banner=document.createElement('div');
-    banner.id='lockBanner';
-    banner.style.cssText=`
-      position:fixed;
-      bottom:calc(24px + env(safe-area-inset-bottom));
-      left:50%;
-      transform:translateX(-50%) translateY(12px) scale(.97);
-      width:max-content;
-      max-width:calc(100vw - 32px);
-      z-index:9999;
-      display:flex;align-items:center;justify-content:center;gap:8px;
-      padding:13px 20px;
-      background:rgba(22,20,36,0.75);
-      backdrop-filter:blur(48px) saturate(1.8) brightness(.95);
-      -webkit-backdrop-filter:blur(48px) saturate(1.8) brightness(.95);
-      border:1px solid rgba(255,255,255,.12);
-      border-top:1px solid rgba(255,255,255,.2);
-      border-radius:18px;
-      box-shadow:
-        0 8px 40px rgba(0,0,0,.4),
-        0 1px 0 rgba(255,255,255,.08),
-        inset 0 1px 0 rgba(255,255,255,.12);
-      text-align:center;
-      flex-wrap:wrap;
-      opacity:0;
-      transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.34,1.1,.64,1);
-    `;
-    banner.innerHTML=`
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
-        <rect x="3" y="11" width="18" height="11" rx="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      <span style="font-size:13.5px;color:rgba(255,255,255,.5);">
-        Чат заблокирован за нарушение правил.
-        <span onclick="newChat();document.getElementById('lockBanner').remove();" style="color:rgba(255,255,255,.8);cursor:pointer;font-weight:500;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.8)'">
-          Новый чат
-        </span>
-      </span>
-    `;
-    document.body.appendChild(banner);
-    iw.style.display='none';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      banner.style.opacity='1';
-      banner.style.transform='translateX(-50%) translateY(0) scale(1)';
-    }));
-  },450);
+    iw.innerHTML=`
+      <div style="
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:14px;padding:22px 28px;
+        background:rgba(239,68,68,.07);
+        border:1px solid rgba(239,68,68,.2);
+        border-radius:24px;
+        text-align:center;
+        animation:fadeUp .5s ease;
+      ">
+        <div style="
+          width:48px;height:48px;border-radius:50%;
+          background:rgba(239,68,68,.12);
+          border:1px solid rgba(239,68,68,.25);
+          display:flex;align-items:center;justify-content:center;
+          font-size:22px;
+        ">🔒</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f87171;margin-bottom:6px;">
+            Чат заблокирован
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;max-width:320px;">
+            Обнаружена попытка обхода правил безопасности FernieX-AI.<br>
+            Создайте новый чат чтобы продолжить общение.
+          </div>
+        </div>
+        <button onclick="newChat()" style="
+          padding:10px 24px;
+          background:linear-gradient(135deg,var(--c1),var(--c5));
+          border:none;border-radius:12px;
+          font-family:var(--font);font-size:13px;font-weight:600;
+          color:#fff;cursor:pointer;
+          box-shadow:0 4px 16px var(--c1-30);
+          transition:all .2s;
+        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          + Новый чат
+        </button>
+      </div>`;
+    iw.style.opacity='1';
+    iw.style.transform='none';
+  },400);
 }
-
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
-  if(chatLocked||(!txt&&!pendingImages.length)||ta.disabled)return;
+  if((!txt&&!pendingImages.length)||ta.disabled)return;
   // Загружаем скиллы заранее
   const fullSystemPrompt=await buildSystemPromptFull();
   if(!started){
@@ -2717,7 +2677,7 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){allChats=allChats.filter(c=>c.id!==activeChatId);sbSave();sbRender();lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
+        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
@@ -2736,13 +2696,7 @@ if(uncertainty.test(full)){
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
             onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); },
-            onError:(msg)=>{ 
-              if(msg.includes('безопасност') && activeChatId) {
-                let curr = allChats.find(c => c.id === activeChatId);
-                if(curr) { curr.isBlocked = true; sbSave(); }
-              }
-              aiTxt2.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; 
-            }
+            onError:(msg)=>{ aiTxt2.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
           },
           {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
         );
