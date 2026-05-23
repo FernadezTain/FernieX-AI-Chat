@@ -1998,7 +1998,8 @@ function switchChat(id){
   document.getElementById('chatBody').style.justifyContent='flex-start';
   const iw=document.getElementById('inputWrap');
   iw.className='input-wrap';
-  if(!c.locked)iw.style.cssText='';
+  iw.removeAttribute('style');
+  if(c.locked) iw.style.display='none';
   // Отрисовка истории
   chatHistory.forEach(m=>{
     if(m.role==='user'){
