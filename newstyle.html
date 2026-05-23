@@ -1821,11 +1821,17 @@ if(dayMatches.length>=3){
 }
 function renderErrorMsg(msg){
   const isLimit=msg.includes('лимит')||msg.includes('токен')||msg.includes('limit');
+  const isFree=isLimit&&(msg.includes('200')||msg.includes('Free')||msg.includes('free')||!msg.includes('Fernie+'));
+  const isPlus=isLimit&&msg.includes('Fernie+');
   const isNet=msg.includes('соединени')||msg.includes('connect')||msg.includes('network')||msg.includes('fetch');
   let icon,color,title,sub;
-  if(isLimit){
+  if(isLimit&&isFree){
     icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
-    color='#fbbf24';title='Лимит токенов исчерпан';
+    color='#fbbf24';title='Дневной лимит исчерпан';
+    sub=`Бесплатный план: 200 000 токенов/день. Обновится завтра.<br><br><a href="https://fernie-xs.vercel.app/" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:10px 18px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:11px;font-size:13px;font-weight:700;color:#1a1200;text-decoration:none;transition:opacity .18s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Оформить Fernie+</a>`;
+  } else if(isLimit&&isPlus){
+    icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    color='#fbbf24';title='Лимит Fernie+ исчерпан';
     sub=msg.replace(/⚠\s*/,'');
   } else if(isNet){
     icon=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>`;
