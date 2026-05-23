@@ -2377,6 +2377,7 @@ async function sendMsg(){
   }
 
   chatHistory.push({role:'user',content:finalTxt});
+const lastUserMsgIndex = chatHistory.length - 1;
 
   // Блок ответа ИИ с typing dots
   const ai=document.createElement('div');ai.className='msg-ai';
@@ -2596,7 +2597,7 @@ async function sendMsg(){
                 const isCurrency=/(курс|валют|USD|EUR|GBP|рубл|доллар|евро|биткоин|BTC|ETH|JPY|CNY)/i.test(full2);
                 if(isCurrency)tryRenderCurrencyChart(aiTxt,full2);
               },
-                onError:(msg)=>{ aiTxt.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
+                onError:(msg)=>{ if(chatHistory[lastUserMsgIndex]?.role==='user') chatHistory.splice(lastUserMsgIndex,1); aiTxt.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
               },
               {model:model.api,max_tokens:2048,system:fullSystemPrompt}
             );
