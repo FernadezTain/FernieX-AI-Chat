@@ -2035,6 +2035,12 @@ if (imgResultMatch) {
 }
 
 function newChat(){
+  chatLocked=false;
+  const b=document.getElementById('lockBanner');
+  if(b)b.remove();
+  const iwEl=document.getElementById('inputWrap');
+  iwEl.style.display='';
+  iwEl.style.opacity='1';
   saveCurrentChat();
   activeChatId=genId();
   chatHistory=[];
@@ -2085,6 +2091,7 @@ sbLoad();
 // ── CHAT ──
 let started=false;
 let chatHistory=[];
+let chatLocked=false;
 let abortCtrl=null;
 let pendingImages=[];// [{file, dataUrl}]
 
@@ -2294,6 +2301,7 @@ print("Hello")
 - После блока файла — продолжай объяснение как обычно`;
 
 function lockChat(){
+  chatLocked=true;
   // Плавно скрываем inputWrap
   const iw=document.getElementById('inputWrap');
   iw.style.transition='opacity .5s ease';
@@ -2305,9 +2313,10 @@ function lockChat(){
     banner.style.cssText=`
       position:fixed;
       bottom:calc(24px + env(safe-area-inset-bottom));
-      left:16px;
-      right:16px;
-      transform:translateY(12px) scale(.97);
+      left:50%;
+      transform:translateX(-50%) translateY(12px) scale(.97);
+      width:max-content;
+      max-width:calc(100vw - 32px);
       z-index:9999;
       display:flex;align-items:center;justify-content:center;gap:8px;
       padding:13px 20px;
@@ -2349,7 +2358,7 @@ function lockChat(){
 
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
-  if((!txt&&!pendingImages.length)||ta.disabled)return;
+  if(chatLocked||(!txt&&!pendingImages.length)||ta.disabled)return;
   // Загружаем скиллы заранее
   const fullSystemPrompt=await buildSystemPromptFull();
   if(!started){
