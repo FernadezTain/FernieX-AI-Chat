@@ -2360,22 +2360,21 @@ async function defenderCheck(){
 }
 
 function defenderBan(){
-  // Разлогиниваем
   FernieID.logout();
-  // Прячем всё
   document.getElementById('chatScreen').classList.add('hidden');
   document.getElementById('loginScreen').classList.add('hidden');
-  // Показываем бан-экран
   const bs=document.getElementById('banScreen');
   bs.style.display='flex';
   bs.style.animation='fadeUp .5s ease';
 }
+
+function lockChat(){
   chatLocked=true;
-  // Плавно скрываем inputWrap
   const iw=document.getElementById('inputWrap');
   iw.style.transition='opacity .5s ease';
   iw.style.opacity='0';
   setTimeout(()=>{
+    
     // Вставляем баннер прямо в body поверх всего
     const banner=document.createElement('div');
     banner.id='lockBanner';
@@ -2425,6 +2424,7 @@ function defenderBan(){
       banner.style.transform='translateY(0) scale(1)';
     }));
   },450);
+}
 
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
