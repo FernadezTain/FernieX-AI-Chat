@@ -1026,10 +1026,6 @@ try{const f=localStorage.getItem('fx_font');if(f){document.documentElement.style
 
 // ── BRIGHTNESS ──
 let themeBri=55;
-  themeBri=Math.round(v*100);
-  document.getElementById('briVal').textContent=themeBri+'%';
-  applyTheme(themeH,themeS,themeBri);
-;
 // Патч applyTheme — добавляем яркость
 const _origApplyTheme=applyTheme;
 applyTheme=function(h,s,bri){
@@ -2064,7 +2060,7 @@ if (imgResultMatch) {
     const banner=document.createElement('div');
     banner.id='lockBanner';
     banner.style.cssText=`position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 32px);z-index:9999;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;background:rgba(22,20,36,0.75);backdrop-filter:blur(48px);border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.4);`;
-    banner.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:13.5px;color:rgba(255,255,255,.5);">Чат заблокирован за нарушение правил. <span onclick="newChat();document.getElementById('lockBanner').remove();" style="color:rgba(255,255,255,.8);cursor:pointer;font-weight:500;">Новый чат →</span></span>`;
+    banner.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:13.5px;color:rgba(255,255,255,.5);">Чат заблокирован за нарушение правил. <span onclick="newChat();const _lb=document.getElementById('lockBanner');if(_lb)_lb.remove();" style="color:rgba(255,255,255,.8);cursor:pointer;font-weight:500;">Новый чат →</span></span>`;
     document.body.appendChild(banner);
   }
   sbRender();
