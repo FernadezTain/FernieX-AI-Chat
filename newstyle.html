@@ -2299,83 +2299,32 @@ function lockChat(){
   iw.style.opacity='0';
   setTimeout(()=>{
     iw.innerHTML=`
-      <svg width="0" height="0" style="position:absolute;pointer-events:none">
-        <defs>
-          <filter id="glassLens" x="-5%" y="-50%" width="110%" height="200%" color-interpolation-filters="sRGB" primitiveUnits="objectBoundingBox">
-            <feTurbulence type="fractalNoise" baseFrequency="0 0.5" numOctaves="1" seed="2" result="warp"/>
-            <feComponentTransfer in="warp" result="warpScaled">
-              <feFuncR type="linear" slope="0" intercept="0.5"/>
-              <feFuncG type="linear" slope="0.08" intercept="0.46"/>
-            </feComponentTransfer>
-            <feDisplacementMap in="SourceGraphic" in2="warpScaled" scale="0.08" xChannelSelector="R" yChannelSelector="G"/>
-          </filter>
-        </defs>
-      </svg>
       <div id="lockBanner" style="
-        position:relative;overflow:visible;
-        opacity:0;transform:translateY(10px);
-        transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.34,1.1,.64,1);
+        display:flex;align-items:center;justify-content:center;gap:10px;
+        padding:14px 26px;
+        background:rgba(28,26,42,0.82);
+        backdrop-filter:blur(40px) saturate(1.6);
+        -webkit-backdrop-filter:blur(40px) saturate(1.6);
+        border:1px solid rgba(255,255,255,.1);
+        border-top:1px solid rgba(255,255,255,.18);
+        border-radius:100px;
+        box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1);
+        opacity:0;
+        transform:translateY(8px) scale(.98);
+        transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.34,1.1,.64,1);
       ">
-        <!-- Само стекло с искажением через CSS filter -->
-        <div style="
-          position:relative;
-          display:flex;align-items:center;justify-content:center;gap:10px;
-          padding:14px 28px;
-          border-radius:100px;
-          overflow:hidden;
-        ">
-          <!-- Слой преломления фона -->
-          <div style="
-            position:absolute;inset:0;border-radius:100px;
-            backdrop-filter:blur(0.5px) saturate(3) brightness(1.35) contrast(1.1);
-            -webkit-backdrop-filter:blur(0.5px) saturate(3) brightness(1.35) contrast(1.1);
-            background:rgba(255,255,255,.04);
-            border-top:1px solid rgba(255,255,255,.35);
-            border-bottom:1px solid rgba(255,255,255,.08);
-            border-left:1px solid rgba(255,255,255,.15);
-            border-right:1px solid rgba(255,255,255,.15);
-            box-shadow:
-              inset 0 1px 0 rgba(255,255,255,.3),
-              inset 0 -1px 0 rgba(0,0,0,.15),
-              0 8px 32px rgba(0,0,0,.25),
-              0 1px 0 rgba(255,255,255,.08);
-          "></div>
-          <!-- Блик сверху (выпуклость) -->
-          <div style="
-            position:absolute;top:0;left:20%;right:20%;height:45%;
-            border-radius:0 0 50% 50%;
-            background:linear-gradient(to bottom,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 100%);
-            pointer-events:none;z-index:1;
-          "></div>
-          <!-- Тёмное дно (вогнутость снизу) -->
-          <div style="
-            position:absolute;bottom:0;left:10%;right:10%;height:30%;
-            border-radius:50% 50% 0 0;
-            background:linear-gradient(to top,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 100%);
-            pointer-events:none;z-index:1;
-          "></div>
-          <!-- Хроматическая аберрация — цветные края -->
-          <div style="
-            position:absolute;inset:0;border-radius:100px;
-            box-shadow:inset 2px 0 0 rgba(255,80,80,.15),inset -2px 0 0 rgba(80,120,255,.15);
-            pointer-events:none;z-index:2;
-          "></div>
-          <!-- Контент -->
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;position:relative;z-index:3">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          <span style="font-size:13.5px;color:rgba(255,255,255,.6);white-space:nowrap;position:relative;z-index:3;text-shadow:0 1px 4px rgba(0,0,0,.4);">
-            Чат заблокирован за нарушение правил безопасности.
-            <span onclick="newChat()" style="color:rgba(255,255,255,.9);cursor:pointer;font-weight:500;transition:color .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.9)'">
-              Создать новый →
-            </span>
-          </span>
-        </div>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span style="font-size:13.5px;color:rgba(255,255,255,.45);white-space:nowrap;">
+          Чат заблокирован за нарушение правил.
+          <span onclick="newChat()" style="color:rgba(255,255,255,.75);cursor:pointer;font-weight:500;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.75)'">Новый чат →</span>
+        </span>
       </div>`;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       const b=document.getElementById('lockBanner');
-      if(b){b.style.opacity='1';b.style.transform='translateY(0)';}
+      if(b){b.style.opacity='1';b.style.transform='translateY(0) scale(1)';}
     }));
     iw.style.opacity='1';
   },450);
