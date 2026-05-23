@@ -1026,11 +1026,10 @@ try{const f=localStorage.getItem('fx_font');if(f){document.documentElement.style
 
 // ── BRIGHTNESS ──
 let themeBri=55;
-makeDraggable('briTrack','briThumb',v=>{
   themeBri=Math.round(v*100);
   document.getElementById('briVal').textContent=themeBri+'%';
   applyTheme(themeH,themeS,themeBri);
-});
+;
 // Патч applyTheme — добавляем яркость
 const _origApplyTheme=applyTheme;
 applyTheme=function(h,s,bri){
@@ -1383,6 +1382,11 @@ function makeDraggable(trackId,thumbId,onValue){
   window.addEventListener('touchend',()=>{dragging=false;});
 }
 
+makeDraggable('briTrack','briThumb',v=>{
+  themeBri=Math.round(v*100);
+  document.getElementById('briVal').textContent=themeBri+'%';
+  applyTheme(themeH,themeS,themeBri);
+});
 makeDraggable('hueTrack','hueThumb',v=>{
   const h=v*360;
   document.getElementById('hueVal').textContent=Math.round(h)+'°';
