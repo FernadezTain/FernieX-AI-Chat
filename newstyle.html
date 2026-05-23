@@ -271,61 +271,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   transition:background .45s ease,backdrop-filter .45s ease,-webkit-backdrop-filter .45s ease;
 }
 #settingsOverlay.open #settingsBg{
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
 }
-
-/* Анимация как открытие приложения на iOS — из точки origin (правый верхний угол где кнопка) */
 #settingsCard{
   position:relative;
-  width:min(540px,94vw);
-  background:rgba(15,13,28,0.97);
+  background:rgba(12,10,24,0.97);
   border:1px solid rgba(255,255,255,.08);
   border-radius:28px;
   overflow:hidden;
-  box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(255,255,255,.05);
+  box-shadow:0 40px 100px rgba(0,0,0,.85),0 0 0 0.5px rgba(255,255,255,.05);
   transform-origin:top right;
   transform:scale(0.08) translate(45vw,-45vh);
   opacity:0;
-  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+  transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .3s ease;
   will-change:transform,opacity;
 }
-#settingsOverlay.open #settingsCard{
-  transform:scale(1) translate(0,0);
-  opacity:1;
-}
-#settingsOverlay.closing #settingsCard{
-  transform:scale(0.08) translate(45vw,-45vh);
-  opacity:0;
-  transition:transform .4s cubic-bezier(.4,0,1,1), opacity .25s ease;
-}
-#settingsOverlay.closing #settingsBg{
-  background:rgba(0,0,0,0);
-  backdrop-filter:blur(0px);
-  transition:background .35s ease,backdrop-filter .35s ease;
-}
-
-/* Два "экрана" внутри карточки */
-#sMain, #sCustom{
-  padding:28px 26px 24px;
-  transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .28s ease;
-  width:100%;
-}
-#sMain{transform:translateX(0);opacity:1;}
-#sCustom{position:absolute;top:0;left:0;right:0;transform:translateX(100%);opacity:0;}
-#settingsCard.show-custom #sMain{transform:translateX(-100%);opacity:0;}
-#settingsCard.show-custom #sCustom{transform:translateX(0);opacity:1;}
-
-/* Profile block */
-.s-profile{
-  display:flex;align-items:center;gap:16px;
-  padding:18px;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:18px;
-  margin-bottom:20px;
-}
+#settingsOverlay.open #settingsCard{transform:scale(1) translate(0,0);opacity:1;}
+#settingsOverlay.closing #settingsCard{transform:scale(0.08) translate(45vw,-45vh);opacity:0;transition:transform .4s cubic-bezier(.4,0,1,1),opacity .25s ease;}
+#settingsOverlay.closing #settingsBg{background:rgba(0,0,0,0);backdrop-filter:blur(0px);transition:background .35s ease,backdrop-filter .35s ease;}
 .s-av{
   width:56px;height:56px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(135deg,var(--c1),var(--c5));
@@ -333,102 +298,45 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   font-size:22px;font-weight:700;color:#fff;
   box-shadow:0 0 0 3px rgba(255,255,255,.08);
 }
-.s-info{flex:1;min-width:0;}
 .s-name{font-size:17px;font-weight:600;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.s-tag{font-size:12px;color:var(--t3);}
-
-/* Menu rows */
-.s-menu{display:flex;flex-direction:column;gap:4px;margin-bottom:20px;}
-.s-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.05);
-  border-radius:14px;
-  cursor:pointer;
-  transition:background .18s,border-color .18s;
-  color:var(--text);
-  font-size:15px;font-weight:500;
-  user-select:none;
-}
-.s-row:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1);}
-.s-row:active{background:rgba(255,255,255,.04);}
-.s-row-left{display:flex;align-items:center;gap:12px;}
-.s-row-ico{
-  width:34px;height:34px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:17px;flex-shrink:0;
-}
-.s-row-arrow{color:rgba(255,255,255,.25);font-size:12px;}
 .s-btn-logout{
-  width:100%;padding:14px;
+  width:100%;padding:12px;
   background:rgba(248,113,113,.07);
   border:1px solid rgba(248,113,113,.15);
-  border-radius:14px;
-  font-family:var(--font);font-size:15px;font-weight:600;
+  border-radius:12px;
+  font-family:var(--font);font-size:13px;font-weight:600;
   color:#f87171;cursor:pointer;
   transition:background .2s,border-color .2s;
 }
 .s-btn-logout:hover{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.3);}
-
-/* Кастомизация — подраздел */
-.s-back{
-  display:flex;align-items:center;gap:8px;
-  cursor:pointer;color:var(--c1);font-size:14px;font-weight:500;
-  margin-bottom:22px;width:fit-content;
-  transition:opacity .15s;
-}
-.s-back:hover{opacity:.75;}
-.s-custom-title{font-size:20px;font-weight:600;margin-bottom:6px;}
-.s-custom-sub{font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.5;}
-
-.s-hue-block{margin-bottom:24px;}
-.s-hue-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.s-hue-name{font-size:14px;font-weight:500;color:var(--text);}
-.s-hue-val{font-size:13px;color:var(--t3);font-family:monospace;}
 .s-hue-track{
-  position:relative;height:36px;border-radius:18px;
+  position:relative;height:28px;border-radius:14px;
   background:linear-gradient(to right,
     hsl(0,80%,55%),hsl(30,80%,55%),hsl(60,80%,55%),
     hsl(120,80%,45%),hsl(180,80%,45%),hsl(210,80%,55%),
     hsl(240,80%,60%),hsl(270,80%,60%),hsl(300,80%,55%),hsl(360,80%,55%));
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);
-  touch-action:none;
+  cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;
 }
 .s-hue-thumb{
   position:absolute;top:50%;
-  width:28px;height:28px;border-radius:50%;
-  background:#fff;
-  border:3px solid #fff;
-  box-shadow:0 2px 12px rgba(0,0,0,.5);
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-  transition:box-shadow .15s;
+  width:22px;height:22px;border-radius:50%;
+  background:#fff;border:2px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
+  transform:translate(-50%,-50%);pointer-events:none;
 }
-.s-hue-track:active .s-hue-thumb{box-shadow:0 2px 20px rgba(0,0,0,.7),0 0 0 4px rgba(255,255,255,.2);}
-
-.s-sat-block{margin-bottom:28px;}
 .s-sat-track{
-  position:relative;height:36px;border-radius:18px;
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.1);
-  touch-action:none;
+  position:relative;height:28px;border-radius:14px;
+  cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;
 }
-.s-presets{display:flex;gap:10px;flex-wrap:wrap;}
 .s-preset{
-  flex:1;min-width:80px;
-  padding:12px 8px;
-  border-radius:14px;
-  border:2px solid transparent;
-  cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:rgba(255,255,255,.04);
-  transition:all .2s;font-size:12px;color:var(--t2);font-weight:500;
+  padding:10px 8px;border-radius:12px;border:2px solid transparent;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(255,255,255,.04);transition:all .2s;
+  font-size:11px;color:var(--t2);font-weight:500;flex-shrink:0;
 }
 .s-preset:hover{background:rgba(255,255,255,.08);}
-.s-preset.active{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06);color:#fff;}
-.s-preset-dot{width:28px;height:28px;border-radius:50%;}
+.s-preset.active{border-color:var(--c1);background:rgba(var(--c1-rgb),.1);color:#fff;}
+.s-preset-dot{width:26px;height:26px;border-radius:50%;}
 
 /* CONFIRM */
 #confirmDialog{
@@ -601,115 +509,465 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
 </div>
 
-<!-- SETTINGS -->
+<!-- SETTINGS — новый sidebar-стиль -->
 <div id="settingsOverlay">
   <div id="settingsBg" onclick="closeSettings()"></div>
   <div id="settingsCard">
-    <!-- Главный экран -->
-    <div id="sMain">
-      <div class="s-profile">
-        <div class="s-av" id="sAv">F</div>
-        <div class="s-info">
-          <div class="s-name" id="sName">FernieX</div>
-          <div class="s-tag">FernieID аккаунт</div>
+    <!-- Метаболлы фон -->
+    <canvas id="blobCanvas" style="position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:28px;"></canvas>
+
+    <div style="position:relative;z-index:1;display:flex;height:100%;min-height:0;">
+      <!-- Левая навигация -->
+      <div id="sNav" style="width:168px;flex-shrink:0;display:flex;flex-direction:column;padding:22px 10px 16px;border-right:1px solid rgba(255,255,255,.06);gap:2px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.6px;color:rgba(255,255,255,.18);text-transform:uppercase;padding:0 8px;margin-bottom:10px;">FERNIEX</div>
+        <div class="snav-item active" data-tab="profile" onclick="switchSettingsTab('profile')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Профиль
         </div>
-      </div>
-      <div class="s-menu">
-        <div class="s-row" onclick="openCustom()">
-          <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(168,85,247,.15)">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="11.5" r="2.5"/><circle cx="13.5" cy="17.5" r="2.5"/><path d="M20 21a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2"/><path d="M13 11a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v1"/></svg>
-</div>
-            <span>Кастомизация</span>
+        <div class="snav-item" data-tab="tokens" onclick="switchSettingsTab('tokens')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Токены
+        </div>
+        <div class="snav-item" data-tab="appearance" onclick="switchSettingsTab('appearance')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          Вид
+        </div>
+        <div class="snav-item" data-tab="privacy" onclick="switchSettingsTab('privacy')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Приватность
+        </div>
+        <div style="flex:1"></div>
+        <div style="padding:6px 8px;margin-bottom:8px;">
+          <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:10px;color:rgba(255,255,255,.3);cursor:default;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            v3 Dev
           </div>
-          <span class="s-row-arrow">›</span>
         </div>
-        <div class="s-row" id="tokenRow" onclick="openTokenModal()" style="cursor:pointer">
-          <div class="s-row-left" style="flex:1;min-width:0">
-            <div class="s-row-ico" style="background:rgba(168,85,247,.12)">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:14px;font-weight:500;color:var(--text)">Токены</div>
-              <div style="font-size:11px;color:var(--t3);margin-top:2px" id="tokenRowSub">Загрузка...</div>
-              <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;width:100%">
-                <div id="tokenRowBar" style="height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,var(--c1),var(--c5));transition:width .9s cubic-bezier(.34,1.2,.64,1)"></div>
+        <button class="s-btn-logout" onclick="askLogout()" style="margin:0;padding:11px 10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Выйти
+        </button>
+      </div>
+
+      <!-- Правая контентная область -->
+      <div id="sContent" style="flex:1;overflow-y:auto;padding:24px 22px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent;min-width:0;">
+
+        <!-- TAB: PROFILE -->
+        <div class="stab" id="stab-profile">
+          <div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;">Профиль</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;">Управление аккаунтом FernieID</div>
+
+          <div style="display:flex;align-items:center;gap:16px;padding:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;margin-bottom:16px;">
+            <div class="s-av" id="sAv" style="width:60px;height:60px;font-size:24px;">F</div>
+            <div style="flex:1;min-width:0;">
+              <div class="s-name" id="sName" style="font-size:18px;font-weight:700;">FernieX</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;">FernieID аккаунт</div>
+              <div style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(99,102,241,.15));border:1px solid rgba(168,85,247,.25);border-radius:20px;font-size:11px;font-weight:600;color:#c084fc;" id="sPlanBadge">
+                ⚡ Free план
               </div>
             </div>
           </div>
-          <span class="s-row-arrow">›</span>
+
+          <!-- Мини-токены на профиле -->
+          <div style="padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div style="font-size:12px;color:rgba(255,255,255,.4);font-weight:500;">ТОКЕНОВ СЕГОДНЯ</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);">ОСТАЛОСЬ</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;">
+              <div>
+                <div style="font-size:28px;font-weight:800;color:#fff;line-height:1;" id="prof-used">—</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px;" id="prof-used-of">из 200K</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:28px;font-weight:800;color:#fff;line-height:1;" id="prof-rem">—</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px;" id="prof-reset-sub">сброс через —</div>
+              </div>
+            </div>
+            <div style="height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:8px;">
+              <div id="prof-bar" style="height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--c1),var(--c5));transition:width 1s cubic-bezier(.34,1.2,.64,1);"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.25);">
+              <span>0</span>
+              <span id="prof-pct-label">34% использовано</span>
+              <span id="prof-limit-label">200K</span>
+            </div>
+            <div style="margin-top:10px;text-align:center;font-size:12px;color:rgba(255,255,255,.3);">
+              Перейди в <span onclick="switchSettingsTab('tokens')" style="color:var(--c1);cursor:pointer;font-weight:500;">Токены</span> для подробной статистики
+            </div>
+          </div>
         </div>
 
-<!-- TOKEN MODAL -->
-<div id="tokenModalOverlay" style="position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s">
-  <div id="tokenModalBg" onclick="closeTokenModal()" style="position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)"></div>
-  <div id="tokenModalCard" style="position:relative;width:min(420px,92vw);background:rgba(15,13,28,.97);border:1px solid rgba(255,255,255,.1);border-radius:26px;padding:28px 24px 24px;box-shadow:0 32px 80px rgba(0,0,0,.7);transform:scale(.88) translateY(20px);opacity:0;transition:transform .42s cubic-bezier(.34,1.2,.64,1),opacity .3s;display:flex;flex-direction:column;gap:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#a855f7,#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(168,85,247,.4);animation:tokenGlow 2.5s ease-in-out infinite">⚡</div>
-        <div>
-          <div style="font-size:17px;font-weight:700;color:#fff">Токены</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35)" id="tm-plan-badge">Free план</div>
+        <!-- TAB: TOKENS -->
+        <div class="stab" id="stab-tokens" style="display:none;">
+          <div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;">Токены</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;">Ежедневный лимит запросов к FernieX AI</div>
+
+          <!-- Главный блок использования -->
+          <div style="padding:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;margin-bottom:12px;">
+            <div style="font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">ИСПОЛЬЗОВАНО СЕГОДНЯ</div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;">
+              <div>
+                <span style="font-size:32px;font-weight:800;color:#fff;line-height:1;" id="tm-used">—</span>
+                <span style="font-size:12px;color:rgba(255,255,255,.4);margin-left:6px;">ТОКЕНОВ</span>
+              </div>
+              <div style="font-size:22px;font-weight:800;" id="tm-pct">—%</div>
+            </div>
+            <div style="height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:10px;">
+              <div id="tm-bar" style="height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#a855f7,#6366f1);transition:width 1s cubic-bezier(.34,1.2,.64,1);box-shadow:0 0 12px rgba(168,85,247,.4);"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.3);">
+              <span>Осталось: <b style="color:rgba(255,255,255,.65);" id="tm-remaining">—</b></span>
+              <span id="tm-reset">сброс через —</span>
+            </div>
+          </div>
+
+          <!-- Сетка деталей -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">ЛИМИТ В ДЕНЬ</div>
+              <div style="font-size:18px;font-weight:700;color:#fff;" id="tm-limit-val">200 000</div>
+            </div>
+            <div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">МАКС ЗА ЗАПРОС</div>
+              <div style="font-size:18px;font-weight:700;color:#fff;">8 192</div>
+            </div>
+            <div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">ОБНОВЛЕНИЕ</div>
+              <div style="font-size:18px;font-weight:700;color:#fff;">Каждый день</div>
+            </div>
+            <div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">ТАРИФНЫЙ ПЛАН</div>
+              <div style="font-size:18px;font-weight:700;color:#fff;" id="tm-plan-badge">Free</div>
+            </div>
+          </div>
+
+          <!-- Инфо -->
+          <div style="padding:12px 14px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:12px;font-size:12px;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:12px;">
+            Токен ≈ 4 символа · одно слово ≈ 1–2 токена · каждый запрос и ответ расходует токены
+          </div>
+
+          <!-- Fernie+ -->
+          <div style="padding:14px 16px;background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(245,158,11,.04));border:1px solid rgba(251,191,36,.2);border-radius:14px;display:flex;align-items:center;gap:12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#fbbf24;">Fernie+ — 1 500 000 токенов/день</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;">Открой расширенные модели и приоритет</div>
+            </div>
+          </div>
+          <div id="tm-warn" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;font-size:12px;color:#f87171;text-align:center;">
+            ⚠️ Лимит скоро закончится!
+          </div>
         </div>
-      </div>
-      <div onclick="closeTokenModal()" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:rgba(255,255,255,.4);transition:all .18s" onmouseover="this.style.background='rgba(239,68,68,.15)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.07)';this.style.color='rgba(255,255,255,.4)'">✕</div>
-    </div>
 
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:20px">
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Использовано сегодня</div>
-          <div style="font-size:32px;font-weight:800;color:#fff;line-height:1" id="tm-used">—</div>
+        <!-- TAB: APPEARANCE -->
+        <div class="stab" id="stab-appearance" style="display:none;">
+          <div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;">Внешний вид</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;">Настрой цвет, шрифт и фон интерфейса</div>
+
+          <!-- Цвет акцента — пресеты -->
+          <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ЦВЕТ АКЦЕНТА</div>
+          <div style="display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none;" id="presets">
+            <div class="s-preset active" data-h="213" data-s="85" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#4285f4,#5a9cf5)"></div>Синий
+            </div>
+            <div class="s-preset" data-h="270" data-s="80" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#a855f7,#c084fc)"></div>Фиолет
+            </div>
+            <div class="s-preset" data-h="187" data-s="80" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#06b6d4,#22d3ee)"></div>Циан
+            </div>
+            <div class="s-preset" data-h="160" data-s="75" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#10b981,#34d399)"></div>Зелёный
+            </div>
+            <div class="s-preset" data-h="38" data-s="90" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"></div>Янтарь
+            </div>
+            <div class="s-preset" data-h="330" data-s="80" onclick="applyPreset(this)" style="flex-shrink:0;">
+              <div class="s-preset-dot" style="background:linear-gradient(135deg,#ec4899,#f472b6)"></div>Розовый
+            </div>
+          </div>
+
+          <!-- Слайдеры оттенка -->
+          <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">ОТТЕНОК</div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:60px;font-size:12px;color:rgba(255,255,255,.4);flex-shrink:0;">Цвет</div>
+              <div class="s-hue-track" id="hueTrack" style="flex:1;height:28px;border-radius:14px;">
+                <div class="s-hue-thumb" id="hueThumb" style="left:59%"></div>
+              </div>
+              <div style="width:36px;text-align:right;font-size:12px;color:rgba(255,255,255,.35);flex-shrink:0;" id="hueVal">213°</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:60px;font-size:12px;color:rgba(255,255,255,.4);flex-shrink:0;">Насыщенность</div>
+              <div class="s-sat-track" id="satTrack" style="flex:1;height:28px;border-radius:14px;">
+                <div class="s-hue-thumb" id="satThumb" style="left:80%"></div>
+              </div>
+              <div style="width:36px;text-align:right;font-size:12px;color:rgba(255,255,255,.35);flex-shrink:0;" id="satVal">85%</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:60px;font-size:12px;color:rgba(255,255,255,.4);flex-shrink:0;">Яркость</div>
+              <div id="briTrack" style="flex:1;height:28px;border-radius:14px;position:relative;cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;">
+                <div id="briThumb" style="position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);transform:translate(-50%,-50%);pointer-events:none;left:55%;"></div>
+              </div>
+              <div style="width:36px;text-align:right;font-size:12px;color:rgba(255,255,255,.35);flex-shrink:0;" id="briVal">55%</div>
+            </div>
+          </div>
+
+          <!-- Шрифт -->
+          <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ШРИФТ ИНТЕРФЕЙСА</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;" id="fontPicker">
+            <div class="font-pick active" data-font="'Outfit',sans-serif" onclick="applyFont(this)">
+              <div style="font-size:16px;font-weight:700;margin-bottom:3px;font-family:'Outfit',sans-serif">Outfit</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);font-family:'Outfit',sans-serif">AaBbCc 123</div>
+            </div>
+            <div class="font-pick" data-font="'Inter',sans-serif" onclick="applyFont(this)">
+              <div style="font-size:16px;font-weight:700;margin-bottom:3px;font-family:'Inter',sans-serif">Inter</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);font-family:'Inter',sans-serif">AaBbCc 123</div>
+            </div>
+            <div class="font-pick" data-font="'JetBrains Mono',monospace" onclick="applyFont(this)">
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px;font-family:monospace">Mono</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);font-family:monospace">AaBbCc 123</div>
+            </div>
+          </div>
+
+          <!-- Дополнительно -->
+          <div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ДОПОЛНИТЕЛЬНО</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:9px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:#fff;">Анимация фона</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px;">Частицы на главном экране</div>
+                </div>
+              </div>
+              <div class="s-toggle" id="toggleAnim" onclick="toggleSetting('anim',this)" data-on="true"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:9px;background:rgba(251,191,36,.1);display:flex;align-items:center;justify-content:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:#fff;">Компактный режим</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px;">Уменьшенные отступы</div>
+                </div>
+              </div>
+              <div class="s-toggle" id="toggleCompact" onclick="toggleSetting('compact',this)" data-on="false"></div>
+            </div>
+          </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px">из <span id="tm-limit">—</span></div>
-          <div style="font-size:15px;font-weight:700" id="tm-pct" style="color:#a855f7">—%</div>
+
+        <!-- TAB: PRIVACY -->
+        <div class="stab" id="stab-privacy" style="display:none;">
+          <div style="font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;">Приватность</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;">Управление данными и доступами</div>
+
+          <!-- Инфо-строки -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);">
+              <span style="font-size:13px;color:rgba(255,255,255,.6);">Telegram привязан</span>
+              <span style="font-size:13px;color:#4ade80;font-weight:600;">✓ Да</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);">
+              <span style="font-size:13px;color:rgba(255,255,255,.6);">История чатов</span>
+              <span style="font-size:13px;color:rgba(255,255,255,.35);">Локально</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);">
+              <span style="font-size:13px;color:rgba(255,255,255,.6);">Логи запросов</span>
+              <span style="font-size:13px;color:rgba(255,255,255,.35);">Сервер (24ч)</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;">
+              <span style="font-size:13px;color:rgba(255,255,255,.6);">2FA авторизация</span>
+              <span style="font-size:13px;color:#4ade80;font-weight:600;">✓ Включена</span>
+            </div>
+          </div>
+
+          <!-- Тогглы -->
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:9px;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34a853" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:#fff;">Сохранять историю</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px;">Чаты хранятся в localStorage</div>
+                </div>
+              </div>
+              <div class="s-toggle" id="toggleHistory" onclick="toggleSetting('history',this)" data-on="true"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:9px;background:rgba(234,67,53,.1);display:flex;align-items:center;justify-content:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea4335" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:#fff;">Режим инкогнито</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px;">Чаты не сохраняются</div>
+                </div>
+              </div>
+              <div class="s-toggle" id="toggleIncognito" onclick="toggleSetting('incognito',this)" data-on="false"></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div style="height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:10px">
-        <div id="tm-bar" style="height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#a855f7,#6366f1);transition:width 1s cubic-bezier(.34,1.2,.64,1);box-shadow:0 0 12px rgba(168,85,247,.5)"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35)">
-        <span>Осталось: <b style="color:rgba(255,255,255,.7)" id="tm-remaining">—</b></span>
-        <span id="tm-reset">сброс в 00:00 МСК</span>
-      </div>
-    </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px">
-        <div style="font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Обновление</div>
-        <div style="font-size:14px;font-weight:700;color:#fff">Каждый день</div>
-      </div>
-      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px">
-        <div style="font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Макс/запрос</div>
-        <div style="font-size:14px;font-weight:700;color:#fff">8 192</div>
-      </div>
-    </div>
-
-    <div style="padding:12px 14px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:12px;font-size:12px;color:rgba(255,255,255,.45);line-height:1.7">
-      Токен ≈ 4 символа. Одно слово ≈ 1–2 токена.<br>
-      Каждый запрос и ответ расходует токены.
-    </div>
-
-    <div id="tm-warn" style="display:none;padding:10px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;font-size:12px;color:#f87171;text-align:center;animation:fadeUp .3s ease">
-      ⚠️ Лимит скоро закончится!
-    </div>
+      </div><!-- end sContent -->
+    </div><!-- end flex row -->
   </div>
 </div>
 
 <style>
-@keyframes tokenGlow{0%,100%{box-shadow:0 0 20px rgba(168,85,247,.4)}50%{box-shadow:0 0 36px rgba(168,85,247,.8),0 0 60px rgba(99,102,241,.3)}}
-@keyframes tokenBarShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+/* Новый sidebar-стиль настроек */
+#settingsCard{
+  width:min(680px,96vw);
+  height:min(520px,88vh);
+  display:flex;
+  flex-direction:column;
+  padding:0;
+  overflow:hidden;
+}
+#sMain,#sCustom{display:none!important;}
+
+.snav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 12px;border-radius:11px;
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.5);
+  cursor:pointer;transition:all .18s;
+  border:1px solid transparent;
+}
+.snav-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.8);}
+.snav-item.active{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.09);color:#fff;}
+.snav-item svg{flex-shrink:0;opacity:.7;}
+.snav-item.active svg{opacity:1;}
+
+.s-toggle{
+  width:42px;height:24px;border-radius:12px;cursor:pointer;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.1);
+  position:relative;transition:background .25s,border-color .25s;flex-shrink:0;
+}
+.s-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:transform .25s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.s-toggle[data-on="true"]{background:var(--c1);border-color:transparent;}
+.s-toggle[data-on="true"]::after{transform:translateX(18px);}
+
+.font-pick{
+  padding:12px;background:rgba(255,255,255,.04);
+  border:2px solid rgba(255,255,255,.07);
+  border-radius:12px;cursor:pointer;text-align:center;
+  transition:all .18s;
+}
+.font-pick:hover{background:rgba(255,255,255,.07);}
+.font-pick.active{border-color:var(--c1);background:rgba(var(--c1-rgb),.08);}
+
+/* Blob / metaball glow */
+#blobCanvas{opacity:.35;}
+@keyframes tokenGlow{0%,100%{box-shadow:0 0 20px rgba(168,85,247,.4)}50%{box-shadow:0 0 36px rgba(168,85,247,.8)}}
 </style>
 
 <script>
+// ── BLOB CANVAS (метаболлы) ──
+(function initBlobs(){
+  const cv=document.getElementById('blobCanvas');
+  if(!cv)return;
+  let animId;
+  function resize(){
+    const card=document.getElementById('settingsCard');
+    cv.width=card.offsetWidth;cv.height=card.offsetHeight;
+  }
+  const blobs=[
+    {x:.2,y:.3,r:.22,vx:.00012,vy:.00008,hue:213},
+    {x:.75,y:.6,r:.18,vx:-.00009,vy:.00013,hue:270},
+    {x:.5,y:.85,r:.15,vx:.00007,vy:-.00011,hue:187},
+    {x:.1,y:.75,r:.12,vx:.00014,vy:.0001,hue:330},
+  ];
+  let t=0;
+  function draw(){
+    const card=document.getElementById('settingsCard');
+    if(!card||!document.getElementById('settingsOverlay').classList.contains('open')){
+      cancelAnimationFrame(animId);return;
+    }
+    cv.width=card.offsetWidth;cv.height=card.offsetHeight;
+    const W=cv.width,H=cv.height;
+    const ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    t+=1;
+    blobs.forEach(b=>{
+      b.x+=b.vx*Math.sin(t*0.4+b.hue);
+      b.y+=b.vy*Math.cos(t*0.3+b.hue);
+      if(b.x<0||b.x>1)b.vx*=-1;
+      if(b.y<0||b.y>1)b.vy*=-1;
+      // Притяжение к другим блобам (эффект капли)
+      blobs.forEach(other=>{
+        if(other===b)return;
+        const dx=(other.x-b.x)*W,dy=(other.y-b.y)*H;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        const attract=(b.r+other.r)*Math.min(W,H);
+        if(dist<attract*1.8&&dist>10){
+          const force=0.00003*(1-dist/(attract*1.8));
+          b.x+=dx/dist*force;b.y+=dy/dist*force;
+        }
+      });
+      const rx=b.x*W,ry=b.y*H,rad=b.r*Math.min(W,H);
+      const g=ctx.createRadialGradient(rx,ry,0,rx,ry,rad);
+      const hex=getComputedStyle(document.documentElement).getPropertyValue('--c1').trim()||'#4285f4';
+      const cr=parseInt(hex.slice(1,3),16),cg=parseInt(hex.slice(3,5),16),cb=parseInt(hex.slice(5,7),16);
+      // Смешиваем цвет темы с цветом блоба
+      const hueShift=(b.hue-213)/360*2;
+      g.addColorStop(0,`rgba(${Math.round(cr+hueShift*40)},${Math.round(cg+hueShift*20)},${Math.round(cb+hueShift*60)},.55)`);
+      g.addColorStop(.5,`rgba(${cr},${cg},${cb},.18)`);
+      g.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(rx,ry,rad,0,Math.PI*2);ctx.fill();
+    });
+    animId=requestAnimationFrame(draw);
+  }
+  window._startBlobs=function(){draw();};
+  window._stopBlobs=function(){cancelAnimationFrame(animId);};
+})();
+
+// ── SETTINGS NAV ──
+function switchSettingsTab(tab){
+  document.querySelectorAll('.snav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+  document.querySelectorAll('.stab').forEach(el=>el.style.display='none');
+  const t=document.getElementById('stab-'+tab);
+  if(t){t.style.display='';t.style.animation='fadeUp .3s ease';}
+  if(tab==='tokens'||tab==='profile')loadTokenData();
+}
+
+function openSettings(){
+  const u=FernieID.getUser();
+  if(u){
+    document.getElementById('sName').textContent=u.username||'Пользователь';
+    document.getElementById('sAv').textContent=(u.username||'F')[0].toUpperCase();
+  }
+  const ov=document.getElementById('settingsOverlay');
+  ov.classList.remove('closing');
+  ov.classList.add('open');
+  switchSettingsTab('profile');
+  loadTokenData();
+  if(window._startBlobs)window._startBlobs();
+}
+function closeSettings(){
+  const ov=document.getElementById('settingsOverlay');
+  ov.classList.add('closing');
+  document.getElementById('settingsCard').classList.remove('show-custom');
+  setTimeout(()=>{ov.classList.remove('open','closing');if(window._stopBlobs)window._stopBlobs();},420);
+}
+
+// ── TOKEN DATA (обновлённая — пишет в оба таба) ──
 async function loadTokenData(){
   try{
     const u=FernieID.getUser();
-    if(!u?.userId){
-      document.getElementById('tokenRowSub').textContent='Войдите для просмотра';
-      return;
-    }
+    if(!u?.userId)return;
     const r=await fetch(`https://ferniex-id.vercel.app/api/chat/usage/${u.userId}`);
     const d=await r.json();
     if(!d.success)return;
@@ -718,122 +976,107 @@ async function loadTokenData(){
     const pct=Math.min(100,Math.round(used/limit*100));
     const fmt=n=>n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':n.toLocaleString('ru-RU');
 
-    // Row mini
-    document.getElementById('tokenRowSub').textContent=fmt(used)+' / '+fmt(limit)+' · '+pct+'%';
-    setTimeout(()=>document.getElementById('tokenRowBar').style.width=pct+'%',80);
+    // Профиль мини
+    const pu=document.getElementById('prof-used');if(pu)pu.textContent=fmt(used);
+    const pr=document.getElementById('prof-rem');if(pr)pr.textContent=fmt(remaining);
+    const pb=document.getElementById('prof-bar');if(pb)setTimeout(()=>pb.style.width=pct+'%',80);
+    const pp=document.getElementById('prof-pct-label');if(pp)pp.textContent=pct+'% использовано';
+    const po=document.getElementById('prof-used-of');if(po)po.textContent='из '+fmt(limit);
+    const pl=document.getElementById('prof-limit-label');if(pl)pl.textContent=fmt(limit);
 
-    // Modal
-    document.getElementById('tm-used').textContent=fmt(used)+' токенов';
-    document.getElementById('tm-limit').textContent=fmt(limit);
-    document.getElementById('tm-remaining').textContent=fmt(remaining);
-    const pctEl=document.getElementById('tm-pct');
-    pctEl.textContent=pct+'%';
-    pctEl.style.color=pct>85?'#f87171':pct>60?'#fb923c':'#a855f7';
-    const bar=document.getElementById('tm-bar');
-    bar.style.background=pct>85?'linear-gradient(90deg,#ef4444,#dc2626)':pct>60?'linear-gradient(90deg,#f97316,#eab308)':'linear-gradient(90deg,#a855f7,#6366f1)';
-    setTimeout(()=>bar.style.width=pct+'%',80);
-    document.getElementById('tm-plan-badge').textContent=(d.has_plus?'Fernie+':'Free')+' план';
-    const warn=document.getElementById('tm-warn');
-    if(warn)warn.style.display=pct>80?'block':'none';
-    const now=new Date();
-    const msk=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
-    document.getElementById('tm-reset').textContent=`сброс через ${23-msk.getHours()}ч ${59-msk.getMinutes()}м`;
-  }catch(e){
-    document.getElementById('tokenRowSub').textContent='Ошибка загрузки';
-  }
+    // Токены таб
+    const tu=document.getElementById('tm-used');if(tu)tu.textContent=fmt(used);
+    const tl=document.getElementById('tm-limit');if(tl)tl.textContent=fmt(limit);
+    const tlv=document.getElementById('tm-limit-val');if(tlv)tlv.textContent=limit.toLocaleString('ru-RU');
+    const tremEl=document.getElementById('tm-remaining');if(tremEl)tremEl.textContent=fmt(remaining);
+    const tpct=document.getElementById('tm-pct');
+    if(tpct){tpct.textContent=pct+'%';tpct.style.color=pct>85?'#f87171':pct>60?'#fb923c':'#a855f7';}
+    const tbar=document.getElementById('tm-bar');
+    if(tbar){tbar.style.background=pct>85?'linear-gradient(90deg,#ef4444,#dc2626)':pct>60?'linear-gradient(90deg,#f97316,#eab308)':'linear-gradient(90deg,#a855f7,#6366f1)';setTimeout(()=>tbar.style.width=pct+'%',80);}
+    const tplan=document.getElementById('tm-plan-badge');if(tplan)tplan.textContent=d.has_plus?'Fernie+':'Free';
+    const spb=document.getElementById('sPlanBadge');if(spb)spb.innerHTML=(d.has_plus?'⭐ Fernie+':'⚡ Free план');
+    const warn=document.getElementById('tm-warn');if(warn)warn.style.display=pct>80?'block':'none';
+    const now=new Date();const msk=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
+    const resetStr=`сброс через ${23-msk.getHours()}ч ${59-msk.getMinutes()}м`;
+    const treset=document.getElementById('tm-reset');if(treset)treset.textContent=resetStr;
+    const preset=document.getElementById('prof-reset-sub');if(preset)preset.textContent=resetStr;
+    // Row mini в старом месте (для совместимости)
+    const trs=document.getElementById('tokenRowSub');if(trs)trs.textContent=fmt(used)+' / '+fmt(limit)+' · '+pct+'%';
+    const trb=document.getElementById('tokenRowBar');if(trb)setTimeout(()=>trb.style.width=pct+'%',80);
+  }catch(e){console.warn('loadTokenData:',e);}
 }
 
-function openTokenModal(){
-  const ov=document.getElementById('tokenModalOverlay');
-  const card=document.getElementById('tokenModalCard');
-  ov.style.pointerEvents='all';
-  ov.style.opacity='1';
-  card.style.transform='scale(1) translateY(0)';
-  card.style.opacity='1';
-  loadTokenData();
+// ── TOGGLE ──
+function toggleSetting(key,el){
+  const on=el.dataset.on!=='true';
+  el.dataset.on=on;
+  try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');s[key]=on;localStorage.setItem('fx_settings',JSON.stringify(s));}catch{}
 }
 
-function closeTokenModal(){
-  const ov=document.getElementById('tokenModalOverlay');
-  const card=document.getElementById('tokenModalCard');
-  card.style.transform='scale(.88) translateY(20px)';
-  card.style.opacity='0';
-  setTimeout(()=>{ov.style.opacity='0';ov.style.pointerEvents='none';},350);
+// ── FONT ──
+function applyFont(el){
+  document.querySelectorAll('.font-pick').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  const f=el.dataset.font;
+  document.documentElement.style.setProperty('--font',f);
+  document.body.style.fontFamily=f;
+  try{localStorage.setItem('fx_font',f);}catch{}
 }
+try{const f=localStorage.getItem('fx_font');if(f){document.documentElement.style.setProperty('--font',f);document.body.style.fontFamily=f;document.querySelectorAll('.font-pick').forEach(e=>e.classList.toggle('active',e.dataset.font===f));}}catch{}
 
-// Первичная загрузка при входе
-document.addEventListener('DOMContentLoaded',()=>{
-  const u=FernieID.getUser();
-  if(u?.userId)loadTokenData();
+// ── BRIGHTNESS ──
+let themeBri=55;
+makeDraggable('briTrack','briThumb',v=>{
+  themeBri=Math.round(v*100);
+  document.getElementById('briVal').textContent=themeBri+'%';
+  applyTheme(themeH,themeS,themeBri);
 });
+// Патч applyTheme — добавляем яркость
+const _origApplyTheme=applyTheme;
+applyTheme=function(h,s,bri){
+  bri=bri!=null?bri:themeBri;
+  const L=Math.max(30,Math.min(80,bri));
+  themeH=h;themeS=s;themeBri=L;
+  const c1=hslToHex(h,s,L);
+  const c5=hslToHex((h+30)%360,s,Math.min(L+10,85));
+  const c1rgb=hexToRgb(c1);const c5rgb=hexToRgb(c5);
+  const root=document.documentElement;
+  root.style.setProperty('--c1',c1);root.style.setProperty('--c5',c5);
+  root.style.setProperty('--c1-rgb',c1rgb);root.style.setProperty('--c5-rgb',c5rgb);
+  root.style.setProperty('--c1-10',`rgba(${c1rgb},.10)`);
+  root.style.setProperty('--c1-12',`rgba(${c1rgb},.12)`);
+  root.style.setProperty('--c1-13',`rgba(${c1rgb},.13)`);
+  root.style.setProperty('--c1-15',`rgba(${c1rgb},.15)`);
+  root.style.setProperty('--c1-18',`rgba(${c1rgb},.18)`);
+  root.style.setProperty('--c1-30',`rgba(${c1rgb},.30)`);
+  root.style.setProperty('--c1-38',`rgba(${c1rgb},.38)`);
+  root.style.setProperty('--c1-40',`rgba(${c1rgb},.40)`);
+  root.style.setProperty('--c1-45',`rgba(${c1rgb},.45)`);
+  root.style.setProperty('--c1-55',`rgba(${c1rgb},.55)`);
+  root.style.setProperty('--c1-60',`rgba(${c1rgb},.60)`);
+  const satTr=document.getElementById('satTrack');
+  if(satTr)satTr.style.background=`linear-gradient(to right,hsl(${h},0%,${L}%),hsl(${h},100%,${L}%))`;
+  const briTr=document.getElementById('briTrack');
+  if(briTr)briTr.style.background=`linear-gradient(to right,hsl(${h},${s}%,20%),hsl(${h},${s}%,70%))`;
+  try{localStorage.setItem('fx_theme',JSON.stringify({h,s,bri:L}));}catch{}
+};
+// Восстановить тему с яркостью
+try{
+  const t=JSON.parse(localStorage.getItem('fx_theme'));
+  if(t&&t.h!=null){
+    updateHueUI(t.h);updateSatUI(t.s||80);
+    themeBri=t.bri||55;
+    const briThumb=document.getElementById('briThumb');
+    if(briThumb)briThumb.style.left=(themeBri)+'%';
+    const briValEl=document.getElementById('briVal');
+    if(briValEl)briValEl.textContent=themeBri+'%';
+    applyTheme(t.h,t.s||80,t.bri||55);
+    document.querySelectorAll('.s-preset').forEach(p=>{
+      p.classList.toggle('active',+p.dataset.h===t.h&&+p.dataset.s===(t.s||80));
+    });
+  }
+}catch{}
 </script>
-        <div class="s-row">
-          <div class="s-row-left">
-            <div class="s-row-ico" style="background:rgba(52,168,83,.15)">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-</div>
-            <span>Конфиденциальность</span>
-          </div>
-          <span class="s-row-arrow">›</span>
-        </div>
-      </div>
-      <button class="s-btn-logout" onclick="askLogout()">Выйти из аккаунта</button>
-      <div style="text-align:center;margin-top:16px;font-size:11px;color:rgba(255,255,255,.18);letter-spacing:.4px;">version: 3 Development </div>
-    </div>
-
-    <!-- Экран кастомизации -->
-    <div id="sCustom">
-      <div class="s-back" onclick="closeCustom()">‹ Назад</div>
-      <div class="s-custom-title">Кастомизация</div>
-      <div class="s-custom-sub">Выбери основной цвет интерфейса</div>
-
-      <div class="s-hue-block">
-        <div class="s-hue-label">
-          <span class="s-hue-name">Оттенок</span>
-          <span class="s-hue-val" id="hueVal">213°</span>
-        </div>
-        <div class="s-hue-track" id="hueTrack">
-          <div class="s-hue-thumb" id="hueThumb" style="left:59%"></div>
-        </div>
-      </div>
-
-      <div class="s-sat-block">
-        <div class="s-hue-label">
-          <span class="s-hue-name">Насыщенность</span>
-          <span class="s-hue-val" id="satVal">80%</span>
-        </div>
-        <div class="s-sat-track" id="satTrack">
-          <div class="s-hue-thumb" id="satThumb" style="left:80%"></div>
-        </div>
-      </div>
-
-      <div class="s-hue-label" style="margin-bottom:12px">
-        <span class="s-hue-name">Пресеты</span>
-      </div>
-      <div class="s-presets" id="presets">
-        <div class="s-preset active" data-h="213" data-s="85" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#4285f4,#5a9cf5)"></div>Синий
-        </div>
-        <div class="s-preset" data-h="270" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#a855f7,#c084fc)"></div>Фиолет
-        </div>
-        <div class="s-preset" data-h="187" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#06b6d4,#22d3ee)"></div>Циан
-        </div>
-        <div class="s-preset" data-h="160" data-s="75" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#10b981,#34d399)"></div>Зелёный
-        </div>
-        <div class="s-preset" data-h="38" data-s="90" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"></div>Янтарь
-        </div>
-        <div class="s-preset" data-h="330" data-s="80" onclick="applyPreset(this)">
-          <div class="s-preset-dot" style="background:linear-gradient(135deg,#ec4899,#f472b6)"></div>Розовый
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- MODEL MODAL -->
 <div id="modelOverlay">
   <div id="modelBg" onclick="closeModelModal()"></div>
