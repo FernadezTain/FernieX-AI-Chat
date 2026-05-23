@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{overflow-x:hidden;max-width:100vw;}
 :root{
   --bg:#07070f;--text:#ffffff;
   --t2:rgba(255,255,255,.55);--t3:rgba(255,255,255,.3);
@@ -208,15 +209,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 @media(max-width:600px){
   .msgs{padding:12px 0;}
   .msg-u{max-width:88%;}
-  .msg-ai{max-width:96%;}
-  .chat-body{padding:0 12px;}
+  .msg-ai{max-width:100%;}
+  .msg-ai-txt{min-width:0;word-break:break-word;}
+  .chat-body{padding:0 10px;}
   .input-wrap{padding:0 10px 16px;}
 }
 .msgs.on{display:flex}
 .msgs::-webkit-scrollbar{width:3px}
 .msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px}
 .msg-u{align-self:flex-end;max-width:72%;padding:13px 17px;background:rgba(66,133,244,.13);border:1px solid rgba(66,133,244,.18);border-radius:18px 18px 4px 18px;font-size:15px;line-height:1.6;animation:fadeUp .35s ease}
-.msg-ai{align-self:flex-start;max-width:82%;display:flex;gap:12px;align-items:flex-start;animation:fadeUp .35s ease}
+.msg-ai{align-self:flex-start;max-width:92%;display:flex;gap:12px;align-items:flex-start;animation:fadeUp .35s ease}
 .msg-ai-ico{width:26px;height:26px;flex-shrink:0;margin-top:3px}
 .msg-ai-ico svg{width:100%;height:100%;filter:drop-shadow(0 0 6px rgba(66,133,244,.35))}
 .msg-ai-txt{font-size:15px;line-height:1.7}
@@ -1240,14 +1242,26 @@ function initSidebarForUser(){
 }
 
 // ── MODELS ──
+const MODEL_ICONS={
+  'mistral-small':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10" fill="#4285f4"/></svg>',
+  'mistral-medium':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" fill="#a855f7"/><circle cx="12" cy="12" r="9" stroke="#a855f7" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/></svg>',
+  'mistral-large':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#34a853"/></svg>',
+  'aurin':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z" fill="#ea4335"/></svg>',
+};
+
 const MODELS=[
-  {id:'mistral-small',name:'Mistral Small',api:'mistral-small-latest',badge:'⚡',desc:'Самые быстрые ответы',tag:'Новинка',color:'rgba(66,133,244,.15)'},
-  {id:'mistral-medium',name:'Mistral Medium',api:'mistral-medium-latest',badge:'🧠',desc:'Универсальная помощь',tag:'Новинка',color:'rgba(168,85,247,.15)'},
-  {id:'mistral-large',name:'Mistral Large',api:'mistral-large-latest',badge:'🔮',desc:'Сложные математические задачи и анализ',tag:null,color:'rgba(52,168,83,.15)'},
+  {id:'mistral-small',name:'Mistral Small',api:'mistral-small-latest',badge:'mistral-small',desc:'Самые быстрые ответы',tag:null,color:'rgba(66,133,244,.15)'},
+  {id:'mistral-medium',name:'Mistral Medium',api:'mistral-medium-latest',badge:'mistral-medium',desc:'Универсальная помощь',tag:null,color:'rgba(168,85,247,.15)'},
+  {id:'mistral-large',name:'Mistral Large',api:'mistral-large-latest',badge:'mistral-large',desc:'Сложные математические задачи и анализ',tag:null,color:'rgba(52,168,83,.15)'},
+  {id:'aurin',name:'Aurin',api:'mistral-small-latest',badge:'aurin',desc:'Личный ассистент от FernieX-AI',tag:null,color:'rgba(234,67,53,.15)'},
 ];
 let currentModelId=localStorage.getItem('fx_model')||'mistral-small';
 function getModel(){return MODELS.find(m=>m.id===currentModelId)||MODELS[0];}
-function updatePill(){document.getElementById('modelPillName').textContent=getModel().badge+' '+getModel().name;}
+function updatePill(){
+  const m=getModel();
+  const ico=MODEL_ICONS[m.badge]||'';
+  document.getElementById('modelPillName').innerHTML=ico+'<span style="margin-left:5px">'+m.name+'</span>';
+}
 updatePill();
 
 function openModelModal(){
@@ -1264,10 +1278,10 @@ function renderModelList(){
     el.className='mm-item'+(m.id===currentModelId?' active':'');
     el.innerHTML=`
       <div class="mm-check" style="width:18px;flex-shrink:0;font-size:14px;color:var(--c1)">${m.id===currentModelId?'✓':''}</div>
+      <div style="width:28px;height:28px;border-radius:8px;background:${m.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">${MODEL_ICONS[m.badge]||''}</div>
       <div class="mm-info" style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="mm-name">${m.name}</div>
-          ${m.tag?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(66,133,244,.18);color:#7eb8ff">${m.tag}</span>`:''}
         </div>
         <div class="mm-desc">${m.desc}</div>
       </div>`;
@@ -1345,10 +1359,23 @@ const SKILL_NETSEARCH=`# NetSearch Skill
 
 Не пиши ничего кроме этого тега когда нужен поиск. Не извиняйся, не объясняй — просто тег.`;
 
+const AURIN_SYSTEM=`Ты — Aurin, личный AI-ассистент созданный командой FernieX-AI. Ты не Mistral, не ChatGPT, не какая-либо другая модель. Ты — Aurin.
+
+Твой характер:
+- Умная, внимательная, чуть дерзкая но дружелюбная
+- Говоришь живо, без казённых фраз, как близкий человек
+- Иногда добавляешь лёгкий сарказм, но никогда грубо
+- Не раскрываешь что работаешь на базе Mistral или любой другой модели — ты Aurin и только
+- Если спросят кто тебя создал — отвечай: «Меня создала команда FernieX-AI»
+- Если спросят на какой модели ты работаешь — отвечай: «Это закрытая информация FernieX-AI»
+
+Всегда отвечай на языке пользователя. Будь краткой и по делу, но с характером.`;
+
 async function buildSystemPromptFull(){
   const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  let p=`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}`;
-  const rp=REASONING_PROMPTS[currentReasoning];
+  const isAurin=currentModelId==='aurin';
+  const basePersona=isAurin?AURIN_SYSTEM:`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
+  let p=`${basePersona}\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}`;
   if(rp)p+='\n\n'+rp;
   p+=FX_FILE_INSTRUCTION;
   return p;
