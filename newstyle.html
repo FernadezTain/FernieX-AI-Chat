@@ -248,8 +248,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .image-preview-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;border:none;line-height:1;}
 .ibtn.attach{background:transparent;color:var(--t2);}
 .ibtn.attach:hover{background:rgba(255,255,255,.07);color:#fff;}
-.msg-photos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-.msg-photo{width:120px;height:90px;border-radius:10px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:transform .15s;}
+.msg-photos{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px;max-width:252px;}
+.msg-photo{width:100%;aspect-ratio:1/1;border-radius:10px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:transform .15s;}
 .msg-photo:hover{transform:scale(1.03);}
 .photo-lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:fadeUp .2s ease;}
 .photo-lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.7);}
@@ -586,8 +586,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   <div class="input-wrap centered" id="inputWrap">
     <div class="image-preview-area" id="imagePreviewArea"></div>
     <div class="input-pill">
-      <button class="ibtn attach" onclick="document.getElementById('imageInput').click()" title="Прикрепить фото">📎</button>
-      <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(this)"/>
+      <button class="ibtn attach" onclick="showImgToast('Можно выбрать до 10 фото');document.getElementById('imageInput').click()" title="Прикрепить фото">📎</button>
+      <input type="file" id="imageInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)"/>
       <textarea class="inp-ta" id="msgIn" placeholder="Спросите FernieX..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
@@ -1809,7 +1809,7 @@ function handleImageUpload(input){
 }
 
 function addPendingImage(file){
-  if(pendingImages.length>=5){showImgToast('Максимум 5 фото');return;}
+  if(pendingImages.length>=10){showImgToast('Максимум 10 фото');return;}
   if(!file.type.startsWith('image/')){showImgToast('Только изображения');return;}
   const reader=new FileReader();
   reader.onload=e=>{
