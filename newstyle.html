@@ -2293,6 +2293,55 @@ print("Hello")
 - Можно несколько файлов подряд
 - После блока файла — продолжай объяснение как обычно`;
 
+function lockChat(){
+  const iw=document.getElementById('inputWrap');
+  iw.style.transition='all .5s cubic-bezier(.4,0,.2,1)';
+  iw.style.opacity='0';
+  iw.style.transform='translateY(10px)';
+  setTimeout(()=>{
+    iw.innerHTML=`
+      <div style="
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:14px;padding:22px 28px;
+        background:rgba(239,68,68,.07);
+        border:1px solid rgba(239,68,68,.2);
+        border-radius:24px;
+        text-align:center;
+        animation:fadeUp .5s ease;
+      ">
+        <div style="
+          width:48px;height:48px;border-radius:50%;
+          background:rgba(239,68,68,.12);
+          border:1px solid rgba(239,68,68,.25);
+          display:flex;align-items:center;justify-content:center;
+          font-size:22px;
+        ">🔒</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#f87171;margin-bottom:6px;">
+            Чат заблокирован
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;max-width:320px;">
+            Обнаружена попытка обхода правил безопасности FernieX-AI.<br>
+            Создайте новый чат чтобы продолжить общение.
+          </div>
+        </div>
+        <button onclick="newChat()" style="
+          padding:10px 24px;
+          background:linear-gradient(135deg,var(--c1),var(--c5));
+          border:none;border-radius:12px;
+          font-family:var(--font);font-size:13px;font-weight:600;
+          color:#fff;cursor:pointer;
+          box-shadow:0 4px 16px var(--c1-30);
+          transition:all .2s;
+        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          + Новый чат
+        </button>
+      </div>`;
+    iw.style.opacity='1';
+    iw.style.transform='none';
+  },400);
+}
+
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
   if((!txt&&!pendingImages.length)||ta.disabled)return;
@@ -2629,7 +2678,7 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ aiTxt.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; }
+        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
