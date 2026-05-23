@@ -1887,12 +1887,23 @@ function sbLoad(){
   try{
     const raw=JSON.parse(localStorage.getItem('fx_chats')||'[]');
     allChats=Array.isArray(raw)?raw:[];
+    if(allChats.length > 0) {
+      allChats = allChats.filter(c => !c.isBlocked);
+      sbSave();
+    }
   }catch{allChats=[];}
 }
 function sbSave(){
   try{localStorage.setItem('fx_chats',JSON.stringify(allChats));}catch{}
 }
 function sbRender(){
+  if(typeof allChats !== 'undefined') {
+    let hasBlocked = allChats.some(c => c.isBlocked);
+    if(hasBlocked) {
+      allChats = allChats.filter(c => !c.isBlocked);
+      sbSave();
+    }
+  }
   const list=document.getElementById('sbList');
   list.innerHTML='';
   if(!allChats.length){
@@ -1969,7 +1980,6 @@ function escStr(s){return(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
 function saveCurrentChat(){
-  if(window.isBlockedChat) return;
   if(!activeChatId||!chatHistory.length)return;
   if(!Array.isArray(allChats))allChats=[];
   const idx=allChats.findIndex(c=>c.id===activeChatId);
@@ -2725,16 +2735,13 @@ if(uncertainty.test(full)){
           [...chatHistory],
           {
             onToken:(chunk)=>{full2+=chunk;aiTxt2.innerHTML=renderMd(full2);msgs.scrollTop=msgs.scrollHeight;},
-            onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); window.isBlockedChat = false; },
+            onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); },
             onError:(msg)=>{ 
-              if(msg.includes('безопасност')) {
-                window.isBlockedChat = true;
-                if(typeof allChats !== 'undefined' && typeof activeChatId !== 'undefined') {
-                  allChats = allChats.filter(c => c.id !== activeChatId);
-                  sbSave(); sbRender();
-                }
+              if(msg.includes('безопасност') && activeChatId) {
+                let curr = allChats.find(c => c.id === activeChatId);
+                if(curr) { curr.isBlocked = true; sbSave(); }
               }
-              aiTxt2.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5\">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; 
+              aiTxt2.innerHTML=msg.includes('безопасност')?`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:16px;max-width:420px"><div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">🛡</div><div><div style="font-size:14px;font-weight:600;color:#f87171;margin-bottom:4px">Запрос заблокирован</div><div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.5">Этот запрос нарушает правила безопасности FernieX-AI и не может быть выполнен.</div></div></div>`:`<span style="color:#f87171">⚠ ${msg}</span>`; 
             }
           },
           {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
