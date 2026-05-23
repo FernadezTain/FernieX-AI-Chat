@@ -1976,7 +1976,7 @@ function saveCurrentChat(){
   const lastAi=chatHistory.slice().reverse().find(m=>m.role==='assistant')?.content||'';
   const title=firstUser.slice(0,40)+(firstUser.length>40?'…':'');
   const preview=lastAi.replace(/<[^>]+>/g,'').slice(0,55)+(lastAi.length>55?'…':'');
-  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory]};
+  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory],locked:chatLocked};
   if(idx>=0)allChats[idx]=chat;
   else allChats.unshift(chat);
   sbSave();sbRender();
@@ -1988,6 +1988,7 @@ function switchChat(id){
   if(!c)return;
   activeChatId=id;
   chatHistory=[...c.history];
+  chatLocked=c.locked||false;
   // Сброс UI
   started=true;
   document.getElementById('chatTitle').classList.add('hide');
@@ -2032,6 +2033,17 @@ if (imgResultMatch) {
   });
   msgs.scrollTop=msgs.scrollHeight;
   sbRender();
+  if(chatLocked){
+    const iw=document.getElementById('inputWrap');
+    iw.style.display='none';
+    if(!document.getElementById('lockBanner')){
+      const banner=document.createElement('div');
+      banner.id='lockBanner';
+      banner.style.cssText=`position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;margin:0 auto;transform:translateY(0) scale(1);z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;background:rgba(22,20,36,0.85);backdrop-filter:blur(48px);-webkit-backdrop-filter:blur(48px);border:1px solid rgba(255,255,255,.12);border-radius:100px;box-shadow:0 8px 40px rgba(0,0,0,.4);white-space:nowrap;opacity:1;width:max-content;`;
+      banner.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:13.5px;color:rgba(255,255,255,.5);">Чат заблокирован за нарушение правил.</span><span onclick="newChat();document.getElementById('lockBanner').remove();" style="font-size:13.5px;color:rgba(255,255,255,.85);cursor:pointer;font-weight:600;">Новый чат →</span>`;
+      document.body.appendChild(banner);
+    }
+  }
 }
 
 function newChat(){
@@ -2313,10 +2325,8 @@ function lockChat(){
     banner.style.cssText=`
       position:fixed;
       bottom:calc(24px + env(safe-area-inset-bottom));
-      left:0;
-      right:0;
-      margin:0 auto;
-      transform:translateY(12px) scale(.97);
+      left:50%;
+      transform:translateX(-50%) translateY(12px) scale(.97);
       width:max-content;
       max-width:calc(100vw - 32px);
       z-index:9999;
@@ -2353,7 +2363,7 @@ function lockChat(){
     iw.style.display='none';
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       banner.style.opacity='1';
-      banner.style.transform='translateY(0) scale(1)';
+      banner.style.transform='translateX(-50%) translateY(0) scale(1)';
     }));
   },450);
 }
