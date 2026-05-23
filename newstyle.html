@@ -2304,8 +2304,9 @@ function lockChat(){
     banner.id='lockBanner';
     banner.style.cssText=`
       position:fixed;
-      bottom:28px;
+      bottom:calc(28px + env(safe-area-inset-bottom));
       left:50%;
+      max-width:calc(100vw - 32px);
       transform:translateX(-50%) translateY(12px) scale(.97);
       z-index:9999;
       display:flex;align-items:center;gap:10px;
@@ -2320,7 +2321,10 @@ function lockChat(){
         0 8px 40px rgba(0,0,0,.4),
         0 1px 0 rgba(255,255,255,.08),
         inset 0 1px 0 rgba(255,255,255,.12);
-      white-space:nowrap;
+      white-space:normal;
+      text-align:center;
+      flex-wrap:wrap;
+      justify-content:center;
       opacity:0;
       transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.34,1.1,.64,1);
     `;
