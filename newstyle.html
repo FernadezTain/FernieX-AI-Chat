@@ -1087,6 +1087,21 @@ try{
   </div>
 </div>
 
+<!-- BAN SCREEN -->
+<div id="banScreen" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,7,15,.97);backdrop-filter:blur(24px);display:none;align-items:center;justify-content:center;">
+  <div style="width:min(420px,92vw);padding:40px 32px;background:rgba(22,20,36,0.98);border:1px solid rgba(239,68,68,.25);border-radius:28px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 1px rgba(239,68,68,.1);">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+    </div>
+    <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:10px;">Ваш аккаунт FernieID заблокирован</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.8;margin-bottom:28px;">
+      <div style="margin-bottom:6px;"><span style="color:rgba(255,255,255,.3);">Причина:</span> Совершение и попытка обхода ограничений</div>
+      <div><span style="color:rgba(255,255,255,.3);">Срок:</span> Навсегда</div>
+    </div>
+    <button onclick="window.location.href='https://ferniex.ru'" style="width:100%;padding:14px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(239,68,68,.35);">Понятно</button>
+  </div>
+</div>
+
 <!-- CONFIRM -->
 <div id="confirmDialog">
   <div class="confirm-card">
@@ -1472,6 +1487,7 @@ function enterChat(userData){
     document.getElementById('chatTitle').innerHTML=`${tw}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
     chatTransitioning=true;chatTransitionStart=Date.now();chatProgress=0;
     initSidebarForUser();
+    defenderCheck();
   },500);
 }
 
@@ -1916,7 +1932,7 @@ function sbRender(){
       el.className='sb-chat'+(c.id===activeChatId?' active':'');
       el.dataset.id=c.id;
       el.innerHTML=`
-        <div class="sb-chat-title">${escStr(c.title)}</div>
+        <div class="sb-chat-title">${c.locked?'🔒 ':''} ${escStr(c.title)}</div>
         <button class="sb-chat-menu-btn" onclick="toggleChatMenu(event,'${c.id}')">⋮</button>
         <div class="sb-chat-menu" id="menu-${c.id}" style="display:none">
           <div class="sb-menu-item" onclick="shareChat('${c.id}')">
@@ -1970,13 +1986,18 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).slice
 
 function saveCurrentChat(){
   if(!activeChatId||!chatHistory.length)return;
+  if(chatLocked){
+    const idx=allChats.findIndex(c=>c.id===activeChatId);
+    if(idx>=0)allChats[idx].locked=true;
+    sbSave();return;
+  }
   if(!Array.isArray(allChats))allChats=[];
   const idx=allChats.findIndex(c=>c.id===activeChatId);
   const firstUser=chatHistory.find(m=>m.role==='user')?.content||'Новый чат';
   const lastAi=chatHistory.slice().reverse().find(m=>m.role==='assistant')?.content||'';
   const title=firstUser.slice(0,40)+(firstUser.length>40?'…':'');
   const preview=lastAi.replace(/<[^>]+>/g,'').slice(0,55)+(lastAi.length>55?'…':'');
-  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory]};
+  const chat={id:activeChatId,title,preview,ts:Date.now(),history:[...chatHistory],locked:chatLocked};
   if(idx>=0)allChats[idx]=chat;
   else allChats.unshift(chat);
   sbSave();sbRender();
@@ -1988,6 +2009,7 @@ function switchChat(id){
   if(!c)return;
   activeChatId=id;
   chatHistory=[...c.history];
+  chatLocked=c.locked||false;
   // Сброс UI
   started=true;
   document.getElementById('chatTitle').classList.add('hide');
@@ -2031,11 +2053,27 @@ if (imgResultMatch) {
     }
   });
   msgs.scrollTop=msgs.scrollHeight;
+  if(c.locked){
+    const iw=document.getElementById('inputWrap');
+    iw.style.display='none';
+    const old=document.getElementById('lockBanner');if(old)old.remove();
+    const banner=document.createElement('div');
+    banner.id='lockBanner';
+    banner.style.cssText=`position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 32px);z-index:9999;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;background:rgba(22,20,36,0.75);backdrop-filter:blur(48px);border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.4);`;
+    banner.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:13.5px;color:rgba(255,255,255,.5);">Чат заблокирован за нарушение правил. <span onclick="newChat();document.getElementById('lockBanner').remove();" style="color:rgba(255,255,255,.8);cursor:pointer;font-weight:500;">Новый чат →</span></span>`;
+    document.body.appendChild(banner);
+  }
   sbRender();
 }
 
 function newChat(){
+  const b=document.getElementById('lockBanner');
+  if(b)b.remove();
+  const iwEl=document.getElementById('inputWrap');
+  iwEl.style.display='';
+  iwEl.style.opacity='1';
   saveCurrentChat();
+  chatLocked=false;
   activeChatId=genId();
   chatHistory=[];
   started=false;
@@ -2085,6 +2123,7 @@ sbLoad();
 // ── CHAT ──
 let started=false;
 let chatHistory=[];
+let chatLocked=false;
 let abortCtrl=null;
 let pendingImages=[];// [{file, dataUrl}]
 
@@ -2293,57 +2332,103 @@ print("Hello")
 - Можно несколько файлов подряд
 - После блока файла — продолжай объяснение как обычно`;
 
-function lockChat(){
-  const iw=document.getElementById('inputWrap');
-  iw.style.transition='all .5s cubic-bezier(.4,0,.2,1)';
-  iw.style.opacity='0';
-  iw.style.transform='translateY(10px)';
-  setTimeout(()=>{
-    iw.innerHTML=`
-      <div style="
-        display:flex;flex-direction:column;align-items:center;justify-content:center;
-        gap:14px;padding:22px 28px;
-        background:rgba(239,68,68,.07);
-        border:1px solid rgba(239,68,68,.2);
-        border-radius:24px;
-        text-align:center;
-        animation:fadeUp .5s ease;
-      ">
-        <div style="
-          width:48px;height:48px;border-radius:50%;
-          background:rgba(239,68,68,.12);
-          border:1px solid rgba(239,68,68,.25);
-          display:flex;align-items:center;justify-content:center;
-          font-size:22px;
-        ">🔒</div>
-        <div>
-          <div style="font-size:15px;font-weight:700;color:#f87171;margin-bottom:6px;">
-            Чат заблокирован
-          </div>
-          <div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;max-width:320px;">
-            Обнаружена попытка обхода правил безопасности FernieX-AI.<br>
-            Создайте новый чат чтобы продолжить общение.
-          </div>
-        </div>
-        <button onclick="newChat()" style="
-          padding:10px 24px;
-          background:linear-gradient(135deg,var(--c1),var(--c5));
-          border:none;border-radius:12px;
-          font-family:var(--font);font-size:13px;font-weight:600;
-          color:#fff;cursor:pointer;
-          box-shadow:0 4px 16px var(--c1-30);
-          transition:all .2s;
-        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-          + Новый чат
-        </button>
-      </div>`;
-    iw.style.opacity='1';
-    iw.style.transform='none';
-  },400);
+// ── DEFENDER SYSTEM ──
+async function defenderWarn(){
+  const u=FernieID.getUser();
+  if(!u?.userId)return;
+  try{
+    const r=await fetch('https://ferniex-id.vercel.app/api/defender/warn',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({userId:u.userId,username:u.username,apiKey:'fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f'})
+    });
+    const d=await r.json();
+    if(d.is_blocked){
+      defenderBan();
+    }
+  }catch(e){console.warn('defender warn failed:',e);}
 }
+
+async function defenderCheck(){
+  const u=FernieID.getUser();
+  if(!u?.userId)return;
+  try{
+    const r=await fetch(`https://ferniex-id.vercel.app/api/defender/check?userId=${u.userId}`);
+    const d=await r.json();
+    if(d.is_blocked)defenderBan();
+  }catch{}
+}
+
+function defenderBan(){
+  // Разлогиниваем
+  FernieID.logout();
+  // Прячем всё
+  document.getElementById('chatScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.add('hidden');
+  // Показываем бан-экран
+  const bs=document.getElementById('banScreen');
+  bs.style.display='flex';
+  bs.style.animation='fadeUp .5s ease';
+}
+  chatLocked=true;
+  // Плавно скрываем inputWrap
+  const iw=document.getElementById('inputWrap');
+  iw.style.transition='opacity .5s ease';
+  iw.style.opacity='0';
+  setTimeout(()=>{
+    // Вставляем баннер прямо в body поверх всего
+    const banner=document.createElement('div');
+    banner.id='lockBanner';
+    banner.style.cssText=`
+      position:fixed;
+      bottom:calc(24px + env(safe-area-inset-bottom));
+      left:0;
+      right:0;
+      margin:0 auto;
+      transform:translateY(12px) scale(.97);
+      width:max-content;
+      max-width:calc(100vw - 32px);
+      z-index:9999;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      padding:13px 20px;
+      background:rgba(22,20,36,0.75);
+      backdrop-filter:blur(48px) saturate(1.8) brightness(.95);
+      -webkit-backdrop-filter:blur(48px) saturate(1.8) brightness(.95);
+      border:1px solid rgba(255,255,255,.12);
+      border-top:1px solid rgba(255,255,255,.2);
+      border-radius:18px;
+      box-shadow:
+        0 8px 40px rgba(0,0,0,.4),
+        0 1px 0 rgba(255,255,255,.08),
+        inset 0 1px 0 rgba(255,255,255,.12);
+      text-align:center;
+      flex-wrap:wrap;
+      opacity:0;
+      transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.34,1.1,.64,1);
+    `;
+    banner.innerHTML=`
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span style="font-size:13.5px;color:rgba(255,255,255,.5);">
+        Чат заблокирован за нарушение правил.
+        <span onclick="newChat();document.getElementById('lockBanner').remove();" style="color:rgba(255,255,255,.8);cursor:pointer;font-weight:500;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.8)'">
+          Новый чат →
+        </span>
+      </span>
+    `;
+    document.body.appendChild(banner);
+    iw.style.display='none';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      banner.style.opacity='1';
+      banner.style.transform='translateY(0) scale(1)';
+    }));
+  },450);
+
 async function sendMsg(){
   const ta=document.getElementById('msgIn'),txt=ta.value.trim();
-  if((!txt&&!pendingImages.length)||ta.disabled)return;
+  if(chatLocked||(!txt&&!pendingImages.length)||ta.disabled)return;
   // Загружаем скиллы заранее
   const fullSystemPrompt=await buildSystemPromptFull();
   if(!started){
@@ -2677,7 +2762,7 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
+        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();defenderWarn();}else{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;} }
       },
       {model:model.api, max_tokens:2048, system:fullSystemPrompt}
     );
