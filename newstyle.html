@@ -1611,7 +1611,7 @@ function renderModelList(){
   const row=document.createElement('div');
   row.className='mm-item';row.style.position='relative';
   row.innerHTML=`<div class="mm-info"><div class="mm-name">Уровень рассуждений</div><div class="mm-desc" id="reasoningLabel">Стандартный</div></div><div style="color:rgba(255,255,255,.3);font-size:14px">›</div>
-  <div id="reasoningSubmenu" style="display:none;position:absolute;left:calc(100% + 6px);top:0;width:220px;background:rgba(18,16,32,0.98);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:10;">
+  <div id="reasoningSubmenu" style="display:none;position:absolute;left:0;top:calc(100% + 4px);width:100%;background:rgba(18,16,32,0.98);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:10;">
     <div class="mm-item" id="rsStd" onclick="setReasoning('Стандартный',this)"><div style="width:16px;font-size:13px;color:var(--c1)" id="rsStdChk">✓</div><div class="mm-info"><div class="mm-name">Стандартный</div><div class="mm-desc">Подходит для большинства вопросов</div></div></div>
     <div class="mm-item" id="rsAdv" onclick="setReasoning('Расширенный',this)"><div style="width:16px;font-size:13px;color:var(--c1)" id="rsAdvChk"></div><div class="mm-info"><div class="mm-name">Расширенный</div><div class="mm-desc">Решение сложных проблем</div></div></div>
   </div>`;
