@@ -3650,15 +3650,21 @@ if(uncertainty.test(full)){
 
   // Проверяем уже просмотрел ли
   const views=await sbGet('banner_views',`?user_id=eq.${user.userId}&banner_group_id=eq.${GROUP}`);
-  if(Array.isArray(views)&&views.length>0)return;
+if(Array.isArray(views)&&views.length>0)return;
 
-  // Загружаем баннеры
-  const data=await sbGet('banners','?active=eq.true&show_to_all=eq.true&order=order_index.asc');
-  if(!Array.isArray(data)||!data.length)return;
-  banners=data;
+const data=await sbGet('banners','?active=eq.true&show_to_all=eq.true&order=order_index.asc');
+if(!Array.isArray(data)||!data.length)return;
+banners=data;
 
   renderBanner();
-  showBannerOverlay();
+// Ждём пока chatScreen станет видимым
+const waitForChat=setInterval(()=>{
+  const cs=document.getElementById('chatScreen');
+  if(cs&&!cs.classList.contains('hidden')){
+    clearInterval(waitForChat);
+    showBannerOverlay();
+  }
+},200);
 
   function renderBanner(dir=0){
     const b=banners[currentIdx];
@@ -3684,13 +3690,41 @@ if(uncertainty.test(full)){
     }
 
     function doRender(){
-      title.textContent=b.title||'';
+      title.innerHTML=b.title||'';
       desc.textContent=b.description||'';
-      if(b.image_url){
-        imgWrap.style.display='block';
-        img.src=b.image_url;
-      } else {
+
+      // Layout: side = картинка справа, текст слева
+      const isSide=b.layout==='side';
+      const bannerCard=document.getElementById('bannerCard');
+      const bannerPadding=bannerCard.querySelector('div[style*="padding:32px"]');
+
+      if(isSide&&b.image_url){
         imgWrap.style.display='none';
+        bannerCard.style.display='flex';
+        bannerCard.style.flexDirection='row';
+        bannerCard.style.minHeight='320px';
+        if(bannerPadding)bannerPadding.style.flex='1';
+        let sideImg=document.getElementById('bannerSideImg');
+        if(!sideImg){
+          sideImg=document.createElement('div');
+          sideImg.id='bannerSideImg';
+          sideImg.style.cssText='width:45%;flex-shrink:0;position:relative;overflow:hidden;border-radius:0 28px 28px 0;background:#1a1530;display:flex;align-items:center;justify-content:center;';
+          bannerCard.appendChild(sideImg);
+        }
+        sideImg.style.display='flex';
+        sideImg.innerHTML=`<img src="${b.image_url}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+        // Фоновый градиент под картинкой
+        if(b.accent_color){
+          sideImg.style.background=`radial-gradient(circle at 60% 50%,${b.accent_color}55,#0d0b1a)`;
+          bannerCard.style.background=`linear-gradient(135deg,#0d0b1a,${b.accent_color}22)`;
+        }
+      } else {
+        bannerCard.style.display='';bannerCard.style.flexDirection='';bannerCard.style.minHeight='';
+        if(bannerPadding)bannerPadding.style.flex='';
+        const old=document.getElementById('bannerSideImg');if(old)old.remove();
+        bannerCard.style.background='';
+        if(b.image_url){imgWrap.style.display='block';img.src=b.image_url;}
+        else imgWrap.style.display='none';
       }
       // Кнопки
       const isFirst=currentIdx===0;
@@ -3732,10 +3766,23 @@ if(uncertainty.test(full)){
 
   function showBannerOverlay(){
     const ov=document.getElementById('bannerOverlay');
-    ov.classList.add('open');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>ov.classList.add('visible')));
+    ov.style.display='flex';
+    ov.style.alignItems='center';
+    ov.style.justifyContent='center';
+    ov.style.pointerEvents='all';
+    ov.style.zIndex='99998';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      ov.classList.add('open','visible');
+      ov.style.background='rgba(0,0,0,.7)';
+      ov.style.backdropFilter='blur(20px)';
+      ov.style.webkitBackdropFilter='blur(20px)';
+      const card=document.getElementById('bannerCard');
+      if(card){
+        card.style.opacity='1';
+        card.style.transform='translateY(0) scale(1)';
+      }
+    }));
   }
-
   async function closeBanner(){
     const ov=document.getElementById('bannerOverlay');
     const card=document.getElementById('bannerCard');
