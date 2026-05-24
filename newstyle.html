@@ -290,7 +290,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 }
 #settingsOverlay.open #settingsCard{transform:scale(1) translate(0,0);opacity:1;}
 #settingsOverlay.closing #settingsCard{transform:scale(0.08) translate(45vw,-45vh);opacity:0;transition:transform .4s cubic-bezier(.4,0,1,1),opacity .25s ease;}
-#settingsOverlay.closing #settingsBg{background:rgba(0,0,0,0);backdrop-filter:blur(0px);transition:background .35s ease,backdrop-filter .35s ease;}
+#settingsOverlay.closing #settingsBg{background:rgba(0,0,0,0)!important;backdrop-filter:blur(0px)!important;-webkit-backdrop-filter:blur(0px)!important;transition:background .35s ease,backdrop-filter .35s ease,-webkit-backdrop-filter .35s ease;}
 .s-av{
   width:56px;height:56px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(135deg,var(--c1),var(--c5));
@@ -994,7 +994,12 @@ function closeSettings(){
   const ov=document.getElementById('settingsOverlay');
   ov.classList.add('closing');
   document.getElementById('settingsCard').classList.remove('show-custom');
-  setTimeout(()=>{ov.classList.remove('open','closing');if(window._stopBlobs)window._stopBlobs();},420);
+  setTimeout(()=>{
+  ov.classList.remove('open','closing');
+  if(window._stopBlobs)window._stopBlobs();
+  const bg=document.getElementById('settingsBg');
+  if(bg){bg.style.backdropFilter='blur(0px)';bg.style.webkitBackdropFilter='blur(0px)';bg.style.background='rgba(0,0,0,0)';}
+},420);
 }
 
 // ── TOKEN DATA (обновлённая — пишет в оба таба) ──
