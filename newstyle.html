@@ -1095,15 +1095,15 @@ function applyIncognitoEffect(on){
   animateGlow();
 }
 
-// Восстановить состояние при загрузке
+// Восстановить состояние при загрузке — только если пользователь залогинен
 try{
   const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');
-  if(s.incognito){
+  const u=localStorage.getItem('fid_user');
+  if(s.incognito&&u){
     const el=document.getElementById('toggleIncognito');
     if(el){el.dataset.on='true';applyIncognitoEffect(true);}
   }
 }catch{}
-
 // ── FONT ──
 function applyFont(el){
   document.querySelectorAll('.font-pick').forEach(e=>e.classList.remove('active'));
