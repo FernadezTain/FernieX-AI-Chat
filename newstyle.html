@@ -3117,6 +3117,7 @@ async function defenderCheck(){
     const d=await r.json();
     console.log('[Defender check]', JSON.stringify(d));
     if(d.is_blocked||d.banned||d.block||d.blocked)defenderBan();
+    if((d.warns||d.warnings||d.warn_count||0)>=10)defenderBan();
   }catch(e){console.warn('[Defender check error]',e);}
 }
 
