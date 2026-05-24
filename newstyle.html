@@ -3115,8 +3115,9 @@ async function defenderCheck(){
   try{
     const r=await fetch(`https://ferniex-id.vercel.app/api/defender/check?userId=${u.userId}`);
     const d=await r.json();
-    if(d.is_blocked)defenderBan();
-  }catch{}
+    console.log('[Defender check]', JSON.stringify(d));
+    if(d.is_blocked||d.banned||d.block||d.blocked)defenderBan();
+  }catch(e){console.warn('[Defender check error]',e);}
 }
 
 function defenderBan(){
