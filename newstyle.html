@@ -78,7 +78,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   #sidebar.collapsed{transform:translateX(-100%)!important;width:80vw!important;padding:20px 12px!important;opacity:1!important;}
   #sidebar.mobile-open{transform:translateX(0);}
   #sidebar::after{display:none;}
-  #sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(4px);}
+  #sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:none;-webkit-backdrop-filter:none;}
   #sbOverlay.show{display:block;}
   .sb-toggle{display:flex;left:0;}
 }
