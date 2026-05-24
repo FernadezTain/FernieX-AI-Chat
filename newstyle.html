@@ -571,7 +571,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
               <div class="s-name" id="sName" style="font-size:18px;font-weight:700;">FernieX</div>
               <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;">FernieID аккаунт</div>
               <div style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(99,102,241,.15));border:1px solid rgba(168,85,247,.25);border-radius:20px;font-size:11px;font-weight:600;color:#c084fc;" id="sPlanBadge">
-                ⚡ Free план
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#6366f1);box-shadow:0 0 6px rgba(192,132,252,.6);flex-shrink:0;"></span> Free план
               </div>
             </div>
           </div>
@@ -1040,7 +1040,7 @@ async function loadTokenData(){
     const tbar=document.getElementById('tm-bar');
     if(tbar){tbar.style.background=pct>85?'linear-gradient(90deg,#ef4444,#dc2626)':pct>60?'linear-gradient(90deg,#f97316,#eab308)':'linear-gradient(90deg,#a855f7,#6366f1)';setTimeout(()=>tbar.style.width=pct+'%',80);}
     const tplan=document.getElementById('tm-plan-badge');if(tplan)tplan.textContent=d.has_plus?'Fernie+':'Free';
-    const spb=document.getElementById('sPlanBadge');if(spb)spb.innerHTML=(d.has_plus?'⭐ Fernie+':'⚡ Free план');
+    const spb=document.getElementById('sPlanBadge');if(spb)spb.innerHTML=(d.has_plus?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 6px rgba(251,191,36,.7);flex-shrink:0;"></span> Fernie+':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#6366f1);box-shadow:0 0 6px rgba(192,132,252,.6);flex-shrink:0;"></span> Free план');
     const warn=document.getElementById('tm-warn');if(warn)warn.style.display=pct>80?'block':'none';
     const now=new Date();const msk=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
     const resetStr=`сброс через ${23-msk.getHours()}ч ${59-msk.getMinutes()}м`;
