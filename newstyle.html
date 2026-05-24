@@ -659,7 +659,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
           </div>
 
           <!-- Fernie+ -->
-          <div style="padding:14px 16px;background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(245,158,11,.04));border:1px solid rgba(251,191,36,.2);border-radius:14px;display:flex;align-items:center;gap:12px;">
+          <div id="ferniePlusPromo" style="padding:14px 16px;background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(245,158,11,.04));border:1px solid rgba(251,191,36,.2);border-radius:14px;display:flex;align-items:center;gap:12px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <div>
               <div style="font-size:13px;font-weight:700;color:#fbbf24;">Fernie+ — 1 500 000 токенов/день</div>
@@ -1045,6 +1045,7 @@ async function loadTokenData(){
     const tbar=document.getElementById('tm-bar');
     if(tbar){tbar.style.background=pct>85?'linear-gradient(90deg,#ef4444,#dc2626)':pct>60?'linear-gradient(90deg,#f97316,#eab308)':'linear-gradient(90deg,#a855f7,#6366f1)';setTimeout(()=>tbar.style.width=pct+'%',80);}
     const tplan=document.getElementById('tm-plan-badge');if(tplan)tplan.textContent=d.has_plus?'Fernie+':'Free';
+    const promo=document.getElementById('ferniePlusPromo');if(promo)promo.style.display=d.has_plus?'none':'flex';
     const spb=document.getElementById('sPlanBadge');if(spb)spb.innerHTML=(d.has_plus?'<svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" style="filter:drop-shadow(0 0 4px rgba(251,191,36,.8));flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Fernie+':'<svg width="12" height="12" viewBox="0 0 24 24" fill="#c084fc" stroke="#a855f7" stroke-width="1" style="filter:drop-shadow(0 0 4px rgba(192,132,252,.7));flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Free план');
     const warn=document.getElementById('tm-warn');if(warn)warn.style.display=pct>80?'block':'none';
     const now=new Date();const msk=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
