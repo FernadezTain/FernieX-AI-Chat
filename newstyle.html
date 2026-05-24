@@ -1682,7 +1682,7 @@ try{
 </div>
 
 <!-- BAN SCREEN -->
-<div id="banScreen" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(7,7,15,.97);backdrop-filter:blur(24px);align-items:center;justify-content:center;">
+<div id="banScreen" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(7,7,15,.97);backdrop-filter:blur(24px);align-items:center;justify-content:center;pointer-events:all;">
   <div style="width:min(420px,92vw);padding:40px 32px;background:rgba(22,20,36,0.98);border:1px solid rgba(239,68,68,.25);border-radius:28px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 1px rgba(239,68,68,.1);">
     <div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
@@ -1692,7 +1692,7 @@ try{
       <div style="margin-bottom:6px;"><span style="color:rgba(255,255,255,.3);">Причина:</span> Совершение и попытка обхода ограничений</div>
       <div><span style="color:rgba(255,255,255,.3);">Срок:</span> Навсегда</div>
     </div>
-    <button onclick="FernieID.logout();window.location.reload();" style="width:100%;padding:14px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(239,68,68,.35);">Понятно</button>
+    <button onclick="FernieID.logout();window.location.reload();" style="width:100%;padding:14px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(239,68,68,.35);position:relative;z-index:100000;">Понятно</button>
   </div>
 </div>
 
