@@ -2361,6 +2361,9 @@ const SKILL_IMAGEGEN=`# Генерация изображений
 Когда нужен /imggenerate — ответь ОДНОЙ строкой:
 /imggenerate [описание на английском]
 
+Если пользователь прислал фото И хочет его изменить/стилизовать/дорисовать — используй:
+/imggenerate2img [описание на английском] | [ссылка на изображение или BASE64_PLACEHOLDER]
+
 Примеры КОГДА использовать:
 - "нарисуй кота" → /imggenerate a fluffy cat, photorealistic
 - "создай арт дракона" → /imggenerate dragon art, fantasy
@@ -2370,6 +2373,9 @@ const SKILL_IMAGEGEN=`# Генерация изображений
 - "дай команду /damage" → отвечай текстом с командой
 - "покажи пример кода" → пиши код
 - "дай самую редкую причину" → отвечай текстом
+
+Если пользователь прислал фото И просит его изменить, стилизовать, дорисовать — используй img2img:
+/imggenerate2img [описание изменений на английском] | BASE64_PLACEHOLDER
 
 Не предлагай DALL-E, Midjourney, Stable Diffusion.
 
@@ -3313,9 +3319,10 @@ async function sendMsg(){
       ai.remove();
       if(ocrParts.length){
         const ocrBlock=ocrParts.join('\n---\n');
-        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock):('[Текст с изображений]:\n'+ocrBlock);
+        const imgRef=imagesToProcess.length>0?'\n\n[Изображение доступно для img2img. DataURL: '+imagesToProcess[0].dataUrl+']':'';
+        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock+imgRef):('[Текст с изображений]:\n'+ocrBlock+imgRef);
       } else if(!txt){
-        finalTxt='[Пользователь прислал изображение без распознанного текста. Скажи что не видишь текста на фото и попроси уточнить вопрос.]';
+        finalTxt='[Пользователь прислал изображение. Если он хочет его изменить/стилизовать — используй /imggenerate2img. DataURL изображения: '+imagesToProcess[0].dataUrl+']';
       }
     }catch(e){ai.remove();}
   } else {
@@ -3360,6 +3367,54 @@ const lastUserMsgIndex = chatHistory.length - 1;
         },
         onDone: async(text)=>{
           // Проверяем imggenerate
+          // img2img
+          const ig2Match=text.trim().match(/^\/imggenerate2img\s+(.+?)\s*\|\s*(.+)/s);
+          if(ig2Match){
+            const prompt=ig2Match[1].trim();
+            const srcImg=ig2Match[2].trim();
+            aiTxt.innerHTML=renderStatus('Обрабатываю изображение...');
+            // Если BASE64_PLACEHOLDER — берём первое pendingImage dataUrl из истории
+            let finalSrc=srcImg;
+            if(srcImg==='BASE64_PLACEHOLDER'||srcImg.startsWith('data:')){
+              // Уже dataUrl — используем напрямую через image parameter
+              finalSrc=srcImg;
+            }
+            const seed=Math.floor(Math.random()*99999);
+            const imgUrl=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}&image=${encodeURIComponent(finalSrc)}`;
+            await new Promise(resolve=>{
+              const placeholderId='igph2_'+Date.now();
+              aiTxt.innerHTML=`<div id="${placeholderId}" style="width:320px;max-width:100%;aspect-ratio:1/1;border-radius:16px;background:#1a1825;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+                <div style="font-size:13px;color:rgba(255,255,255,.6);">🎨 Генерирую по вашему фото...</div>
+                <div style="display:flex;gap:4px">${[0,1,2].map(i=>`<span style="width:6px;height:6px;border-radius:50%;background:var(--c1);display:inline-block;animation:tp 1.2s ease-in-out ${i*0.2}s infinite"></span>`).join('')}</div>
+              </div>`;
+              msgs.scrollTop=msgs.scrollHeight;
+              const img=new Image();
+              img.onload=()=>{
+                const wrap=document.createElement('div');
+                wrap.style.cssText='display:flex;flex-direction:column;gap:10px;';
+                const label=document.createElement('div');
+                label.style.cssText='font-size:12px;color:rgba(255,255,255,.4);';
+                label.textContent='🎨 '+prompt;
+                const imgEl=document.createElement('img');
+                imgEl.src=imgUrl;
+                imgEl.style.cssText='max-width:320px;width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.1);cursor:pointer;display:block;';
+                imgEl.onclick=()=>openLightbox(imgUrl);
+                wrap.appendChild(label);wrap.appendChild(imgEl);
+                aiTxt.innerHTML='';aiTxt.appendChild(wrap);
+                msgs.scrollTop=msgs.scrollHeight;
+                resolve();
+              };
+              img.onerror=()=>{
+                aiTxt.innerHTML='<span style="color:#f87171">⚠ Не удалось обработать изображение</span>';
+                resolve();
+              };
+              img.src=imgUrl;
+            });
+            chatHistory.push({role:'assistant',content:`/imgresult ${imgUrl} ${prompt}`});
+            saveCurrentChat();
+            return;
+          }
+
           const igMatch=text.trim().match(/^\/imggenerate\s+(.+)/s);
           if(igMatch){
             const prompt=igMatch[1].trim();
