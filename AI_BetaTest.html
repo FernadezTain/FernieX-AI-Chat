@@ -989,6 +989,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 .font-pick:hover{background:rgba(255,255,255,.07);}
 .font-pick.active{border-color:var(--c1);background:rgba(var(--c1-rgb),.08);}
 
+.stab{opacity:0;transition:opacity .18s ease,transform .18s ease;}
+.stab.tab-visible{opacity:1;transform:translateY(0)!important;}
+.stab.tab-exit{opacity:0;transform:translateY(5px)!important;}
+
 /* Blob / metaball glow */
 #blobCanvas{opacity:.35;}
 @keyframes tokenGlow{0%,100%{box-shadow:0 0 20px rgba(168,85,247,.4)}50%{box-shadow:0 0 36px rgba(168,85,247,.8)}}
@@ -1059,9 +1063,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 // ── SETTINGS NAV ──
 function switchSettingsTab(tab){
   document.querySelectorAll('.snav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
-  document.querySelectorAll('.stab').forEach(el=>el.style.display='none');
-  const t=document.getElementById('stab-'+tab);
-  if(t){t.style.display='';t.style.animation='fadeUp .3s ease';}
+  const current=Array.from(document.querySelectorAll('.stab')).find(el=>el.style.display!=='none'&&!el.classList.contains('tab-exit'));
+  const next=document.getElementById('stab-'+tab);
+  if(!next||current===next)return;
+  if(current){
+    current.classList.add('tab-exit');
+    setTimeout(()=>{
+      current.style.display='none';
+      current.classList.remove('tab-visible','tab-exit');
+      next.style.display='';
+      next.style.transform='translateY(-5px)';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('tab-visible')));
+    },160);
+  } else {
+    next.style.display='';
+    next.style.transform='translateY(-5px)';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('tab-visible')));
+  }
   if(tab==='tokens'||tab==='profile')loadTokenData();
 }
 
@@ -3598,7 +3616,7 @@ if(uncertainty.test(full)){
 
 <!-- BANNER SYSTEM -->
 <div id="bannerOverlay" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0);backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);transition:background .5s ease,backdrop-filter .5s ease;pointer-events:none;align-items:center;justify-content:center;">
-  <div id="bannerCard" style="position:relative;width:min(480px,94vw);background:rgba(12,10,24,0.98);border:1px solid rgba(255,255,255,.1);border-radius:28px;overflow:hidden;opacity:0;transform:translateY(32px) scale(.96);transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1);box-shadow:0 40px 100px rgba(0,0,0,.8);">
+  <div id="bannerCard" style="position:relative;width:min(480px,90vw);max-width:480px;background:rgba(12,10,24,0.98);border:1px solid rgba(255,255,255,.1);border-radius:28px;overflow:hidden;opacity:0;transform:translateY(32px) scale(.96);transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1);box-shadow:0 40px 100px rgba(0,0,0,.8);">
     <div id="bannerImgWrap" style="display:none;width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;">
       <img id="bannerImg" src="" style="width:100%;height:100%;object-fit:cover;display:block;" />
       <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(12,10,24,.95));"></div>
@@ -3610,8 +3628,8 @@ if(uncertainty.test(full)){
       </div>
       <div id="bannerDots" style="display:flex;justify-content:center;gap:6px;margin:24px 0 20px;"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <button id="bannerBack" onclick="bannerNav(-1)" style="padding:11px 20px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-family:var(--font);font-size:14px;font-weight:500;color:rgba(255,255,255,.6);cursor:pointer;transition:all .18s;opacity:0;pointer-events:none;">← Назад</button>
-        <button id="bannerNext" onclick="bannerNav(1)" style="flex:1;padding:13px 20px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--c1),var(--c5));font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;transition:all .18s;box-shadow:0 4px 20px rgba(66,133,244,.35);">Далее →</button>
+        <button id="bannerBack" onclick="bannerNav(-1)" style="padding:11px 20px;border-radius:13px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-family:var(--font);font-size:14px;font-weight:500;color:rgba(255,255,255,.6);cursor:pointer;transition:all .18s;opacity:0;pointer-events:none;">Назад</button>
+        <button id="bannerNext" onclick="bannerNav(1)" style="flex:1;padding:13px 20px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--c1),var(--c5));font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;transition:all .18s;box-shadow:0 4px 20px rgba(66,133,244,.35);">Далее</button>
       </div>
     </div>
   </div>
@@ -3623,6 +3641,7 @@ if(uncertainty.test(full)){
 #bannerOverlay.visible #bannerCard{opacity:1;transform:translateY(0) scale(1);}
 .bn-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .35s cubic-bezier(.34,1.2,.64,1);cursor:pointer;}
 .bn-dot.active{width:22px;border-radius:4px;background:var(--c1);}
+#bannerCard{will-change:height,width;overflow:hidden;}
 @keyframes bnSlideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
 @keyframes bnSlideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-24px)}}
 </style>
@@ -3682,16 +3701,42 @@ const waitForChat=setInterval(()=>{
       content.style.animation=`bnSlideOut .2s ease forwards`;
       setTimeout(()=>{
         content.style.animation='';
-        doRender();
+        doRender(true);
         content.style.animation=`bnSlideIn .3s cubic-bezier(.16,1,.3,1) forwards`;
       },200);
     } else {
-      doRender();
+      doRender(false);
     }
-
-    function doRender(){
+    function doRender(animate){
       title.innerHTML=b.title||'';
       desc.textContent=b.description||'';
+
+      // Плавное изменение размера карточки
+      if(animate){
+        const oldH=card.offsetHeight;
+        const oldW=card.offsetWidth;
+        card.style.height=oldH+'px';
+        card.style.width=oldW+'px';
+        card.style.transition='none';
+        requestAnimationFrame(()=>{
+          card.style.transition='height .45s cubic-bezier(.4,0,.2,1),width .45s cubic-bezier(.4,0,.2,1)';
+          card.style.height='';
+          card.style.width='';
+          // Форс reflow чтобы браузер пересчитал новый размер
+          setTimeout(()=>{
+            const newH=card.scrollHeight;
+            const newW=card.scrollWidth;
+            card.style.height=oldH+'px';
+            card.style.width=oldW+'px';
+            card.style.transition='height .45s cubic-bezier(.4,0,.2,1),width .45s cubic-bezier(.4,0,.2,1)';
+            requestAnimationFrame(()=>{
+              card.style.height=newH+'px';
+              card.style.width=newW+'px';
+              setTimeout(()=>{card.style.height='';card.style.width='';},460);
+            });
+          },10);
+        });
+      }
 
       // Layout: side = картинка справа, текст слева
       const isSide=b.layout==='side';
@@ -3702,24 +3747,45 @@ const waitForChat=setInterval(()=>{
         imgWrap.style.display='none';
         bannerCard.style.display='flex';
         bannerCard.style.flexDirection='row';
-        bannerCard.style.minHeight='320px';
+        bannerCard.style.alignItems='stretch';
+        bannerCard.style.width='min(680px,90vw)';
+        bannerCard.style.maxWidth='680px';
+        bannerCard.style.maxHeight='';
+        bannerCard.style.overflow='hidden';
         if(bannerPadding)bannerPadding.style.flex='1';
         let sideImg=document.getElementById('bannerSideImg');
         if(!sideImg){
           sideImg=document.createElement('div');
           sideImg.id='bannerSideImg';
-          sideImg.style.cssText='width:45%;flex-shrink:0;position:relative;overflow:hidden;border-radius:0 28px 28px 0;background:#1a1530;display:flex;align-items:center;justify-content:center;';
           bannerCard.appendChild(sideImg);
         }
-        sideImg.style.display='flex';
-        sideImg.innerHTML=`<img src="${b.image_url}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-        // Фоновый градиент под картинкой
+        sideImg.style.cssText='width:42%;min-height:280px;flex-shrink:0;position:relative;overflow:hidden;border-radius:0 28px 28px 0;display:flex;align-items:center;justify-content:center;';
+        const oldImg=sideImg.querySelector('img');
+if(oldImg){
+  oldImg.style.transition='opacity .2s ease';
+  oldImg.style.opacity='0';
+  setTimeout(()=>{
+    sideImg.innerHTML=`<img src="${b.image_url}" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s ease;">`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const ni=sideImg.querySelector('img');if(ni)ni.style.opacity='1';
+    }));
+  },200);
+} else {
+  sideImg.innerHTML=`<img src="${b.image_url}" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s ease;">`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const ni=sideImg.querySelector('img');if(ni)ni.style.opacity='1';
+  }));
+}
         if(b.accent_color){
           sideImg.style.background=`radial-gradient(circle at 60% 50%,${b.accent_color}55,#0d0b1a)`;
           bannerCard.style.background=`linear-gradient(135deg,#0d0b1a,${b.accent_color}22)`;
+        } else {
+          sideImg.style.background='#1a1530';
         }
       } else {
-        bannerCard.style.display='';bannerCard.style.flexDirection='';bannerCard.style.minHeight='';
+        bannerCard.style.display='';bannerCard.style.flexDirection='';bannerCard.style.alignItems='';
+        bannerCard.style.maxHeight='';bannerCard.style.overflow='';
+        bannerCard.style.width='min(480px,90vw)';bannerCard.style.maxWidth='480px';
         if(bannerPadding)bannerPadding.style.flex='';
         const old=document.getElementById('bannerSideImg');if(old)old.remove();
         bannerCard.style.background='';
@@ -3731,7 +3797,7 @@ const waitForChat=setInterval(()=>{
       const isLast=currentIdx===banners.length-1;
       back.style.opacity=isFirst?'0':'1';
       back.style.pointerEvents=isFirst?'none':'all';
-      next.textContent=isLast?'Закрыть ✓':'Далее →';
+      next.textContent=isLast?'Закрыть':'Далее';
       next.style.background=isLast?'linear-gradient(135deg,#34a853,#22c55e)':'linear-gradient(135deg,var(--c1),var(--c5))';
       // Точки
       renderDots();
@@ -3788,11 +3854,20 @@ const waitForChat=setInterval(()=>{
     const card=document.getElementById('bannerCard');
     card.style.opacity='0';
     card.style.transform='translateY(20px) scale(.97)';
+    ov.style.background='rgba(0,0,0,0)';
+    ov.style.backdropFilter='none';
+    ov.style.webkitBackdropFilter='none';
     ov.classList.remove('visible');
-    setTimeout(()=>{ov.classList.remove('open');},500);
-    // Записываем просмотр
+    setTimeout(()=>{
+      ov.classList.remove('open');
+      ov.style.display='none';
+      ov.style.background='';
+      ov.style.backdropFilter='';
+      ov.style.webkitBackdropFilter='';
+      ov.style.pointerEvents='none';
+    },500);
     await sbPost('banner_views',{user_id:user.userId,banner_group_id:GROUP});
-  }
+}
 })();
 </script>
 
