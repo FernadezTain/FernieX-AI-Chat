@@ -3668,6 +3668,11 @@ if(uncertainty.test(full)){
     max-height:92dvh!important;
     overflow-y:auto!important;
     transform:translateY(60px) scale(1)!important;
+    background:rgba(14,12,28,0.99)!important;
+    border-left:none!important;
+    border-right:none!important;
+    border-bottom:none!important;
+    box-shadow:0 -8px 48px rgba(0,0,0,.8),0 0 0 0.5px rgba(255,255,255,.08)!important;
   }
   #bannerImgWrap{
     aspect-ratio:16/8!important;
@@ -3794,7 +3799,8 @@ const waitForChat=setInterval(()=>{
       const bannerCard=document.getElementById('bannerCard');
       const bannerPadding=bannerCard.querySelector('div[style*="padding:32px"]');
 
-      if(isSide&&b.image_url){
+      const mobile=window.innerWidth<=600;
+      if(isSide&&b.image_url&&!mobile){
         imgWrap.style.display='none';
         bannerCard.style.display='flex';
         bannerCard.style.flexDirection='row';
@@ -3836,12 +3842,19 @@ if(oldImg){
       } else {
         bannerCard.style.display='';bannerCard.style.flexDirection='';bannerCard.style.alignItems='';
         bannerCard.style.maxHeight='';bannerCard.style.overflow='';
-        bannerCard.style.width='min(480px,90vw)';bannerCard.style.maxWidth='480px';
+        bannerCard.style.width=mobile?'100vw':'min(480px,90vw)';
+        bannerCard.style.maxWidth=mobile?'100vw':'480px';
         if(bannerPadding)bannerPadding.style.flex='';
         const old=document.getElementById('bannerSideImg');if(old)old.remove();
         bannerCard.style.background='';
-        if(b.image_url){imgWrap.style.display='block';img.src=b.image_url;}
-        else imgWrap.style.display='none';
+        if(b.image_url){
+          imgWrap.style.display='block';
+          img.src=b.image_url;
+          if(mobile)imgWrap.style.cssText='display:block;width:100%;height:240px;overflow:hidden;position:relative;flex-shrink:0;';
+          img.style.cssText='width:100%;height:100%;object-fit:cover;object-position:center center;display:block;';
+        } else {
+          imgWrap.style.display='none';
+        }
       }
       // Кнопки
       const isFirst=currentIdx===0;
@@ -3884,7 +3897,8 @@ if(oldImg){
   function showBannerOverlay(){
     const ov=document.getElementById('bannerOverlay');
     ov.style.display='flex';
-    ov.style.alignItems='center';
+    const mobile=window.innerWidth<=600;
+    ov.style.alignItems=mobile?'flex-end':'center';
     ov.style.justifyContent='center';
     ov.style.pointerEvents='all';
     ov.style.zIndex='99998';
