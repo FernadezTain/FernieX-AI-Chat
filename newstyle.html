@@ -778,6 +778,36 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
           <!-- Список эффектов (выкатывается) -->
           <div id="effectsList" style="overflow:hidden;max-height:0;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;opacity:0;">
             <div style="padding:4px 0 8px;">
+              <!-- Wave Cubes effect -->
+              <div id="effectWaveCubes" style="padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;cursor:pointer;transition:all .2s;margin-bottom:8px;" onclick="toggleEffect('waveCubes',this)">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(66,133,244,.2));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+                      <div style="position:absolute;inset:0;background:linear-gradient(135deg,#06b6d4,#4285f4);opacity:.35;animation:auroraGlow 2.5s ease-in-out infinite;"></div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" style="position:relative;z-index:1"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    </div>
+                    <div>
+                      <div style="font-size:13px;font-weight:500;color:#fff;">Wave Cube Grid</div>
+                      <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:1px;">Волновая сетка блоков</div>
+                    </div>
+                  </div>
+                  <div class="s-toggle" id="toggleWaveCubesEffect" data-on="false" style="pointer-events:none;"></div>
+                </div>
+                <!-- Слайдер скорости -->
+                <div id="waveCubesSliderWrap" style="overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .3s ease;opacity:0;margin-top:0;">
+                  <div style="padding-top:12px;border-top:1px solid rgba(255,255,255,.06);margin-top:12px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="font-size:11px;color:rgba(255,255,255,.3);flex-shrink:0;width:60px;">Скорость: <b style="color:rgba(255,255,255,.6);" id="waveCubesSpeedVal">3</b></div>
+                      <div style="flex:1;position:relative;height:24px;border-radius:12px;cursor:pointer;border:1px solid rgba(255,255,255,.1);touch-action:none;overflow:hidden;" id="waveCubesTrack">
+                        <div id="waveCubesFill" style="position:absolute;inset:0;border-radius:12px;background:linear-gradient(to right,rgba(6,182,212,.3),rgba(66,133,244,.5));width:30%;"></div>
+                        <div id="waveCubesThumb" style="position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);transform:translate(-50%,-50%);pointer-events:none;left:30%;"></div>
+                      </div>
+                      <div style="font-size:10px;color:rgba(255,255,255,.25);flex-shrink:0;">10 макс</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Aurora effect -->
               <div id="effectAurora" style="padding:13px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;cursor:pointer;transition:all .2s;" onclick="toggleEffect('aurora',this)">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;" id="auroraHeader">
@@ -1128,13 +1158,24 @@ function toggleSetting(key,el){
   const ctx=canvas.getContext('2d');
   let W,H,animId,enabled=false;
 
-  const blobs=[
-    {x:.3,y:.2,r:.45,vx:.00018,vy:.00012,h:213},
-    {x:.7,y:.5,r:.4,vx:-.00014,vy:.00016,h:240},
-    {x:.5,y:.8,r:.35,vx:.00011,vy:-.00013,h:270},
-    {x:.1,y:.6,r:.3,vx:.00016,vy:.0001,h:200},
-    {x:.85,y:.2,r:.32,vx:-.0001,vy:.00014,h:220},
-  ];
+  let blobs=[];
+  function buildBlobs(count){
+    blobs=[];
+    const hues=[213,240,270,200,220,187,330,160,38,280,310,350];
+    for(let i=0;i<count;i++){
+      const angle=(i/count)*Math.PI*2;
+      blobs.push({
+        x:.15+Math.random()*.7,
+        y:.15+Math.random()*.7,
+        r:Math.max(0.12,0.45-((count-1)/(50-1))*0.33),
+        vx:(Math.random()-.5)*.00028,
+        vy:(Math.random()-.5)*.00028,
+        h:hues[i%hues.length]
+      });
+    }
+  }
+  buildBlobs(window._auroraCount||5);
+  window._rebuildBlobs=function(count){buildBlobs(count);};
   let t=0;
 
   function resize(){
@@ -1306,6 +1347,114 @@ try{
 window._glowHeight=50;
 try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');if(s.glowHeight!=null)window._glowHeight=s.glowHeight;}catch{}
 
+// ── WAVE CUBES ──
+(function(){
+  const cv=document.createElement('canvas');
+  cv.id='waveCubesCanvas';
+  cv.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease;';
+  document.body.appendChild(cv);
+
+  let enabled=false,animId=null,speed=3;
+  let W,H,ctx;
+  window._waveCubesSpeed=speed;
+
+  function resize(){
+    W=cv.width=window.innerWidth;
+    H=cv.height=window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  function draw(){
+    if(!enabled){cancelAnimationFrame(animId);return;}
+    ctx=ctx||cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    const t=Date.now()/1000;
+    const spd=window._waveCubesSpeed||3;
+    const COLS_WAVE=[[66,133,244],[168,85,247],[6,182,212],[52,168,83],[234,67,53],[251,188,4]];
+    const CUBE=Math.max(18,Math.round(Math.min(W,H)/28));
+    const cols=Math.ceil(W/CUBE)+1;
+    const rows=Math.ceil(H/CUBE)+1;
+
+    for(let row=0;row<rows;row++){
+      for(let col=0;col<cols;col++){
+        const x=col*CUBE;
+        const y=row*CUBE;
+        // Волновое смещение высоты
+        const wave=Math.sin((col*0.4+row*0.3+t*spd*0.18)*1.1)*0.5+
+                   Math.sin((col*0.25-row*0.45+t*spd*0.12)*0.9)*0.5;
+        const h=Math.max(2,Math.round((wave*0.5+0.5)*CUBE*0.75));
+        // Альфа — только видимые кубы
+        const alpha=Math.max(0,(wave*0.5+0.5)*0.55+0.05);
+        if(alpha<0.04)continue;
+        // Переливание цвета
+        const colorPhase=(col*0.15+row*0.1+t*spd*0.07)%(COLS_WAVE.length);
+        const ci=Math.floor(colorPhase)%COLS_WAVE.length;
+        const cn=COLS_WAVE[(ci+1)%COLS_WAVE.length];
+        const cc=COLS_WAVE[ci];
+        const blend=colorPhase-Math.floor(colorPhase);
+        const r=Math.round(cc[0]+(cn[0]-cc[0])*blend);
+        const g=Math.round(cc[1]+(cn[1]-cc[1])*blend);
+        const b=Math.round(cc[2]+(cn[2]-cc[2])*blend);
+
+        // Тёмная грань (дно)
+        ctx.fillStyle=`rgba(${Math.round(r*.4)},${Math.round(g*.4)},${Math.round(b*.4)},${alpha*.7})`;
+        ctx.fillRect(x,y+CUBE-h,CUBE-1,h);
+
+        // Верхняя грань (светлее)
+        ctx.fillStyle=`rgba(${Math.min(255,r+60)},${Math.min(255,g+60)},${Math.min(255,b+60)},${alpha})`;
+        ctx.fillRect(x,y+CUBE-h,CUBE-1,Math.max(2,Math.round(h*0.22)));
+
+        // Правая грань (средняя)
+        ctx.fillStyle=`rgba(${Math.round(r*.7)},${Math.round(g*.7)},${Math.round(b*.7)},${alpha*.85})`;
+        ctx.fillRect(x+CUBE-Math.max(2,Math.round(CUBE*0.2)),y+CUBE-h,Math.max(2,Math.round(CUBE*0.2)),h);
+      }
+    }
+    animId=requestAnimationFrame(draw);
+  }
+
+  window._waveCubesStart=function(){
+    if(enabled)return;
+    enabled=true;
+    cv.style.opacity='1';
+    draw();
+  };
+  window._waveCubesStop=function(){
+    enabled=false;
+    cv.style.opacity='0';
+    cancelAnimationFrame(animId);
+  };
+})();
+
+// ── WAVE CUBES SPEED SLIDER ──
+(function(){
+  let spd=3;
+  try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');if(s.waveCubesSpeed!=null)spd=s.waveCubesSpeed;}catch{}
+  window._waveCubesSpeed=spd;
+
+  function applySpeed(v){
+    spd=Math.round(v);
+    window._waveCubesSpeed=spd;
+    const pct=((spd-1)/(10-1))*100;
+    const el=document.getElementById('waveCubesSpeedVal');if(el)el.textContent=spd;
+    const th=document.getElementById('waveCubesThumb');if(th)th.style.left=pct+'%';
+    const fi=document.getElementById('waveCubesFill');if(fi)fi.style.width=pct+'%';
+    try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');s.waveCubesSpeed=spd;localStorage.setItem('fx_settings',JSON.stringify(s));}catch{}
+  }
+
+  const track=document.getElementById('waveCubesTrack');
+  if(!track)return;
+  let dragging=false;
+  function getV(e){const r=track.getBoundingClientRect();const pct=Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width));return Math.round(1+pct*(10-1));}
+  track.addEventListener('mousedown',e=>{dragging=true;applySpeed(getV(e));});
+  track.addEventListener('touchstart',e=>{dragging=true;applySpeed(getV(e));},{passive:true});
+  window.addEventListener('mousemove',e=>{if(dragging)applySpeed(getV(e));});
+  window.addEventListener('touchmove',e=>{if(dragging)applySpeed(getV(e));},{passive:true});
+  window.addEventListener('mouseup',()=>dragging=false);
+  window.addEventListener('touchend',()=>dragging=false);
+  applySpeed(spd);
+})();
+
 // ── AURORA COUNT SLIDER ──
 (function(){
   let auroraCount=18;
@@ -1319,8 +1468,8 @@ try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');if(s.glowHeigh
     document.getElementById('auroraCountVal').textContent=auroraCount;
     document.getElementById('auroraThumb').style.left=pct+'%';
     document.getElementById('auroraFill').style.width=pct+'%';
-    // Пересобрать сетку с новым кол-вом
     if(window._rebuildGrid)window._rebuildGrid(auroraCount);
+    if(window._rebuildBlobs)window._rebuildBlobs(auroraCount);
     try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');s.auroraCount=auroraCount;localStorage.setItem('fx_settings',JSON.stringify(s));}catch{}
   }
 
@@ -1353,6 +1502,16 @@ function toggleEffect(name,el){
   const tog=document.getElementById('toggle'+name.charAt(0).toUpperCase()+name.slice(1)+'Effect');
   const on=tog.dataset.on!=='true';
   tog.dataset.on=on;
+  if(name==='waveCubes'){
+    const slider=document.getElementById('waveCubesSliderWrap');
+    if(on){
+      slider.style.maxHeight='80px';slider.style.opacity='1';
+      window._waveCubesStart&&window._waveCubesStart();
+    } else {
+      slider.style.maxHeight='0';slider.style.opacity='0';
+      window._waveCubesStop&&window._waveCubesStop();
+    }
+  }
   if(name==='aurora'){
     const slider=document.getElementById('auroraSliderWrap');
     if(on){
@@ -1565,6 +1724,7 @@ function buildGrid(countOverride){
 }
 buildGrid();
 window._rebuildGrid=function(count){window._auroraCount=count;buildGrid(count);};
+  window._rebuildBlobs&&window._rebuildBlobs(count);
 function drawGlow(){
   const hex=getComputedStyle(document.documentElement).getPropertyValue('--c1').trim()||'#4285f4';
   const rr=parseInt(hex.slice(1,3),16),g2=parseInt(hex.slice(3,5),16),bb=parseInt(hex.slice(5,7),16);
