@@ -998,7 +998,12 @@ function closeSettings(){
   ov.classList.remove('open','closing');
   if(window._stopBlobs)window._stopBlobs();
   const bg=document.getElementById('settingsBg');
-  if(bg){bg.style.backdropFilter='blur(0px)';bg.style.webkitBackdropFilter='blur(0px)';bg.style.background='rgba(0,0,0,0)';}
+  if(bg){
+    bg.style.backdropFilter='none';
+    bg.style.webkitBackdropFilter='none';
+    bg.style.background='rgba(0,0,0,0)';
+    bg.style.display='none';
+  }
 },420);
 }
 
@@ -1354,6 +1359,8 @@ function openSettings(){
   const u=FernieID.getUser();
   if(u){document.getElementById('sName').textContent=u.username||'Пользователь';document.getElementById('sAv').textContent=(u.username||'F')[0].toUpperCase();}
   const ov=document.getElementById('settingsOverlay');
+  const bg=document.getElementById('settingsBg');
+  if(bg)bg.style.display='';
   ov.classList.remove('closing');
   ov.classList.add('open');
   loadTokenData();
