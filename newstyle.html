@@ -1692,7 +1692,7 @@ try{
       <div style="margin-bottom:6px;"><span style="color:rgba(255,255,255,.3);">Причина:</span> Совершение и попытка обхода ограничений</div>
       <div><span style="color:rgba(255,255,255,.3);">Срок:</span> Навсегда</div>
     </div>
-    <button onclick="window.location.href='https://ferniex-id.vercel.app'" style="width:100%;padding:14px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(239,68,68,.35);">Понятно</button>
+    <button onclick="FernieID.logout();window.location.reload();" style="width:100%;padding:14px;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;border-radius:13px;font-family:var(--font);font-size:15px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(239,68,68,.35);">Понятно</button>
   </div>
 </div>
 
@@ -1910,10 +1910,11 @@ const CHAT_DUR=1800;
     const rgb=`${cr},${cg},${cb}`;
     ctx.save();ctx.translate(W/2,H);ctx.scale(1,.45);
     const g=ctx.createRadialGradient(0,0,0,0,0,W*.7);
-    g.addColorStop(0,`rgba(${rgb},${.7*p})`);
-    g.addColorStop(.2,`rgba(${rgb},${.5*p})`);
-    g.addColorStop(.5,`rgba(${rgb},${.25*p})`);
-    g.addColorStop(.8,`rgba(${rgb},${.1*p})`);
+    const glowH=(window._glowHeight!=null?window._glowHeight:50)/100;
+    g.addColorStop(0,`rgba(${rgb},${.7*p*glowH})`);
+    g.addColorStop(.2,`rgba(${rgb},${.5*p*glowH})`);
+    g.addColorStop(.5,`rgba(${rgb},${.25*p*glowH})`);
+    g.addColorStop(.8,`rgba(${rgb},${.1*p*glowH})`);
     g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,W*.7,0,Math.PI*2);ctx.fill();
     ctx.restore();
@@ -2199,7 +2200,7 @@ function enterChat(userData){
     document.getElementById('chatTitle').innerHTML=`${tw}, <span class="rainbow-name">${name}!</span><br><span style="font-size:.75em;opacity:.7">Что вас интересует?</span>`;
     chatTransitioning=true;chatTransitionStart=Date.now();chatProgress=0;
     initSidebarForUser();
-    defenderCheck();
+    startDefenderPolling();
   },500);
 }
 
@@ -3104,6 +3105,10 @@ async function defenderWarn(){
   }catch(e){console.warn('defender warn failed:',e);}
 }
 
+async function startDefenderPolling(){
+  await defenderCheck();
+  setInterval(defenderCheck, 30000);
+}
 async function defenderCheck(){
   const u=FernieID.getUser();
   if(!u?.userId)return;
