@@ -64,8 +64,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   #sidebar{
     position:fixed;left:0;top:0;bottom:0;
     width:80vw!important;max-width:320px;
-    background:rgba(12,10,24,1);
+    background:#0c0a18;
     backdrop-filter:none;-webkit-backdrop-filter:none;
+    -webkit-transform:translateZ(0);
+    transform:translateZ(0);
     border-right:1px solid rgba(255,255,255,.08);
     z-index:200;padding:20px 12px;
     transform:translateX(-100%);
@@ -284,6 +286,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 }
 #settingsCard{
   position:relative;
+  user-select:none;-webkit-user-select:none;
   background:rgba(12,10,24,0.97);
   border:1px solid rgba(255,255,255,.08);
   border-radius:28px;
