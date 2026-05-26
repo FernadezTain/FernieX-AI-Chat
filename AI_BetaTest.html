@@ -3319,10 +3319,9 @@ async function sendMsg(){
       ai.remove();
       if(ocrParts.length){
         const ocrBlock=ocrParts.join('\n---\n');
-        const imgRef=imagesToProcess.length>0?'\n\n[Изображение доступно для img2img. DataURL: '+imagesToProcess[0].dataUrl+']':'';
-        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock+imgRef):('[Текст с изображений]:\n'+ocrBlock+imgRef);
+        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock):('[Текст с изображений]:\n'+ocrBlock);
       } else if(!txt){
-        finalTxt='[Пользователь прислал изображение. Если он хочет его изменить/стилизовать — используй /imggenerate2img. DataURL изображения: '+imagesToProcess[0].dataUrl+']';
+        finalTxt='[Пользователь прислал изображение без текста. Спроси что с ним сделать.]';
       }
     }catch(e){ai.remove();}
   } else {
