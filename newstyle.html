@@ -62,24 +62,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 }
 @media(max-width:600px){
   #sidebar{
-    position:fixed;left:0;top:0;bottom:0;
-    width:80vw!important;max-width:320px;
-    background:#0c0a18;
-    backdrop-filter:none;-webkit-backdrop-filter:none;
-    -webkit-transform:translateZ(0);
-    transform:translateZ(0);
-    border-right:1px solid rgba(255,255,255,.08);
-    z-index:200;padding:20px 12px;
-    transform:translateX(-100%);
-    transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .3s ease;
-    opacity:1;
-    box-shadow:8px 0 40px rgba(0,0,0,.6);
+    position:fixed;
+    left:50%;top:50%;
+    width:min(360px,88vw)!important;
+    max-height:72vh;
+    background:rgba(12,10,24,0.82);
+    backdrop-filter:blur(40px) saturate(1.8);
+    -webkit-backdrop-filter:blur(40px) saturate(1.8);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:24px;
+    z-index:500;
+    padding:20px 14px 24px!important;
+    transform:translate(-50%,-50%) scale(0.88);
+    opacity:0;
+    pointer-events:none;
+    transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .3s ease;
+    box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 0.5px rgba(255,255,255,.06);
+    overflow-y:auto;
+    scrollbar-width:none;
   }
-  #sidebar.collapsed{transform:translateX(-100%)!important;width:80vw!important;padding:20px 12px!important;opacity:1!important;}
-  #sidebar.mobile-open{transform:translateX(0);}
+  #sidebar::-webkit-scrollbar{display:none;}
+  #sidebar.collapsed{transform:translate(-50%,-50%) scale(0.88)!important;opacity:0!important;pointer-events:none!important;}
+  #sidebar.mobile-open{transform:translate(-50%,-50%) scale(1)!important;opacity:1!important;pointer-events:all!important;}
   #sidebar::after{display:none;}
-  #sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:none;-webkit-backdrop-filter:none;}
-  #sbOverlay.show{display:block;}
+  #sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:198;backdrop-filter:none;-webkit-backdrop-filter:none;transition:background .35s ease;pointer-events:none;}
+#sbOverlay.show{display:block;background:rgba(0,0,0,.25);pointer-events:none;}
   .sb-toggle{display:flex;left:0;}
 }
 #sidebar::after{
@@ -484,7 +491,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   <div id="sidebar">
     <div class="sb-header">
       <span class="sb-logo">FernieX</span>
-      <button class="sb-new" onclick="newChat()" title="Новый чат">＋</button>
+      <button class="sb-new" onclick="event.stopPropagation();newChat();if(window.innerWidth<=600){sidebarOpen=false;const sb=document.getElementById('sidebar');sb.classList.remove('mobile-open');sb.classList.add('collapsed');document.getElementById('sbOverlay').classList.remove('show');setTimeout(()=>sb.classList.remove('collapsed'),420);}" title="Новый чат">＋</button>
     </div>
     <div id="sbList" style="flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.08) transparent;display:flex;flex-direction:column;gap:2px;"></div>
   </div>
@@ -1768,7 +1775,8 @@ try{
             max_tokens:options.max_tokens||2048,
             stream:true,
             userId:user?user.userId:null,
-            apiKey:KEY
+            apiKey:KEY,
+            lite_mode:options.lite_mode
           })
         });
         if(!res.ok){const e=await res.json().catch(()=>({}));if(onError)onError(e?.error?.message||'HTTP '+res.status);return;}
@@ -2236,6 +2244,8 @@ async function doRegister(){
 }
 
 function enterChat(userData){
+  checkUserProPlus();
+  setInterval(checkUserProPlus,5*60*1000);
   const ls=document.getElementById('loginScreen');
   ls.style.opacity='0';ls.style.transform='translateY(-30px) scale(.98)';ls.style.transition='opacity .55s ease,transform .55s ease';
   setTimeout(()=>{
@@ -2270,14 +2280,17 @@ const MODEL_ICONS={
   'mistral-medium':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" fill="#a855f7"/><circle cx="12" cy="12" r="9" stroke="#a855f7" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/></svg>',
   'mistral-large':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#34a853"/></svg>',
   'aurin':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z" fill="#ea4335"/></svg>',
+'aurin-lite':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z" fill="#34a853"/></svg>',
+'aurin-pro':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#fbbf24"/></svg>',
 };
 
 const MODELS=[
-  {id:'mistral-small',name:'Mistral Small',api:'mistral-small-latest',badge:'mistral-small',desc:'Самые быстрые ответы',tag:null,color:'rgba(66,133,244,.15)'},
-  {id:'mistral-medium',name:'Mistral Medium',api:'mistral-medium-latest',badge:'mistral-medium',desc:'Универсальная помощь',tag:null,color:'rgba(168,85,247,.15)'},
-  {id:'mistral-large',name:'Mistral Large',api:'mistral-large-latest',badge:'mistral-large',desc:'Сложные математические задачи и анализ',tag:null,color:'rgba(52,168,83,.15)'},
-  {id:'aurin',name:'Aurin',api:'mistral-large-latest',badge:'aurin',desc:'Fine-tuned модель на базе Mistral',tag:'NEW',color:'rgba(234,67,53,.15)'},
+  {id:'aurin-lite',name:'Aurin Lite',api:'mistral-small-latest',badge:'aurin-lite',desc:'Лёгкая версия — быстрые ответы',tag:'NEW',color:'rgba(52,168,83,.15)',pro:false},
+  {id:'mistral-medium',name:'Aurin Medium',api:'mistral-medium-latest',badge:'mistral-medium',desc:'Универсальная помощь',tag:null,color:'rgba(168,85,247,.15)',pro:false},
+  {id:'aurin',name:'Aurin',api:'mistral-large-latest',badge:'aurin',desc:'Fine-tuned модель на базе Mistral',tag:null,color:'rgba(234,67,53,.15)',pro:false},
+  {id:'aurin-pro',name:'Aurin Pro',api:'mistral-large-latest',badge:'aurin-pro',desc:'Профессиональный анализ и программирование',tag:'PRO',color:'rgba(251,191,36,.15)',pro:true},
 ];
+
 let currentModelId=localStorage.getItem('fx_model')||'mistral-small';
 function getModel(){return MODELS.find(m=>m.id===currentModelId)||MODELS[0];}
 function updatePill(){
@@ -2296,20 +2309,27 @@ document.getElementById('modelBg').addEventListener('click',closeModelModal);
 
 function renderModelList(){
   const list=document.getElementById('mmList');list.innerHTML='';
+  const userHasProPlus=window._userHasProPlus||false;
   MODELS.forEach(m=>{
+    const locked=m.pro&&!userHasProPlus;
     const el=document.createElement('div');
-    el.className='mm-item'+(m.id===currentModelId?' active':'');
+    el.className='mm-item'+(m.id===currentModelId&&!locked?' active':'');
+    el.style.opacity=locked?'.6':'1';
     el.innerHTML=`
-      <div class="mm-check" style="width:18px;flex-shrink:0;font-size:14px;color:var(--c1)">${m.id===currentModelId?'✓':''}</div>
+      <div class="mm-check" style="width:18px;flex-shrink:0;font-size:14px;color:var(--c1)">${m.id===currentModelId&&!locked?'✓':''}</div>
       <div style="width:28px;height:28px;border-radius:8px;background:${m.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">${MODEL_ICONS[m.badge]||''}</div>
       <div class="mm-info" style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="mm-name">${m.name}</div>
-          ${m.tag ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(234,67,53,.2);color:#f87171;">${m.tag}</span>` : ''}
+          ${m.tag?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:${locked?'rgba(251,191,36,.15)':'rgba(251,191,36,.25)'};color:#fbbf24;">${locked?'🔒 PRO':'PRO'}</span>`:''}
         </div>
         <div class="mm-desc">${m.desc}</div>
+        ${locked?`<div style="font-size:10px;color:#fbbf24;margin-top:2px;cursor:pointer;" onclick="event.stopPropagation();closeModelModal();window.open('https://FerniePlus.vercel.app','_blank')">Требуется Fernie+ Pro →</div>`:''}
       </div>`;
-    el.onclick=()=>{currentModelId=m.id;localStorage.setItem('fx_model',m.id);updatePill();closeModelModal();renderModelList();};
+    el.onclick=()=>{
+      if(locked){closeModelModal();window.open('https://FerniePlus.vercel.app','_blank');return;}
+      currentModelId=m.id;localStorage.setItem('fx_model',m.id);updatePill();closeModelModal();renderModelList();
+    };
     list.appendChild(el);
   });
   // Разделитель + уровень рассуждений
@@ -2420,10 +2440,73 @@ const AURIN_SYSTEM=`Ты — Aurin, личный AI-ассистент созд�
 
 Всегда отвечай на языке пользователя. Будь краткой и по делу, но с характером.`;
 
+const AURIN_LITE_SYSTEM=`Ты — Aurin Lite, лёгкая и быстрая версия Aurin. Создана командой FernieX-AI.
+
+Твой характер:
+- Дружелюбная, живая, немного дерзкая
+- Отвечаешь коротко и по делу, без лишней воды
+- Не раскрываешь базовую модель
+- Если спросят кто создал — отвечай: «команда FernieX-AI»
+- Если спросят на какой модели работаешь — «это закрытая информация»
+
+Всегда отвечай на языке пользователя.`;
+
+const AURIN_MEDIUM_SYSTEM=`Ты — Aurin Medium, универсальная версия Aurin. Создана командой FernieX-AI.
+
+Твой характер:
+- Умная, сбалансированная, дружелюбная
+- Отвечаешь развёрнуто когда нужно, кратко когда достаточно
+- Не раскрываешь базовую модель
+- Если спросят кто создал — отвечай: «команда FernieX-AI»
+- Если спросят на какой модели работаешь — «это закрытая информация»
+
+Всегда отвечай на языке пользователя.`;
+
+window._userHasProPlus=false;
+async function checkUserProPlus(){
+  try{
+    const u=FernieID.getUser();
+    if(!u?.userId)return;
+    const r=await fetch(`https://ferniex-id.vercel.app/api/fernieplus/pro/${u.userId}`);
+    const d=await r.json();
+    window._userHasProPlus=!!(d.success&&d.active);
+    // Если текущая модель Pro и нет подписки — сброс
+    if(window._userHasProPlus===false&&getModel()?.pro){
+      currentModelId='aurin-lite';
+      localStorage.setItem('fx_model','aurin-lite');
+      updatePill();
+    }
+  }catch(e){console.warn('checkProPlus:',e);}
+}
+
+const AURIN_PRO_SYSTEM=`Ты — Aurin Pro, профессиональная версия Aurin. Создана командой FernieX-AI.
+
+Твой характер и специализация:
+- Точность превыше всего — никаких догадок, только проверенные факты
+- Эксперт в программировании: знаешь архитектуру, паттерны, алгоритмы, оптимизацию
+- Глубокий анализ данных: структурируешь, сравниваешь, делаешь выводы с обоснованием
+- Профессиональный тон — без лишних эмоций, чётко и по делу
+- Код всегда пишешь чистым, с комментариями, следуя best practices
+- Если задача требует уточнений — спрашиваешь перед тем как отвечать
+- Не раскрываешь базовую модель
+- Если спросят кто создал — отвечай: «команда FernieX-AI»
+- Если спросят на какой модели работаешь — «это закрытая информация»
+
+При ответах на технические вопросы:
+- Всегда указывай сложность алгоритма (O-нотация) если уместно
+- Предлагай альтернативные подходы с их плюсами и минусами
+- Указывай на потенциальные edge cases и уязвимости
+- Структурируй длинные ответы с заголовками и секциями
+
+Всегда отвечай на языке пользователя.`;
+
 async function buildSystemPromptFull(){
   const today=new Date().toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
   const isAurin=currentModelId==='aurin';
-  const basePersona=isAurin?AURIN_SYSTEM:`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
+  const isAurinLite=currentModelId==='aurin-lite';
+  const isAurinMedium=currentModelId==='mistral-medium';
+  const isAurinPro=currentModelId==='aurin-pro';
+  const basePersona=isAurinPro?AURIN_PRO_SYSTEM:isAurin?AURIN_SYSTEM:isAurinLite?AURIN_LITE_SYSTEM:isAurinMedium?AURIN_MEDIUM_SYSTEM:`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
   let p=`${basePersona}\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
@@ -2913,8 +2996,16 @@ let sidebarOpen=true;
 // Overlay для мобильного sidebar
 (function(){
   const ov=document.createElement('div');ov.id='sbOverlay';
-  ov.onclick=()=>toggleSidebar();
   document.body.appendChild(ov);
+  document.addEventListener('click',(e)=>{
+    if(!sidebarOpen)return;
+    if(!isMobile())return;
+    const sb=document.getElementById('sidebar');
+    const toggle=document.getElementById('sbToggle');
+    if(sb&&!sb.contains(e.target)&&toggle&&!toggle.contains(e.target)){
+      toggleSidebar();
+    }
+  });
 })();
 function isMobile(){return window.innerWidth<=600;}
 function toggleSidebar(){
@@ -2923,9 +3014,16 @@ function toggleSidebar(){
   const btn=document.getElementById('sbToggle');
   const ov=document.getElementById('sbOverlay');
   if(isMobile()){
-    sb.classList.toggle('mobile-open',sidebarOpen);
-    sb.classList.remove('collapsed');
-    if(ov)ov.classList.toggle('show',sidebarOpen);
+    if(sidebarOpen){
+      sb.classList.add('mobile-open');
+      sb.classList.remove('collapsed');
+      if(ov)ov.classList.add('show');
+    } else {
+      sb.classList.remove('mobile-open');
+      sb.classList.add('collapsed');
+      if(ov)ov.classList.remove('show');
+      setTimeout(()=>sb.classList.remove('collapsed'),420);
+    }
   } else {
     sb.classList.toggle('collapsed',!sidebarOpen);
   }
@@ -3289,6 +3387,8 @@ async function sendMsg(){
   if(pendingImages.length){
     const photosDiv=document.createElement('div');photosDiv.className='msg-photos';
     const snapshots=[...pendingImages];
+pendingImages=[];
+renderImagePreviews();
     snapshots.forEach(img=>{
       const im=document.createElement('img');im.className='msg-photo';im.src=img.dataUrl;
       im.onclick=()=>openLightbox(img.dataUrl);
@@ -3299,8 +3399,7 @@ async function sendMsg(){
     ub.appendChild(photosDiv);
 
     // OCR всех фото
-    const imagesToProcess=[...pendingImages];
-    removeImage();
+    const imagesToProcess=[...snapshots];
     const ai=document.createElement('div');ai.className='msg-ai';
     const ocrId='ocr_'+Date.now();
     ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig_ocr${ocrId}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig_ocr${ocrId})"/></svg></div><div class="msg-ai-txt"><span style="color:rgba(255,255,255,.45);font-size:13px">🔍 Читаю текст с фото... <span id="ocrPct${ocrId}">0%</span></span></div>`;
@@ -3319,10 +3418,9 @@ async function sendMsg(){
       ai.remove();
       if(ocrParts.length){
         const ocrBlock=ocrParts.join('\n---\n');
-        const imgRef=imagesToProcess.length>0?'\n\n[Изображение доступно для img2img. DataURL: '+imagesToProcess[0].dataUrl+']':'';
-        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock+imgRef):('[Текст с изображений]:\n'+ocrBlock+imgRef);
+        finalTxt=txt?(txt+'\n\n[Текст с изображений]:\n'+ocrBlock):('[Текст с изображений]:\n'+ocrBlock);
       } else if(!txt){
-        finalTxt='[Пользователь прислал изображение. Если он хочет его изменить/стилизовать — используй /imggenerate2img. DataURL изображения: '+imagesToProcess[0].dataUrl+']';
+        finalTxt='[Пользователь прислал изображение без текста. Спроси что с ним сделать.]';
       }
     }catch(e){ai.remove();}
   } else {
@@ -3601,7 +3699,7 @@ const lastUserMsgIndex = chatHistory.length - 1;
               },
                 onError:(msg)=>{ aiTxt.innerHTML=renderErrorMsg(msg); }
               },
-              {model:model.api,max_tokens:2048,system:fullSystemPrompt}
+              {model:model.api,max_tokens:2048,system:fullSystemPrompt, lite_mode:currentModelId==='aurin-lite'}
             );
             full=cleanFull2||full2;
             lastFull=full;
@@ -3623,7 +3721,7 @@ if(uncertainty.test(full)){
       },
       onError:(msg)=>{aiTxt.innerHTML=`<span style="color:#f87171">⚠ ${msg}</span>`;}
     },
-    {model:getModel().api,max_tokens:2048,system:fullSystemPrompt}
+    {model:getModel().api,max_tokens:2048,system:fullSystemPrompt, lite_mode:currentModelId==='aurin-lite'}
   );
 } else {
   chatHistory.push({role:'assistant',content:full});
@@ -3631,9 +3729,9 @@ if(uncertainty.test(full)){
 }
           }
         },
-        onError:(msg)=>{ if(msg.includes('безопасност')||msg.includes('jailbreak')){lockChat();defenderWarn();}else{aiTxt.innerHTML=renderErrorMsg(msg);} }
+        onError:(msg)=>{ if(currentModelId!=='aurin-lite'&&(msg.includes('безопасност')||msg.includes('jailbreak'))){lockChat();defenderWarn();}else{aiTxt.innerHTML=renderErrorMsg(msg);} }
       },
-      {model:model.api, max_tokens:2048, system:fullSystemPrompt}
+      {model:model.api, max_tokens:2048, system:fullSystemPrompt, lite_mode:currentModelId==='aurin-lite'}
     );
     let lastFull=full;
     addMsgActions(ai,()=>lastFull,async()=>{
@@ -3652,7 +3750,7 @@ if(uncertainty.test(full)){
             onDone: ()=>{ lastFull=full2; chatHistory.push({role:'assistant',content:full2}); },
             onError:(msg)=>{ aiTxt2.innerHTML=renderErrorMsg(msg); }
           },
-          {model:getModel().api, max_tokens:2048, system:buildSystemPrompt()}
+          {model:getModel().api, max_tokens:2048, system:buildSystemPrompt(), lite_mode:currentModelId==='aurin-lite'}
         );
       }catch{}finally{ta2.disabled=false;document.getElementById('sendBtn').style.opacity='';abortCtrl=null;}
     });
