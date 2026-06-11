@@ -515,7 +515,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
     <div class="input-pill">
       <button class="ibtn attach" onclick="showImgToast('Можно выбрать до 10 фото');document.getElementById('imageInput').click()" title="Прикрепить фото"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <input type="file" id="imageInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)"/>
-      <textarea class="inp-ta" id="msgIn" placeholder="Спросите FernieX..." rows="1"
+      <textarea class="inp-ta" id="msgIn" placeholder="Спросите Aurin..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
       <div class="inp-acts">
@@ -558,7 +558,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
         <div style="padding:6px 8px;margin-bottom:8px;">
           <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:10px;color:rgba(255,255,255,.3);cursor:default;">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            v4 Dev
+            v4.2 Dev
           </div>
         </div>
         <button class="s-btn-logout" onclick="askLogout()" style="margin:0;padding:11px 10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
@@ -868,7 +868,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
           <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);">
               <span style="font-size:13px;color:rgba(255,255,255,.6);">Telegram привязан</span>
-              <span style="font-size:13px;color:#4ade80;font-weight:600;">✓ Да</span>
+              <span id="privTgStatus" style="font-size:13px;color:rgba(255,255,255,.35);font-weight:600;">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);">
               <span style="font-size:13px;color:rgba(255,255,255,.6);">История чатов</span>
@@ -1099,9 +1099,45 @@ function openSettings(){
   const ov=document.getElementById('settingsOverlay');
   ov.classList.remove('closing');
   ov.classList.add('open');
-  switchSettingsTab('profile');
+  // Сбрасываем все табы перед открытием
+  document.querySelectorAll('.stab').forEach(el=>{
+    el.style.display='none';
+    el.classList.remove('tab-visible','tab-exit');
+  });
+  const profileTab=document.getElementById('stab-profile');
+  if(profileTab){
+    profileTab.style.display='';
+    profileTab.style.transform='translateY(0)';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>profileTab.classList.add('tab-visible')));
+  }
+  document.querySelectorAll('.snav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab==='profile'));
   loadTokenData();
   if(window._startBlobs)window._startBlobs();
+  // Принудительно показываем профиль через небольшой delay (после анимации открытия карточки)
+  setTimeout(()=>{
+    const pt=document.getElementById('stab-profile');
+    if(pt&&!pt.classList.contains('tab-visible')){
+      pt.classList.add('tab-visible');
+    }
+  },200);
+  setTimeout(()=>{
+    const tog=document.getElementById('toggleAnim');
+    if(tog&&tog.dataset.on==='true'){
+      const list=document.getElementById('effectsList');
+      if(list){list.style.display='block';list.style.maxHeight='600px';list.style.opacity='1';}
+    }
+    const auroraOn=document.getElementById('toggleAuroraEffect');
+    if(auroraOn&&auroraOn.dataset.on==='true'){
+      const sl=document.getElementById('auroraSliderWrap');
+      if(sl){sl.style.maxHeight='80px';sl.style.opacity='1';}
+    }
+    const wcOn=document.getElementById('toggleWaveCubesEffect');
+    if(wcOn&&wcOn.dataset.on==='true'){
+      const sl=document.getElementById('waveCubesSliderWrap');
+      if(sl){sl.style.maxHeight='80px';sl.style.opacity='1';}
+    }
+    window._updateGlowPreviewColor&&window._updateGlowPreviewColor();
+  },80);
 }
 function closeSettings(){
   const ov=document.getElementById('settingsOverlay');
@@ -1125,9 +1161,22 @@ async function loadTokenData(){
   try{
     const u=FernieID.getUser();
     if(!u?.userId)return;
-    const r=await fetch(`https://ferniex-id.vercel.app/api/chat/usage/${u.userId}`);
+    const [r, rPro, rProfile] = await Promise.all([
+      fetch(`https://ferniex-id.vercel.app/api/chat/usage/${u.userId}`),
+      fetch(`https://ferniex-id.vercel.app/api/fernieplus/pro/${u.userId}`),
+      fetch(`https://ferniex-id.vercel.app/api/verify-token`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:u.userId,username:u.username})})
+    ]);
     const d=await r.json();
+    const dPro=await rPro.json();
+    const dProfile=await rProfile.json();
     if(!d.success)return;
+    const isProPlus=!!(dPro.success&&dPro.active);
+    const hasTelegram=!!(dProfile.success&&dProfile.telegramLinked);
+    // Перезаписываем d.has_plus если Pro активен
+    d.has_pro_plus=isProPlus;
+    // Telegram статус
+    const tgEl=document.getElementById('privTgStatus');
+    if(tgEl){tgEl.textContent=hasTelegram?'✓ Да':'✗ Нет';tgEl.style.color=hasTelegram?'#4ade80':'#f87171';}
     const used=d.used||0,limit=d.limit||200000;
     const remaining=Math.max(0,limit-used);
     const pct=Math.min(100,Math.round(used/limit*100));
@@ -1150,9 +1199,10 @@ async function loadTokenData(){
     if(tpct){tpct.textContent=pct+'%';tpct.style.color=pct>85?'#f87171':pct>60?'#fb923c':'#a855f7';}
     const tbar=document.getElementById('tm-bar');
     if(tbar){tbar.style.background=pct>85?'linear-gradient(90deg,#ef4444,#dc2626)':pct>60?'linear-gradient(90deg,#f97316,#eab308)':'linear-gradient(90deg,#a855f7,#6366f1)';setTimeout(()=>tbar.style.width=pct+'%',80);}
-    const tplan=document.getElementById('tm-plan-badge');if(tplan)tplan.textContent=d.has_plus?'Fernie+':'Free';
-    const promo=document.getElementById('ferniePlusPromo');if(promo)promo.style.display=d.has_plus?'none':'flex';
-    const spb=document.getElementById('sPlanBadge');if(spb)spb.innerHTML=(d.has_plus?'<svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="#f59e0b" stroke-width="1" style="filter:drop-shadow(0 0 4px rgba(251,191,36,.8));flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Fernie+':'<svg width="12" height="12" viewBox="0 0 24 24" fill="#c084fc" stroke="#a855f7" stroke-width="1" style="filter:drop-shadow(0 0 4px rgba(192,132,252,.7));flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Free план');
+    const tplan=document.getElementById('tm-plan-badge');if(tplan)tplan.textContent=d.has_pro_plus?'Fernie+ Pro':d.has_plus?'Fernie+':'Free';
+    // Telegram status
+    const promo=document.getElementById('ferniePlusPromo');if(promo)promo.style.display=(d.has_plus||d.has_pro_plus)?'none':'flex';
+    const spb=document.getElementById('sPlanBadge');if(spb){if(d.has_pro_plus){spb.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(234,88,12,.1));border:1px solid rgba(249,115,22,.35);border-radius:20px;font-size:11px;font-weight:600;color:#fb923c;';spb.innerHTML='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#f97316,#ea580c);box-shadow:0 0 6px rgba(249,115,22,.7);flex-shrink:0;"></span> Fernie+ Pro';}else if(d.has_plus){spb.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(245,158,11,.1));border:1px solid rgba(251,191,36,.3);border-radius:20px;font-size:11px;font-weight:600;color:#fbbf24;';spb.innerHTML='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 6px rgba(251,191,36,.6);flex-shrink:0;"></span> Fernie+';}else{spb.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:3px 10px;background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(99,102,241,.15));border:1px solid rgba(168,85,247,.25);border-radius:20px;font-size:11px;font-weight:600;color:#c084fc;';spb.innerHTML='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#6366f1);box-shadow:0 0 6px rgba(192,132,252,.6);flex-shrink:0;"></span> Free план';}}
     const warn=document.getElementById('tm-warn');if(warn)warn.style.display=pct>80?'block':'none';
     const now=new Date();const msk=new Date(now.toLocaleString('en-US',{timeZone:'Europe/Moscow'}));
     const resetStr=`сброс через ${23-msk.getHours()}ч ${59-msk.getMinutes()}м`;
@@ -1169,7 +1219,8 @@ function toggleSetting(key,el){
   const on=el.dataset.on!=='true';
   el.dataset.on=on;
   try{const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');s[key]=on;localStorage.setItem('fx_settings',JSON.stringify(s));}catch{}
-  if(key==='incognito')applyIncognitoEffect(on);
+  if(key==='incognito'){applyIncognitoEffect(on);if(on){allChats=[];try{localStorage.removeItem('fx_chats');}catch{}sbRender();}}
+  if(key==='history'&&!on){allChats=[];try{localStorage.removeItem('fx_chats');}catch{}sbRender();}
   if(key==='anim'){on?window._ambientStart():window._ambientStop();}
 }
 
@@ -1608,34 +1659,6 @@ function toggleEffect(name,el){
 
 // Инициализация списка эффектов при открытии настроек
 setTimeout(()=>{
-const _origOpenSettings=window.openSettings;
-window.openSettings=function(){
-  _origOpenSettings&&_origOpenSettings();
-  setTimeout(()=>{
-    const tog=document.getElementById('toggleAnim');
-    if(tog&&tog.dataset.on==='true'){
-      const list=document.getElementById('effectsList');
-      if(list){
-        list.style.display='block';
-        list.style.maxHeight='600px';
-        list.style.opacity='1';
-      }
-    }
-    // Восстановить слайдер aurora если включена
-    const auroraOn=document.getElementById('toggleAuroraEffect');
-    if(auroraOn&&auroraOn.dataset.on==='true'){
-      const sl=document.getElementById('auroraSliderWrap');
-      if(sl){sl.style.maxHeight='80px';sl.style.opacity='1';}
-    }
-    // Восстановить слайдер waveCubes если включен
-    const wcOn=document.getElementById('toggleWaveCubesEffect');
-    if(wcOn&&wcOn.dataset.on==='true'){
-      const sl=document.getElementById('waveCubesSliderWrap');
-      if(sl){sl.style.maxHeight='80px';sl.style.opacity='1';}
-    }
-    window._updateGlowPreviewColor&&window._updateGlowPreviewColor();
-  },80);
-};
 },500);
 
 // ── FONT ──
@@ -1957,7 +1980,12 @@ function openSettings(){
   if(bg)bg.style.display='';
   ov.classList.remove('closing');
   ov.classList.add('open');
+  document.querySelectorAll('.stab').forEach(el=>{el.style.display='none';el.classList.remove('tab-visible','tab-exit');});
+  const pt=document.getElementById('stab-profile');
+  if(pt){pt.style.display='';pt.style.transform='translateY(0)';requestAnimationFrame(()=>requestAnimationFrame(()=>pt.classList.add('tab-visible')));}
+  document.querySelectorAll('.snav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab==='profile'));
   loadTokenData();
+  if(window._startBlobs)window._startBlobs();
 }
 function closeSettings(){
   const ov=document.getElementById('settingsOverlay');
@@ -2288,7 +2316,7 @@ const MODELS=[
   {id:'aurin-lite',name:'Aurin Lite',api:'mistral-small-latest',badge:'aurin-lite',desc:'Лёгкая версия — быстрые ответы',tag:'NEW',color:'rgba(52,168,83,.15)',pro:false},
   {id:'mistral-medium',name:'Aurin Medium',api:'mistral-medium-latest',badge:'mistral-medium',desc:'Универсальная помощь',tag:null,color:'rgba(168,85,247,.15)',pro:false},
   {id:'aurin',name:'Aurin',api:'mistral-large-latest',badge:'aurin',desc:'Fine-tuned модель на базе Mistral',tag:null,color:'rgba(234,67,53,.15)',pro:false},
-  {id:'aurin-pro',name:'Aurin Pro',api:'mistral-large-latest',badge:'aurin-pro',desc:'Профессиональный анализ и программирование',tag:'PRO',color:'rgba(251,191,36,.15)',pro:true},
+  {id:'aurin-pro',name:'Aurin Pro',api:'mistral-large-latest',badge:'aurin-pro',desc:'Анализ, изображения и программирование',tag:'PRO',color:'rgba(251,191,36,.15)',pro:true},
 ];
 
 let currentModelId=localStorage.getItem('fx_model')||'mistral-small';
@@ -2321,7 +2349,7 @@ function renderModelList(){
       <div class="mm-info" style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="mm-name">${m.name}</div>
-          ${m.tag?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:${locked?'rgba(251,191,36,.15)':'rgba(251,191,36,.25)'};color:#fbbf24;">${locked?'🔒 PRO':'PRO'}</span>`:''}
+          ${m.tag?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:${m.pro?(locked?'rgba(251,191,36,.1)':'rgba(251,191,36,.25)'):'rgba(52,168,83,.2)'};color:${m.pro?'#fbbf24':'#4ade80'};${locked?'border:1px solid rgba(251,191,36,.3);':'border:1px solid transparent;'}">${m.pro?'PRO':m.tag}</span>`:''}
         </div>
         <div class="mm-desc">${m.desc}</div>
         ${locked?`<div style="font-size:10px;color:#fbbf24;margin-top:2px;cursor:pointer;" onclick="event.stopPropagation();closeModelModal();window.open('https://FerniePlus.vercel.app','_blank')">Требуется Fernie+ Pro →</div>`:''}
@@ -2376,6 +2404,8 @@ async function loadSkill(name){
 }
 
 const SKILL_IMAGEGEN=`# Генерация изображений
+Генерация изображений доступна ТОЛЬКО в модели Aurin Pro. Если пользователь просит сгенерировать изображение на другой модели — вежливо сообщи, что эта функция доступна только в Aurin Pro, и предложи переключиться.
+
 Используй /imggenerate ТОЛЬКО когда пользователь явно хочет получить картинку/изображение/арт/фото как медиафайл.
 
 Когда нужен /imggenerate — ответь ОДНОЙ строкой:
@@ -2399,7 +2429,19 @@ const SKILL_IMAGEGEN=`# Генерация изображений
 
 Не предлагай DALL-E, Midjourney, Stable Diffusion.
 
-Как работает: изображения генерирует Pollinations AI (pollinations.ai) на базе модели Flux.`;
+Как работает: изображения генерирует Pollinations AI (pollinations.ai).
+ВАЖНО: Никогда не говори что не можешь рисовать. Всегда используй /imggenerate.`;
+
+const SKILL_WEBFETCH=`# WebFetch Skill
+Используй когда пользователь:
+- Даёт ссылку и просит прочитать/проанализировать/пересказать сайт
+- Просит "зайди на сайт", "открой страницу", "что написано на ..."
+- Даёт URL и задаёт вопрос по его содержимому
+
+Когда нужен webfetch — ответь ТОЛЬКО этим тегом:
+<webfetch>https://example.com</webfetch>
+
+Не пиши ничего кроме тега. После получения содержимого — отвечай на вопрос пользователя.`;
 
 const SKILL_NETSEARCH=`# NetSearch Skill
 ОБЯЗАТЕЛЬНО используй поиск если:
@@ -2507,7 +2549,7 @@ async function buildSystemPromptFull(){
   const isAurinMedium=currentModelId==='mistral-medium';
   const isAurinPro=currentModelId==='aurin-pro';
   const basePersona=isAurinPro?AURIN_PRO_SYSTEM:isAurin?AURIN_SYSTEM:isAurinLite?AURIN_LITE_SYSTEM:isAurinMedium?AURIN_MEDIUM_SYSTEM:`Ты умный дружелюбный AI-ассистент FernieX. Отвечай кратко, по делу, на языке пользователя.`;
-  let p=`${basePersona}\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}`;
+  let p=`${basePersona}\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}\n\n${SKILL_WEBFETCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
   p+=FX_FILE_INSTRUCTION;
@@ -2653,10 +2695,83 @@ function renderErrorMsg(msg){
   </div>`;
 }
 
+function startSiriCanvas(id){
+  const cv=document.getElementById(id);
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=72,H=72,cx=36,cy=36;
+  const orbs=[
+    {angle:0,    speed:0.032, orbit:19, size:8.5},
+    {angle:2.09, speed:0.024, orbit:14, size:6.5},
+    {angle:4.18, speed:0.038, orbit:23, size:5.5},
+    {angle:1.05, speed:0.019, orbit:10, size:4.5},
+  ];
+  let t=0;
+  function draw(){
+    if(!document.body.contains(cv))return;
+    ctx.clearRect(0,0,W,H);
+    t++;
+    const hex=getComputedStyle(document.documentElement).getPropertyValue('--c1').trim()||'#4285f4';
+    const cr=parseInt(hex.slice(1,3),16),cg=parseInt(hex.slice(3,5),16),cb=parseInt(hex.slice(5,7),16);
+    // Центральное свечение
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,18);
+    glow.addColorStop(0,`rgba(${cr},${cg},${cb},.22)`);
+    glow.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);ctx.fill();
+    // Орбы
+    orbs.forEach((o,i)=>{
+      o.angle+=o.speed;
+      const ox=cx+Math.cos(o.angle)*o.orbit;
+      const oy=cy+Math.sin(o.angle)*o.orbit;
+      const pulse=0.84+0.16*Math.sin(t*0.08+i*1.7);
+      const r=o.size*pulse;
+      // Хвост
+      for(let j=10;j>=0;j--){
+        const ta=o.angle-j*0.065;
+        const tx=cx+Math.cos(ta)*o.orbit;
+        const ty=cy+Math.sin(ta)*o.orbit;
+        const alpha=(1-j/10)*0.18;
+        const tg=ctx.createRadialGradient(tx,ty,0,tx,ty,r);
+        if(i===0){tg.addColorStop(0,`rgba(255,255,255,${alpha})`);tg.addColorStop(1,`rgba(255,255,255,0)`);}
+        else{tg.addColorStop(0,`rgba(${cr},${cg},${cb},${alpha})`);tg.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);}
+        ctx.fillStyle=tg;ctx.beginPath();ctx.arc(tx,ty,r,0,Math.PI*2);ctx.fill();
+      }
+      // Тело орба
+      const g=ctx.createRadialGradient(ox-r*.3,oy-r*.35,0,ox,oy,r);
+      if(i===0){
+        g.addColorStop(0,'rgba(255,255,255,.98)');
+        g.addColorStop(0.45,'rgba(230,235,255,.75)');
+        g.addColorStop(1,'rgba(180,195,255,0)');
+      } else if(i===1){
+        g.addColorStop(0,`rgba(${cr},${cg},${cb},.95)`);
+        g.addColorStop(0.5,`rgba(${Math.round(cr*.6)},${Math.round(cg*.6)},${Math.round(cb*.6)},.5)`);
+        g.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+      } else if(i===2){
+        g.addColorStop(0,'rgba(190,160,255,.88)');
+        g.addColorStop(0.5,'rgba(130,100,230,.45)');
+        g.addColorStop(1,'rgba(90,60,200,0)');
+      } else {
+        g.addColorStop(0,`rgba(${Math.min(255,cr+40)},${Math.min(255,cg+60)},${Math.min(255,cb+40)},.85)`);
+        g.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+      }
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,r,0,Math.PI*2);ctx.fill();
+      // Блик
+      const shine=ctx.createRadialGradient(ox-r*.38,oy-r*.38,0,ox,oy,r*.6);
+      shine.addColorStop(0,'rgba(255,255,255,.6)');
+      shine.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=shine;ctx.beginPath();ctx.arc(ox,oy,r,0,Math.PI*2);ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 function renderStatus(text){
-  return`<div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.45);font-size:13px;padding:4px 0">
-    <div style="display:flex;gap:3px;align-items:center">${[0,1,2].map(i=>`<span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);display:inline-block;animation:tp 1.2s ease-in-out ${i*0.15}s infinite"></span>`).join('')}</div>
-    <span>${text}</span>
+  const id='siri_'+Math.random().toString(36).slice(2,8);
+  setTimeout(()=>startSiriCanvas(id),0);
+  return`<div style="display:flex;align-items:center;gap:14px;padding:6px 2px">
+    <canvas id="${id}" width="72" height="72" style="width:36px;height:36px;flex-shrink:0;"></canvas>
+    <span style="color:rgba(255,255,255,.5);font-size:13px;font-weight:400;letter-spacing:.1px;">${text}</span>
   </div>`;
 }
 async function webSearch(query){
@@ -2796,7 +2911,11 @@ function sbLoad(){
   }catch{allChats=[];}
 }
 function sbSave(){
-  try{localStorage.setItem('fx_chats',JSON.stringify(allChats));}catch{}
+  try{
+    const s=JSON.parse(localStorage.getItem('fx_settings')||'{}');
+    if(s.incognito||s.history===false)return;
+    localStorage.setItem('fx_chats',JSON.stringify(allChats));
+  }catch{}
 }
 function sbRender(){
   const list=document.getElementById('sbList');
@@ -3432,7 +3551,9 @@ const lastUserMsgIndex = chatHistory.length - 1;
 
   // Блок ответа ИИ с typing dots
   const ai=document.createElement('div');ai.className='msg-ai';
-  ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${Date.now()}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${Date.now()})"/></svg></div><div class="msg-ai-txt"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  const _sid='siri_'+Math.random().toString(36).slice(2,8);
+ai.innerHTML=`<div class="msg-ai-ico"><svg viewBox="0 0 48 48"><defs><linearGradient id="aig${Date.now()}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="33%" stop-color="#ea4335"/><stop offset="66%" stop-color="#fbbc04"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs><path d="M24 2C24 14 34 24 46 24C34 24 24 34 24 46C24 34 14 24 2 24C14 24 24 14 24 2Z" fill="url(#aig${Date.now()})"/></svg></div><div class="msg-ai-txt"><canvas id="${_sid}" width="72" height="72" style="width:36px;height:36px;display:block;"></canvas></div>`;
+requestAnimationFrame(()=>requestAnimationFrame(()=>startSiriCanvas(_sid)));
   msgs.appendChild(ai);msgs.scrollTop=msgs.scrollHeight;
   const aiTxt=ai.querySelector('.msg-ai-txt');
 
@@ -3443,7 +3564,7 @@ const lastUserMsgIndex = chatHistory.length - 1;
   abortCtrl=new AbortController();
   try{
     const model=getModel();
-    aiTxt.textContent='';
+    // НЕ очищаем aiTxt — там уже canvas с анимацией Siri
     let full='';
     aiTyping=true;
     await FernieID.streamChat(
@@ -3452,22 +3573,49 @@ const lastUserMsgIndex = chatHistory.length - 1;
         onToken:(chunk)=>{
           full+=chunk;
           if(full.includes('<netsearch>')&&!full.includes('</netsearch>')){
-            aiTxt.innerHTML=renderStatus('ищу в интернете');
+            if(!aiTxt.querySelector('canvas')){aiTxt.innerHTML=renderStatus('ищу в интернете');requestAnimationFrame(()=>requestAnimationFrame(()=>{const c=aiTxt.querySelector('canvas');if(c)startSiriCanvas(c.id);}));}
             return;
           }
-          if(full.trimStart().startsWith('/imggenerate')){
-            aiTxt.innerHTML=renderStatus('Подключение к Pollinations AI');
+          if(full.includes('<webfetch>')&&!full.includes('</webfetch>')){
+            if(!aiTxt.querySelector('canvas')){aiTxt.innerHTML=renderStatus('читаю страницу...');requestAnimationFrame(()=>requestAnimationFrame(()=>{const c=aiTxt.querySelector('canvas');if(c)startSiriCanvas(c.id);}));}
             return;
           }
-          if(!full.includes('<netsearch>'))
-            renderBubbleContentFx(aiTxt,full);
+          if(full.includes('/imggenerate')){
+            if(currentModelId==='aurin-pro'){
+              aiTxt.innerHTML=renderStatus('Подключение к Pollinations AI');
+            } else {
+              const textBefore=full.slice(0,full.indexOf('/imggenerate')).trim();
+              aiTxt.innerHTML=renderMd(textBefore||'');
+            }
+            return;
+          }
+          if(!full.includes('<netsearch>')){
+            if(full.trim().length>0){
+              const hasCanvas=aiTxt.querySelector('canvas');
+              if(hasCanvas){
+                // Первый реальный текст — плавно убираем Siri и показываем ответ
+                hasCanvas.style.transition='opacity .3s ease';
+                hasCanvas.style.opacity='0';
+                setTimeout(()=>{
+                  if(aiTxt.querySelector('canvas')){
+                    aiTxt.innerHTML='';
+                    aiTxt.style.opacity='0';
+                    aiTxt.style.transition='opacity .35s ease';
+                    renderBubbleContentFx(aiTxt,full);
+                    requestAnimationFrame(()=>requestAnimationFrame(()=>{aiTxt.style.opacity='1';}));
+                  }
+                },280);
+              } else {
+                renderBubbleContentFx(aiTxt,full);
+              }
+            }
+          }
           msgs.scrollTop=msgs.scrollHeight;
         },
         onDone: async(text)=>{
           // Проверяем imggenerate
-          // img2img
-          const ig2Match=text.trim().match(/^\/imggenerate2img\s+(.+?)\s*\|\s*(.+)/s);
-          if(ig2Match){
+          const ig2Match=text.match(/\/imggenerate2img\s+(.+?)\s*\|\s*(.+)/s);
+          if(ig2Match&&currentModelId==='aurin-pro'){
             const prompt=ig2Match[1].trim();
             const srcImg=ig2Match[2].trim();
             aiTxt.innerHTML=renderStatus('Обрабатываю изображение...');
@@ -3478,7 +3626,7 @@ const lastUserMsgIndex = chatHistory.length - 1;
               finalSrc=srcImg;
             }
             const seed=Math.floor(Math.random()*99999);
-            const imgUrl=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}&image=${encodeURIComponent(finalSrc)}`;
+            const imgUrl=`https://ferniex-id.vercel.app/api/imggen?prompt=${encodeURIComponent(prompt)}&seed=${seed}`;
             await new Promise(resolve=>{
               const placeholderId='igph2_'+Date.now();
               aiTxt.innerHTML=`<div id="${placeholderId}" style="width:320px;max-width:100%;aspect-ratio:1/1;border-radius:16px;background:#1a1825;border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
@@ -3513,11 +3661,24 @@ const lastUserMsgIndex = chatHistory.length - 1;
             return;
           }
 
-          const igMatch=text.trim().match(/^\/imggenerate\s+(.+)/s);
-          if(igMatch){
-            const prompt=igMatch[1].trim();
-            aiTxt.innerHTML=renderStatus('Подключение к Pollinations AI');
-            const imgUrl=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&model=flux&nologo=true&seed=${Math.floor(Math.random()*99999)}`;
+          const igMatch=text.match(/\/imggenerate\s+(.+)/s);
+          if(igMatch&&currentModelId!=='aurin-pro'){
+            const textBefore=text.slice(0,text.indexOf('/imggenerate')).trim();
+            renderBubbleContentFx(aiTxt,textBefore||'Генерация изображений доступна только в **Aurin Pro**.');
+            chatHistory.push({role:'assistant',content:textBefore||'Генерация изображений доступна только в Aurin Pro.'});
+            saveCurrentChat();
+            return;
+          }
+          if(igMatch&&currentModelId==='aurin-pro'){
+            const prompt=igMatch[1].trim().split('\n')[0].trim();
+            const textBefore=text.slice(0,text.indexOf('/imggenerate')).trim();
+            if(textBefore) aiTxt.innerHTML=renderMd(textBefore);
+            else aiTxt.innerHTML='';
+            const genWrap=document.createElement('div');
+            genWrap.style.cssText='margin-top:10px;';
+            genWrap.innerHTML=renderStatus('Подключение к Pollinations AI');
+            aiTxt.appendChild(genWrap);
+            const imgUrl=`https://ferniex-id.vercel.app/api/imggen?prompt=${encodeURIComponent(prompt)}&seed=${Math.floor(Math.random()*99999)}`;
             await new Promise(resolve=>{
               // ── Placeholder с анимированными точками ──
               const placeholderId='igph_'+Date.now();
@@ -3527,8 +3688,8 @@ const lastUserMsgIndex = chatHistory.length - 1;
                   <canvas id="${placeholderId}_c" style="width:100%;flex:1;display:block;"></canvas>
                 </div>
               </div>`;
-              aiTxt.innerHTML='';
-              aiTxt.insertAdjacentHTML('beforeend',phHtml);
+              genWrap.innerHTML='';
+              genWrap.insertAdjacentHTML('beforeend',phHtml);
               msgs.scrollTop=msgs.scrollHeight;
 
               // Анимация точек
@@ -3647,8 +3808,8 @@ const lastUserMsgIndex = chatHistory.length - 1;
                 ph.style.transition='opacity .5s ease';
                 ph.style.opacity='0';
                 setTimeout(()=>{
-                  aiTxt.innerHTML='';
-                  aiTxt.appendChild(wrap);
+                  genWrap.innerHTML='';
+                  genWrap.appendChild(wrap);
                   msgs.scrollTop=msgs.scrollHeight;
                   requestAnimationFrame(()=>{
                     imgEl.style.transition='opacity .6s ease';
@@ -3669,7 +3830,38 @@ const lastUserMsgIndex = chatHistory.length - 1;
             return;
           }
           // Финальный рендер с поддержкой AI файлов
+          aiTxt.style.opacity='0';
+          aiTxt.style.transition='opacity .45s ease';
           renderBubbleContentFx(aiTxt,text.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim());
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{aiTxt.style.opacity='1';}));
+            // WebFetch
+          const wfMatch=text.match(/<webfetch>([\s\S]*?)<\/webfetch>/i);
+          if(wfMatch){
+            const fetchUrl=wfMatch[1].trim();
+            aiTxt.innerHTML=renderStatus('читаю страницу: '+fetchUrl.slice(0,40)+'...');
+            let pageText='';
+            try{
+              const wfRes=await fetch(`https://ferniex-id.vercel.app/api/webfetch?url=${encodeURIComponent(fetchUrl)}`);
+              const wfData=await wfRes.json();
+              pageText=wfData.success?wfData.text:`Ошибка загрузки: ${wfData.error}`;
+            }catch(e){pageText='Не удалось загрузить страницу: '+e.message;}
+            aiTxt.innerHTML=renderStatus('анализирую содержимое...');
+            const userQuestion=chatHistory.filter(m=>m.role==='user').slice(-1)[0]?.content||'';
+            let full2='';aiTxt.innerHTML='';
+            await FernieID.streamChat(
+              [...chatHistory,
+               {role:'assistant',content:text},
+               {role:'user',content:`Содержимое страницы ${fetchUrl}:\n\n${pageText}\n\n${userQuestion?'Теперь ответь на вопрос: '+userQuestion:''}`}
+              ],
+              {
+                onToken:(chunk)=>{full2+=chunk;renderBubbleContentFx(aiTxt,full2);msgs.scrollTop=msgs.scrollHeight;},
+                onDone:()=>{chatHistory.push({role:'assistant',content:full2});saveCurrentChat();},
+                onError:(msg)=>{aiTxt.innerHTML=renderErrorMsg(msg);}
+              },
+              {model:getModel().api,max_tokens:2048,system:await buildSystemPromptFull(),lite_mode:currentModelId==='aurin-lite'}
+            );
+            return;
+          }
           const nsMatch=text.match(/<netsearch>([\s\S]*?)<\/netsearch>/i);
           if(nsMatch){
             const query=nsMatch[1].trim();
