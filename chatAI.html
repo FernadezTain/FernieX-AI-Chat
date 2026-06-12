@@ -17,7 +17,8 @@ html,body{overflow-x:hidden;max-width:100vw;}
   --font:'Outfit',sans-serif;
 *{transition:background-color .5s ease, border-color .5s ease, box-shadow .5s ease, color .3s ease;}
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text);user-select:none;-webkit-user-select:none;}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--text);}
+.msg-u,.msg-ai-txt{user-select:text;-webkit-user-select:text;}
 #bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
 
 .screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .65s cubic-bezier(.4,0,.2,1),transform .65s cubic-bezier(.4,0,.2,1)}
@@ -512,13 +513,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
   </div>
   <div class="input-wrap centered" id="inputWrap">
     <div class="image-preview-area" id="imagePreviewArea"></div>
-    <div class="input-pill">
+    <div class="input-pill" style="position:relative;">
+      <div class="thinking-glow-ring" id="thinkGlowRing"></div>
       <button class="ibtn attach" onclick="showImgToast('Можно выбрать до 10 фото');document.getElementById('imageInput').click()" title="Прикрепить фото"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <input type="file" id="imageInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)"/>
       <textarea class="inp-ta" id="msgIn" placeholder="Спросите Aurin..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
-        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px';window._cmdOnInput&&window._cmdOnInput(this)"></textarea>
       <div class="inp-acts">
+        <div class="thinking-badge" id="thinkBadge"><div class="thinking-badge-dot"></div><span>Thinking</span><span onclick="window._deactivateThinking&&window._deactivateThinking()" style="margin-left:4px;cursor:pointer;opacity:.5;font-size:12px;line-height:1;" title="Выключить">✕</span></div>
         <button class="ibtn send" id="sendBtn" onclick="sendMsg()">➤</button>
       </div>
     </div>
@@ -558,7 +561,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
         <div style="padding:6px 8px;margin-bottom:8px;">
           <div style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:10px;color:rgba(255,255,255,.3);cursor:default;">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            v1 Beta Release
+            v4.2 Dev
           </div>
         </div>
         <button class="s-btn-logout" onclick="askLogout()" style="margin:0;padding:11px 10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;">
@@ -995,6 +998,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--fon
 }
 .font-pick:hover{background:rgba(255,255,255,.07);}
 .font-pick.active{border-color:var(--c1);background:rgba(var(--c1-rgb),.08);}
+
+@keyframes thinkRingSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+#cmdPopup{position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:rgba(14,12,28,0.97);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px;box-shadow:0 16px 48px rgba(0,0,0,.7);z-index:1000;animation:cmdFadeIn .18s cubic-bezier(.16,1,.3,1);pointer-events:all;}
+@keyframes cmdFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.cmd-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:10px;cursor:pointer;transition:background .12s;}
+.cmd-item:hover,.cmd-item.cmd-sel{background:rgba(255,255,255,.07);}
+.cmd-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cmd-name{font-size:13px;font-weight:600;color:#fff;}
+.cmd-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;}
+.thinking-glow-ring{position:absolute;inset:-1px;border-radius:29px;pointer-events:none;z-index:1;opacity:0;transition:opacity .6s ease;}
+.thinking-glow-ring.active{opacity:1;animation:thinkGlowPulse 2.4s ease-in-out infinite;}
+@keyframes thinkGlowPulse{0%,100%{box-shadow:0 0 0 1.5px rgba(56,189,248,.55),0 0 14px rgba(56,189,248,.3),0 0 32px rgba(56,189,248,.12);}50%{box-shadow:0 0 0 1.5px rgba(56,189,248,.9),0 0 24px rgba(56,189,248,.55),0 0 52px rgba(56,189,248,.22);}}
+.thinking-badge{display:none;align-items:center;gap:5px;padding:3px 9px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:20px;font-size:11px;font-weight:600;color:#38bdf8;flex-shrink:0;}
+.thinking-badge.show{display:flex;}
+.thinking-badge-dot{width:6px;height:6px;border-radius:50%;background:#38bdf8;animation:thinkDotPulse 1.4s ease-in-out infinite;}
+@keyframes thinkDotPulse{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes thinkPulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.4);opacity:1;box-shadow:0 0 14px var(--c1),0 0 28px rgba(168,85,247,.4);}}
+@keyframes thinkDot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-4px);opacity:1}}
 
 .stab{opacity:0;transition:opacity .18s ease,transform .18s ease;}
 .stab.tab-visible{opacity:1;transform:translateY(0)!important;}
@@ -2521,24 +2543,16 @@ async function checkUserProPlus(){
   }catch(e){console.warn('checkProPlus:',e);}
 }
 
-const AURIN_PRO_SYSTEM=`Ты — Aurin Pro, профессиональная версия Aurin. Создана командой FernieX-AI.
+const AURIN_PRO_SYSTEM=`Ты — Aurin Pro. Создана командой FernieX-AI.
 
-Твой характер и специализация:
-- Точность превыше всего — никаких догадок, только проверенные факты
-- Эксперт в программировании: знаешь архитектуру, паттерны, алгоритмы, оптимизацию
-- Глубокий анализ данных: структурируешь, сравниваешь, делаешь выводы с обоснованием
-- Профессиональный тон — без лишних эмоций, чётко и по делу
-- Код всегда пишешь чистым, с комментариями, следуя best practices
-- Если задача требует уточнений — спрашиваешь перед тем как отвечать
-- Не раскрываешь базовую модель
-- Если спросят кто создал — отвечай: «команда FernieX-AI»
-- Если спросят на какой модели работаешь — «это закрытая информация»
-
-При ответах на технические вопросы:
-- Всегда указывай сложность алгоритма (O-нотация) если уместно
-- Предлагай альтернативные подходы с их плюсами и минусами
-- Указывай на потенциальные edge cases и уязвимости
-- Структурируй длинные ответы с заголовками и секциями
+ПРАВИЛА (строго):
+- Перед каждым ответом думай внутри <thinking>...</thinking>. Там анализируй задачу, проверяй логику, выбирай подход. Пользователь это не видит.
+- Отвечай кратко и только по делу. Никакой воды, предисловий, послесловий
+- Попросили код — пиши только код на том языке, на котором попросили. Без объяснений если не просили
+- Попросили создать файл — создавай. Не попросили — не создавай, просто пиши код в блоке
+- Попросили калькулятор — сразу код калькулятора. Не "вот калькулятор на Python:", просто код
+- Не раскрываешь базовую модель. Кто создал — «команда FernieX-AI»
+- Если нужны уточнения — один короткий вопрос, не список
 
 Всегда отвечай на языке пользователя.`;
 
@@ -2552,6 +2566,9 @@ async function buildSystemPromptFull(){
   let p=`${basePersona}\nСегодняшняя дата: ${today}.\n\n## Доступные скиллы:\n\n${SKILL_IMAGEGEN}\n\n${SKILL_NETSEARCH}\n\n${SKILL_WEBFETCH}`;
   const rp=REASONING_PROMPTS[currentReasoning];
   if(rp)p+='\n\n'+rp;
+  if(window._isThinkingActive&&window._isThinkingActive()){
+    p+='\n\nПеред ответом ОБЯЗАТЕЛЬНО думай внутри <thinking>...</thinking>. Анализируй задачу, рассматривай варианты, проверяй логику. Пользователь это не видит.';
+  }
   p+=FX_FILE_INSTRUCTION;
   return p;
 }
@@ -2766,6 +2783,31 @@ function startSiriCanvas(id){
   draw();
 }
 
+function renderThinkingAnim(){
+  const id='think_'+Math.random().toString(36).slice(2,8);
+  return`<div id="${id}" class="thinking-bubble" style="display:flex;align-items:center;gap:10px;padding:8px 2px;">
+    <div class="think-orb-wrap" style="position:relative;width:32px;height:32px;flex-shrink:0;">
+      <svg class="think-ring" viewBox="0 0 36 36" style="position:absolute;inset:0;width:100%;height:100%;animation:thinkRingSpin 2s linear infinite;">
+        <circle cx="18" cy="18" r="15" fill="none" stroke="var(--c1)" stroke-width="2" stroke-dasharray="28 66" stroke-linecap="round" opacity=".7"/>
+      </svg>
+      <svg class="think-ring2" viewBox="0 0 36 36" style="position:absolute;inset:0;width:100%;height:100%;animation:thinkRingSpin 3.2s linear infinite reverse;">
+        <circle cx="18" cy="18" r="10" fill="none" stroke="rgba(168,85,247,.6)" stroke-width="1.5" stroke-dasharray="16 48" stroke-linecap="round"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--c1);animation:thinkPulse 1.4s ease-in-out infinite;box-shadow:0 0 8px var(--c1);"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="color:rgba(255,255,255,.55);font-size:13px;font-weight:500;">Думаю...</span>
+      <div style="display:flex;gap:3px;align-items:center;">
+        <div class="think-dot" style="width:4px;height:4px;border-radius:50%;background:var(--c1);opacity:.4;animation:thinkDot 1.4s ease-in-out 0s infinite;"></div>
+        <div class="think-dot" style="width:4px;height:4px;border-radius:50%;background:rgba(168,85,247,.8);opacity:.4;animation:thinkDot 1.4s ease-in-out .2s infinite;"></div>
+        <div class="think-dot" style="width:4px;height:4px;border-radius:50%;background:rgba(52,168,83,.8);opacity:.4;animation:thinkDot 1.4s ease-in-out .4s infinite;"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderStatus(text){
   const id='siri_'+Math.random().toString(36).slice(2,8);
   setTimeout(()=>startSiriCanvas(id),0);
@@ -2824,6 +2866,84 @@ function parseTable(block){
   html+=`</tbody></table></div>`;
   return html;
 }
+function syntaxHighlight(code,lang){
+  const wrap=(s,color)=>`<span style="color:${color}">${s}</span>`;
+  let c=code;
+  const slots=[];
+  function stash(html){const i=slots.length;slots.push(html);return`\x00${i}\x00`;}
+  function restore(s){return s.replace(/\x00(\d+)\x00/g,(_,i)=>slots[i]);}
+
+  // 1. Строки
+  c=c.replace(/(&#39;|&quot;|`)([\s\S]*?)\1/g,m=>stash(`<span style="color:#a8ff78">${m}</span>`));
+
+  // 2. Комментарии
+  if(['js','javascript','ts','typescript','java','cpp','c','cs','csharp','go','swift','kt','kotlin','rust','rs','php','jsx','tsx','vue'].includes(lang)){
+    c=c.replace(/(\/\/[^\n]*)/g,m=>stash(`<span style="color:#636e7b;font-style:italic">${m}</span>`));
+    c=c.replace(/(\/\*[\s\S]*?\*\/)/g,m=>stash(`<span style="color:#636e7b;font-style:italic">${m}</span>`));
+  }
+  if(['py','python','sh','bash','r','ruby','rb','yaml','yml'].includes(lang)){
+    c=c.replace(/(#[^\n]*)/g,m=>stash(`<span style="color:#636e7b;font-style:italic">${m}</span>`));
+  }
+  if(['sql'].includes(lang)){
+    c=c.replace(/(--[^\n]*)/g,m=>stash(`<span style="color:#636e7b;font-style:italic">${m}</span>`));
+  }
+  if(['html','xml'].includes(lang)){
+    c=c.replace(/(&lt;!--[\s\S]*?--&gt;)/g,m=>stash(`<span style="color:#636e7b;font-style:italic">${m}</span>`));
+  }
+
+  // 3. Числа (только вне слотов)
+  c=c.replace(/\b(\d+\.?\d*)\b/g,wrap('$1','#f7c948'));
+
+  // 4. Ключевые слова
+  const KW={
+    'js,javascript,jsx':'const let var function return if else for while do switch case break continue class extends import export default async await try catch finally throw new typeof instanceof void delete in of this super yield from',
+    'ts,typescript,tsx':'const let var function return if else for while do switch case break continue class extends import export default async await try catch finally throw new typeof instanceof void delete in of this super yield from interface type enum namespace declare readonly private public protected abstract static',
+    'py,python':'def return if elif else for while in not and or is import from class try except finally raise with as pass break continue lambda yield global nonlocal True False None del assert async await',
+    'java':'public private protected class interface extends implements import package static final void return if else for while do switch case break continue new this super try catch finally throw throws abstract enum instanceof synchronized',
+    'cpp,c':'int float double char bool void return if else for while do switch case break continue class struct namespace using include define const static auto nullptr true false new delete template typename',
+    'cs,csharp':'public private protected class interface extends implements using namespace static void return if else for while do switch case break continue new this base try catch finally throw abstract override virtual async await',
+    'go':'func return if else for range switch case break continue var const type struct interface import package go defer select chan map nil true false error',
+    'rs,rust':'fn let mut return if else for while loop match break continue use mod struct enum impl trait pub priv self super async await move where type const static unsafe extern crate true false',
+    'rb,ruby':'def end return if elsif else unless for while until do class module include extend require attr_reader attr_writer attr_accessor nil true false self yield begin rescue ensure raise',
+    'php':'function return if elseif else for foreach while do switch case break continue class extends implements namespace use echo print new this static public private protected abstract interface try catch finally throw true false null',
+    'swift':'func return if else for while repeat switch case break continue class struct enum import var let const self super init deinit try catch throw throws async await override static final public private internal',
+    'kt,kotlin':'fun return if else for while do when break continue class object interface import package val var const override companion suspend inline data sealed abstract enum try catch finally throw true false null',
+    'sql':'SELECT FROM WHERE JOIN LEFT RIGHT INNER OUTER ON GROUP BY ORDER HAVING INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE DROP ALTER INDEX DISTINCT UNION ALL AS AND OR NOT IN IS NULL LIKE BETWEEN EXISTS CASE WHEN THEN ELSE END',
+    'sh,bash':'if then else elif fi for while do done case esac function return echo exit local export source set unset readonly trap eval exec',
+  };
+  const langKey=Object.keys(KW).find(k=>k.split(',').includes(lang));
+  if(langKey&&KW[langKey]){
+    const words=KW[langKey].trim().split(' ').filter(Boolean);
+    const re=new RegExp(`\\b(${words.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})\\b`,'g');
+    c=c.replace(re,(_,w)=>stash(wrap(w,'#c792ea')));
+  }
+
+  // 5. HTML/XML теги
+  if(['html','xml','vue','jsx','tsx'].includes(lang)){
+    c=c.replace(/(&lt;\/?)([\w:-]+)/g,(_,bracket,tag)=>stash(`<span style="color:#ef5350">${bracket}</span><span style="color:#f07178">${tag}</span>`));
+    c=c.replace(/\b([\w-]+)(=)/g,(_,a,b)=>stash(`<span style="color:#c3e88d">${a}</span><span style="color:#89ddff">${b}</span>`));
+  }
+
+  // 6. Встроенные имена (до подсветки функций)
+  const builtins={
+    'js,javascript,ts,typescript,jsx,tsx':'console|Math|Array|Object|String|Number|Boolean|Promise|JSON|Date|Error|Map|Set|Symbol|Proxy|Reflect|parseInt|parseFloat|isNaN|isFinite|setTimeout|setInterval|clearTimeout|clearInterval|fetch|document|window|process|module|require|exports',
+    'py,python':'print|len|range|input|int|str|float|list|dict|set|tuple|type|isinstance|hasattr|getattr|setattr|open|enumerate|zip|map|filter|sorted|sum|min|max|abs|round|format|super',
+    'sql':'COUNT|SUM|AVG|MAX|MIN|COALESCE|NULLIF|CAST|CONVERT|NOW|DATE|YEAR|MONTH|DAY|CONCAT|LENGTH|UPPER|LOWER|TRIM|ROUND|FLOOR|CEIL',
+  };
+  const bKey=Object.keys(builtins).find(k=>k.split(',').includes(lang));
+  if(bKey){
+    const bRe=new RegExp(`\\b(${builtins[bKey]})\\b`,'g');
+    c=c.replace(bRe,(_,w)=>stash(wrap(w,'#82aaff')));
+  }
+
+  // 7. Операторы и пунктуация (только вне слотов \x00N\x00)
+  c=c.replace(/(=&gt;|===|!==|==|!=|&lt;=|&gt;=|&amp;&amp;|\|\||\+\+|--)/g,m=>stash(wrap(m,'#89ddff')));
+  c=c.replace(/(?<!\x00\d*)([+\-*\/%]=)/g,m=>stash(wrap(m,'#89ddff')));
+  c=c.replace(/([{}[\]();])/g,m=>stash(wrap(m,'#89ddff')));
+
+  return restore(c);
+}
+
 function renderMd(raw){
   // Убираем <thinking>...</thinking>
   raw=raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim();
@@ -2839,7 +2959,20 @@ function renderMd(raw){
   });
   raw=raw.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
     const i=cb.length;
-    cb.push(`<pre style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;margin:8px 0;overflow-x:auto"><code style="font-family:monospace;font-size:13px;color:#e2e8f0;white-space:pre">${escH(code.trim())}</code></pre>`);
+    const langLabel=lang||'text';
+    const langDisplay={js:'JavaScript',javascript:'JavaScript',ts:'TypeScript',typescript:'TypeScript',py:'Python',python:'Python',html:'HTML',css:'CSS',json:'JSON',md:'Markdown',sh:'Shell',bash:'Bash',sql:'SQL',java:'Java',cpp:'C++',c:'C',php:'PHP',rb:'Ruby',ruby:'Ruby',rs:'Rust',rust:'Rust',go:'Go',swift:'Swift',kt:'Kotlin',kotlin:'Kotlin',vue:'Vue',jsx:'JSX',tsx:'TSX',xml:'XML',yaml:'YAML',yml:'YAML',dart:'Dart',r:'R',lua:'Lua',scala:'Scala',cs:'C#',csharp:'C#',text:'Text',txt:'Text'}[langLabel.toLowerCase()]||langLabel.toUpperCase();
+    const cbId='cb_'+Math.random().toString(36).slice(2,8);
+    const highlighted=syntaxHighlight(escH(code.trim()),langLabel.toLowerCase());
+    cb.push(`<div style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:10px 0;overflow:hidden;font-family:'JetBrains Mono','Fira Mono',monospace;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);">
+        <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;">${escH(langDisplay)}</span>
+        <button onclick="(function(btn){const code=document.getElementById('${cbId}').innerText;navigator.clipboard.writeText(code).then(()=>{btn.innerHTML='<svg width=\\'13\\' height=\\'13\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'#4ade80\\' stroke-width=\\'2.5\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><polyline points=\\'20 6 9 17 4 12\\'/></svg><span style=\\'color:#4ade80;font-size:11px;margin-left:4px;\\'>Скопировано</span>';setTimeout(()=>{btn.innerHTML='<svg width=\\'13\\' height=\\'13\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'rgba(255,255,255,.4)\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><rect x=\\'9\\' y=\\'9\\' width=\\'13\\' height=\\'13\\' rx=\\'2\\'/><path d=\\'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\\'/></svg><span style=\\'font-size:11px;margin-left:4px;color:rgba(255,255,255,.4);\\'>Копировать</span>';},2000);});}).call(this,this)" style="display:flex;align-items:center;gap:4px;background:transparent;border:none;cursor:pointer;padding:4px 8px;border-radius:7px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='transparent'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span style="font-size:11px;color:rgba(255,255,255,.4);">Копировать</span>
+        </button>
+      </div>
+      <pre style="margin:0;padding:14px 16px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;"><code id="${cbId}" style="font-family:inherit;font-size:13px;white-space:pre;line-height:1.6;">${highlighted}</code></pre>
+    </div>`);
     return`%%CB${i}%%`;
   });
   raw=raw
@@ -2852,14 +2985,14 @@ function renderMd(raw){
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--c1);text-decoration:none;border-bottom:1px solid rgba(66,133,244,.35);transition:opacity .15s" onmouseover="this.style.opacity=\'.7\'" onmouseout="this.style.opacity=\'1\'">$1</a>')
     .replace(/^> (.+)$/gm,'<blockquote style="border-left:3px solid var(--c1);padding-left:10px;margin:6px 0;color:rgba(255,255,255,.6);font-style:italic">$1</blockquote>')
     .replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid rgba(255,255,255,.1);margin:10px 0">')
-    .replace(/^\d+\.\s(.+)$/gm,'<li style="margin:3px 0;padding-left:4px">$1</li>')
-    .replace(/^[-*]\s(.+)$/gm,'<li style="margin:3px 0;list-style:disc;padding-left:4px">$1</li>')
-    .replace(/(<li[\s\S]*?<\/li>(\n|$))+/g,m=>`<ul style="padding-left:18px;margin:6px 0">${m}</ul>`);
+    .replace(/^\d+\.\s(.+)$/gm,'<li style="margin:1px 0;padding-left:4px;line-height:1.55">$1</li>')
+    .replace(/^[-*]\s(.+)$/gm,'<li style="margin:1px 0;list-style:disc;padding-left:4px;line-height:1.55">$1</li>')
+    .replace(/(<li[\s\S]*?<\/li>(\n|$))+/g,m=>`<ul style="padding-left:18px;margin:4px 0">${m}</ul>`);
   // Параграфы
   raw=raw.split(/\n{2,}/).map(p=>{
     p=p.trim();
     if(!p||p.startsWith('<'))return p;
-    return`<p style="margin:0 0 8px;line-height:1.7">${p.replace(/\n/g,'<br>')}</p>`;
+    return`<p style="margin:0 0 6px;line-height:1.55">${p.replace(/\n/g,'<br>')}</p>`;
   }).join('');
   // Восстановить code blocks
   // Таблицы — вставляем до code blocks были вырезаны, восстанавливаем после
@@ -3274,6 +3407,11 @@ function getFxFileFromStorage(id){
 function fxFormatBytes(n){if(n<1024)return n+' Б';if(n<1048576)return(n/1024).toFixed(1)+' КБ';return(n/1048576).toFixed(2)+' МБ';}
 
 function parseFxAIFiles(text){
+  // Если есть открывающий маркер, но нет закрывающего — модель забыла закрыть блок,
+  // считаем что файл заканчивается концом текста
+  if(/\/f-x_ai_createfile\s*\n/i.test(text)&&!/\/f-x_ai_createfile_finish/i.test(text)){
+    text=text.replace(/\s*$/,'')+'\n/f-x_ai_createfile_finish';
+  }
   const re=/\/f-x_ai_createfile\s*\n([\s\S]*?)\/f-x_ai_createfile_finish/gi;
   if(!re.test(text))return null;
   re.lastIndex=0;
@@ -3360,7 +3498,8 @@ print("Hello")
 - Всегда используй этот формат для файлов с кодом или текстом
 - Придумывай осмысленное имя файла
 - Можно несколько файлов подряд
-- После блока файла — продолжай объяснение как обычно`;
+- После блока файла — продолжай объяснение как обычно
+- ВСЕГДА завершай блок строкой /f-x_ai_createfile_finish на отдельной строке. Без этого файл не будет создан!`;
 
 // ── DEFENDER SYSTEM ──
 async function defenderWarn(){
@@ -3467,6 +3606,8 @@ async function sendMsg(){
   if(chatLocked||(!txt&&!pendingImages.length)||ta.disabled)return;
   // Загружаем скиллы заранее
   const fullSystemPrompt=await buildSystemPromptFull();
+  // Если активен Thinking Mode — добавляем инструкцию думать
+  // Thinking mode остаётся активным между сообщениями
   if(!started){
     started=true;
     document.getElementById('chatTitle').classList.add('hide');
@@ -3501,6 +3642,21 @@ async function sendMsg(){
   // Добавляем в историю
   if(!activeChatId)activeChatId=genId();
   let finalTxt=txt;
+  // Обрабатываем /skill-* команды
+  if(finalTxt.startsWith('/skill-network ')){
+    const q=finalTxt.replace('/skill-network ','').trim();
+    finalTxt=q;
+    // Форсируем netsearch
+    chatHistory.push({role:'user',content:finalTxt});
+    // Убираем дублирующий push ниже
+    finalTxt='__SKILL_NETWORK__:'+q;
+  } else if(finalTxt.startsWith('/skill-imggenerator ')){
+    const q=finalTxt.replace('/skill-imggenerator ','').trim();
+    finalTxt='/imggenerate '+q;
+  } else if(finalTxt.startsWith('/skill-webfetch ')){
+    const url=finalTxt.replace('/skill-webfetch ','').trim();
+    finalTxt='<webfetch>'+url+'</webfetch>';
+  }
 
   // Показываем фото в пузыре пользователя
   if(pendingImages.length){
@@ -3557,9 +3713,12 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>startSiriCanvas(_sid)));
   msgs.appendChild(ai);msgs.scrollTop=msgs.scrollHeight;
   const aiTxt=ai.querySelector('.msg-ai-txt');
 
-  // Блокируем инпут
-  ta.disabled=true;
-  document.getElementById('sendBtn').style.opacity='.4';
+  // Переключаем на кнопку стоп
+  ta.disabled=false;
+  const sendBtn=document.getElementById('sendBtn');
+  sendBtn.innerHTML='■';
+  sendBtn.style.opacity='1';
+  sendBtn.onclick=(e)=>{e.stopPropagation();if(abortCtrl)abortCtrl.abort();};
 
   abortCtrl=new AbortController();
   try{
@@ -3572,6 +3731,27 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>startSiriCanvas(_sid)));
       {
         onToken:(chunk)=>{
           full+=chunk;
+
+          // Thinking блок — показываем анимацию пока не закрылся
+          if(full.includes('<thinking>')&&!full.includes('</thinking>')){
+            if(!aiTxt.querySelector('.thinking-bubble')){
+              aiTxt.innerHTML=renderThinkingAnim();
+            }
+            return;
+          }
+          // Thinking завершился — плавно убираем анимацию и начинаем рендер
+          if(full.includes('<thinking>')&&full.includes('</thinking>')){
+            const bubble=aiTxt.querySelector('.thinking-bubble');
+            if(bubble){
+              bubble.style.transition='opacity .3s ease, transform .3s ease';
+              bubble.style.opacity='0';
+              bubble.style.transform='translateY(-4px)';
+              setTimeout(()=>{
+                if(aiTxt.querySelector('.thinking-bubble'))aiTxt.innerHTML='';
+              },280);
+            }
+          }
+
           if(full.includes('<netsearch>')&&!full.includes('</netsearch>')){
             if(!aiTxt.querySelector('canvas')){aiTxt.innerHTML=renderStatus('ищу в интернете');requestAnimationFrame(()=>requestAnimationFrame(()=>{const c=aiTxt.querySelector('canvas');if(c)startSiriCanvas(c.id);}));}
             return;
@@ -3591,6 +3771,43 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>startSiriCanvas(_sid)));
           }
           if(!full.includes('<netsearch>')){
             if(full.trim().length>0){
+              // Не рендерим пока не завершён блок создания файла (иначе HTML/скрипт исполнится при стриминге)
+              if(full.includes('/f-x_ai_createfile')&&!full.includes('/f-x_ai_createfile_finish')){
+                const idx=full.indexOf('/f-x_ai_createfile');
+                const safeText2=full.slice(0,idx).trim();
+                const filePart=full.slice(idx);
+                let fileBox=aiTxt.querySelector('.fx-file-stream');
+                if(!fileBox){
+                  aiTxt.innerHTML=(safeText2?renderMd(safeText2):'')+
+                    `<div class="fx-file-stream" style="background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:10px 0;overflow:hidden;font-family:'JetBrains Mono','Fira Mono',monospace;">
+                      <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);">
+                        <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;">Создание файла</span>
+                        <div style="display:flex;gap:3px;align-items:center;margin-left:4px;">
+                          <span style="width:4px;height:4px;border-radius:50%;background:var(--c1);animation:tp 1.2s ease-in-out infinite;display:inline-block"></span>
+                          <span style="width:4px;height:4px;border-radius:50%;background:var(--c1);animation:tp 1.2s ease-in-out .15s infinite;display:inline-block"></span>
+                          <span style="width:4px;height:4px;border-radius:50%;background:var(--c1);animation:tp 1.2s ease-in-out .3s infinite;display:inline-block"></span>
+                        </div>
+                      </div>
+                      <pre style="margin:0;padding:14px 16px;overflow:auto;max-height:260px;scrollbar-width:thin;"><code class="fx-file-code" style="font-family:inherit;font-size:13px;white-space:pre-wrap;line-height:1.6;color:rgba(255,255,255,.7)"></code></pre>
+                    </div>`;
+                  fileBox=aiTxt.querySelector('.fx-file-stream');
+                }
+                fileBox.querySelector('.fx-file-code').textContent=filePart;
+                return;
+              }
+              // Не рендерим пока есть незакрытый code block
+              const codeBlockCount=(full.match(/```/g)||[]).length;
+              if(codeBlockCount%2!==0){
+                // Нечётное число ``` — блок не закрыт, показываем plain text
+                const hasCanvas2=aiTxt.querySelector('canvas');
+                if(hasCanvas2){}// Ждём, оставляем Siri анимацию
+                else{
+                  const safeText=full.replace(/```[\s\S]*$/,'').trim();
+                  if(safeText)aiTxt.innerHTML=renderMd(safeText)+'<span style="opacity:.4;font-size:13px;font-family:monospace"> ⏳ генерирую файл...</span>';
+                }
+                msgs.scrollTop=msgs.scrollHeight;
+                return;
+              }
               const hasCanvas=aiTxt.querySelector('canvas');
               if(hasCanvas){
                 // Первый реальный текст — плавно убираем Siri и показываем ответ
@@ -3832,7 +4049,14 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>startSiriCanvas(_sid)));
           // Финальный рендер с поддержкой AI файлов
           aiTxt.style.opacity='0';
           aiTxt.style.transition='opacity .45s ease';
-          renderBubbleContentFx(aiTxt,text.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim());
+          let finalText=text.replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').trim();
+          // Если файл начат, но не закрыт finish-маркером — закрываем сами (см. parseFxAIFiles)
+          // Если есть незакрытый ``` внутри файла — закрываем его перед finish
+          if(/\/f-x_ai_createfile\s*\n/i.test(finalText)&&!/\/f-x_ai_createfile_finish/i.test(finalText)){
+            const fenceCount=(finalText.match(/```/g)||[]).length;
+            if(fenceCount%2!==0)finalText+='\n```';
+          }
+          renderBubbleContentFx(aiTxt,finalText);
           requestAnimationFrame(()=>requestAnimationFrame(()=>{aiTxt.style.opacity='1';}));
             // WebFetch
           const wfMatch=text.match(/<webfetch>([\s\S]*?)<\/webfetch>/i);
@@ -3923,7 +4147,7 @@ if(uncertainty.test(full)){
         },
         onError:(msg)=>{ if(currentModelId!=='aurin-lite'&&(msg.includes('безопасност')||msg.includes('jailbreak'))){lockChat();defenderWarn();}else{aiTxt.innerHTML=renderErrorMsg(msg);} }
       },
-      {model:model.api, max_tokens:2048, system:fullSystemPrompt, lite_mode:currentModelId==='aurin-lite'}
+      {model:model.api, max_tokens:(currentModelId==='aurin-pro'?8192:2048), system:fullSystemPrompt, lite_mode:currentModelId==='aurin-lite'}
     );
     let lastFull=full;
     addMsgActions(ai,()=>lastFull,async()=>{
@@ -3952,11 +4176,137 @@ if(uncertainty.test(full)){
   }finally{
     aiTyping=false;
     ta.disabled=false;
-    document.getElementById('sendBtn').style.opacity='';
+    const sendBtnF=document.getElementById('sendBtn');
+    sendBtnF.innerHTML='➤';
+    sendBtnF.style.opacity='';
+    sendBtnF.onclick=sendMsg;
     abortCtrl=null;
     msgs.scrollTop=msgs.scrollHeight;
   }
 }
+</script>
+
+<script>
+(function initCmdSystem(){
+  const COMMANDS=[
+    {id:'thinking',slash:'/thinking',name:'Thinking Mode',sub:'ИИ думает перед ответом',icon:'💭',bg:'rgba(56,189,248,.15)',param:false},
+    {id:'skill-network',slash:'/skill-network',name:'Поиск в интернете',sub:'/skill-network [запрос]',icon:'🌐',bg:'rgba(66,133,244,.15)',param:true},
+    {id:'skill-imggenerator',slash:'/skill-imggenerator',name:'Генерация изображения',sub:'/skill-imggenerator [описание]',icon:'🎨',bg:'rgba(234,67,53,.15)',param:true},
+    {id:'skill-webfetch',slash:'/skill-webfetch',name:'Прочитать страницу',sub:'/skill-webfetch [ссылка]',icon:'📄',bg:'rgba(52,168,83,.15)',param:true},
+  ];
+
+  let popup=null,selIdx=0,filtered=[],thinkingActive=false;
+  const ring=()=>document.getElementById('thinkGlowRing');
+  const badge=()=>document.getElementById('thinkBadge');
+
+  function setThinking(on){
+    thinkingActive=on;
+    const r=ring();if(r)r.classList.toggle('active',on);
+    const b=badge();if(b)b.classList.toggle('show',on);
+  }
+
+  window._isThinkingActive=function(){return thinkingActive;};
+  window._deactivateThinking=function(){setThinking(false);};
+
+  function showPopup(cmds){
+    hidePopup();
+    filtered=cmds;selIdx=0;
+    const pill=document.querySelector('.input-pill');
+    if(!pill)return;
+    popup=document.createElement('div');
+    popup.id='cmdPopup';
+    draw();
+    pill.appendChild(popup);
+  }
+
+  function draw(){
+    if(!popup)return;
+    popup.innerHTML='';
+    filtered.forEach((cmd,i)=>{
+      const el=document.createElement('div');
+      el.className='cmd-item'+(i===selIdx?' cmd-sel':'');
+      el.innerHTML=`<div class="cmd-icon" style="background:${cmd.bg}">${cmd.icon}</div><div><div class="cmd-name">${cmd.slash}</div><div class="cmd-sub">${cmd.sub}</div></div>`;
+      el.onmouseenter=()=>{selIdx=i;draw();};
+      el.onclick=()=>applyCmd(cmd);
+      popup.appendChild(el);
+    });
+  }
+
+  function hidePopup(){
+    if(popup){popup.remove();popup=null;}
+    filtered=[];selIdx=0;
+  }
+
+  function applyCmd(cmd){
+    const ta=document.getElementById('msgIn');
+    if(!ta)return;
+    hidePopup();
+    if(cmd.id==='thinking'){
+      ta.value=ta.value.replace(/^\/thinking\s*/,'');
+      setThinking(true);
+      ta.focus();
+      return;
+    }
+    ta.value=cmd.slash+' ';
+    ta.focus();
+    ta.style.height='auto';
+    ta.style.height=Math.min(ta.scrollHeight,150)+'px';
+  }
+
+  window._cmdOnInput=function(ta){
+    const val=ta.value;
+
+    // /thinking с пробелом — активируем и убираем команду
+    if(/^\/thinking\s/.test(val)){
+      e.target.value=val.replace(/^\/thinking\s*/,'');
+      setThinking(true);
+      hidePopup();
+      e.target.style.height='auto';
+      e.target.style.height=Math.min(e.target.scrollHeight,150)+'px';
+      return;
+    }
+
+    // Если нет слеша — прячем
+    if(!val.startsWith('/')){hidePopup();return;}
+
+    // Есть слеш и нет пробела — показываем подсказки
+    if(!val.includes(' ')){
+      const q=val.slice(1).toLowerCase();
+      const cmds=COMMANDS.filter(c=>c.id.startsWith(q)||c.slash.slice(1).startsWith(q));
+      if(cmds.length)showPopup(cmds);
+      else hidePopup();
+      return;
+    }
+
+    // /skill-* команда с пробелом — прячем попап
+    hidePopup();
+  };
+
+  document.addEventListener('keydown',e=>{
+    if(e.target.id!=='msgIn')return;
+
+    // Если нет попапа — проверяем стирание /thinking
+    if(!popup){
+      // Thinking НЕ сбрасывается по Backspace — только по явному стиранию бейджа
+      return;
+    }
+
+    if(e.key==='ArrowDown'){e.preventDefault();selIdx=(selIdx+1)%filtered.length;draw();}
+    else if(e.key==='ArrowUp'){e.preventDefault();selIdx=(selIdx-1+filtered.length)%filtered.length;draw();}
+    else if(e.key==='Tab'||e.key==='Enter'){
+      if(filtered.length){e.preventDefault();applyCmd(filtered[selIdx]);}
+    }
+    else if(e.key==='Escape'){hidePopup();}
+  });
+
+  // Закрываем попап при клике вне
+  document.addEventListener('click',e=>{
+    if(!popup)return;
+    const pill=document.querySelector('.input-pill');
+    if(pill&&pill.contains(e.target))return;
+    hidePopup();
+  });
+})();
 </script>
 
 <!-- BANNER SYSTEM -->
